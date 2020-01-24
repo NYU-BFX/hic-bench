@@ -75,7 +75,8 @@ foreach region ($regions)
   set stop = `echo $region | cut -d'-' -f2`
   set start_bin = `echo $start/$bin_size | bc`
   set stop_bin = `echo $stop/$bin_size | bc`
-  set hic_matrices = `cd $workdir; ls -1 $object2.k=*.$chrom.matrix.txt; ls -1 $object1.k=*.$chrom.matrix.txt`
+ls -1 $workdir/
+  set hic_matrices = `cd $workdir; ls -1 k=*.$chrom.matrix.txt`
   set hic_matrix_no = `echo $hic_matrices | tr ' ' '\n' | wc -l`
   set tiles2 = ()
   foreach t ($tiles)

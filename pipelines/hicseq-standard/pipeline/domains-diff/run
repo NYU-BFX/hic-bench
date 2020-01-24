@@ -26,7 +26,7 @@ set resources = 1,20G
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
-Rscript ./code/code.main/pipeline-master-explorer.r -v --filter-tuples --exclude-branch='matrix-prep' --filter-branch='matrix-ic.by_group' "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "group" 2
+Rscript ./code/code.main/pipeline-master-explorer.r -v --exclude-branch='matrix-prep' --filter-branch='matrix-ic.by_group' "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "group" 2
 
 # run and wait until done!
 set max_jobs = 

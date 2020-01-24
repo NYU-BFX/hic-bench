@@ -40,8 +40,16 @@ set domains1 = $domains_branch/$object1/domains.k=001.bed
 set domains2 = $domains_branch/$object2/domains.k=001.bed
 
 if ($perform_analysis == TRUE) then
-	# Find consistent TADs between samples
-	perl $codedir/find-consistent-domains.pl $domains1 $domains2 $max_boundary_dist $bin_size $outdir/domains1.tsv $outdir/domains2.tsv $outdir/domains_common.tsv
+	if ($use_sample1_ref == TRUE) then
+		# Use sample 1 TADs as reference
+		# Perform Hi-C fold-change analysis
+		cat $domains1 >! $outdir/domains1.tsv
+		cat $domains1 >! $outdir/domains2.tsv
+		cat $domains1 >! $outdir/domains_common.tsv
+	else
+		# Find consistent TADs between samples
+		perl $codedir/find-consistent-domains.pl $domains1 $domains2 $max_boundary_dist $bin_size $outdir/domains1.tsv $outdir/domains2.tsv $outdir/domains_common.tsv
+	endif
 
 	# Perform Hi-C fold-change analysis
 	$codedir/run_comparison.sh $codedir/differential_tad_activity.r $branch/$object1 $branch/$object2 $outdir/domains1.tsv $outdir/domains2.tsv $min_tad_size $max_tad_size $is_normalize $centrotelo_file $bin_size $outdir
