@@ -18,6 +18,7 @@ set genome_file = $genome_dir/gene-info.bed
 set is_normalize = 'dist_norm'
 set printShowCases= FALSE
 
+set use_sample1_ref = TRUE          # if TRUE, use SAMPLE1 TADs; if FALSE, generate common TAD boundaries
 set max_boundary_dist = 3        # max distance between common boundaries (in number of bins)
 set max_range = 2000000
 set min_tad_size = 400000
