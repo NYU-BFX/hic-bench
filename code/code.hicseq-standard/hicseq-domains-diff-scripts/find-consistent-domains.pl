@@ -9,7 +9,8 @@ my $max_diff = $ARGV[2];
 my $bin_size = $ARGV[3];
 my $out_sample_1 = $ARGV[4];
 my $out_sample_2 = $ARGV[5];
-
+# Added code to print a file with the common TADs
+my $out_common = $ARGV[6];
 
 my %sample_1;
 open(sample_1, "<$sample_1_tads");
@@ -23,6 +24,8 @@ close(sample_1);
 open(sample_2, "<$sample_2_tads");
 open(OUT_1, ">$out_sample_1");
 open(OUT_2, ">$out_sample_2");
+open(OUT_common, ">$out_common");
+
 while (my $line = <sample_2>) {
 	chomp($line);
 	my @splitted_line = split(/\t/, $line);
@@ -35,6 +38,7 @@ while (my $line = <sample_2>) {
 				print "FOUND MATCH with offsets $offset_i and $offset_j\n";
 				print OUT_1 join("\t", @{$sample_1{$splitted_line[0] . ":" . ($splitted_line[1] + $offset_i) . "-" . ($splitted_line[2] + $offset_j)}}) . "\n";
 				print OUT_2 join("\t", @splitted_line) . "\n";
+				print OUT_common $splitted_line[0] . "\t" . &min($splitted_line[1], ($splitted_line[1]+$offset_i)) . "\t" . &max($splitted_line[2], ($splitted_line[2] + $offset_j)) . "\n"; 
 			} 
 		}
 	}
@@ -42,4 +46,25 @@ while (my $line = <sample_2>) {
 }
 close(OUT_2);
 close(OUT_1);
+close(OUT_common);
 close(sample_2);
+
+sub max {
+	my $val1 = shift();
+	my $val2 = shift();
+	if ($val1 > $val2) {
+		return($val1);
+	}
+	return($val2);
+}
+
+sub min {
+	my $val1 = shift();
+	my $val2 = shift();
+	if ($val1 < $val2) {
+		return($val1);
+	}
+	return($val2);
+}
+
+

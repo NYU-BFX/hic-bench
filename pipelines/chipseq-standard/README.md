@@ -84,6 +84,10 @@ The `<genome>` is `hg19`, `mm10`, etc.
 The `fragment-size` should be a numeric argument such as `300`, representing the library size of the sequencing sample. 
 Typical fragmentation sizes are 150 for histone marks, and 400 for transcription factors.
 
+A related topic is peak type. This is not specified in the sample sheet, but will be helpful in understanding the results. Both narrow and broad peaks are output by default. Generally, narrow peaks are acceptable for TFs and broad for histone marks. However, exceptions are described in [ENCODE Histone ChIP-seq Data Standards](https://www.encodeproject.org/chip-seq/histone/):
+
+![peak type](https://user-images.githubusercontent.com/6363505/41428326-b6f8e516-6fd7-11e8-9d9d-1c885e01562d.png)
+
 After creation of the sample sheet (should be in `inputs/sample-sheet.tsv`), a manual review process is required to match the correct control or input samples with experimental samples, verify proper grouping names, files, and other entries. 
 
 If editing in Excel, clean up the sample sheet to get rid of problematic characters that get introduced:

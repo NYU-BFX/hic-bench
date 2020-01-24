@@ -32,7 +32,7 @@ mkdir analysis/inputs/fastq
 
 # write project_info.txt file
 cd analysis/
-set author = `whoami | xargs finger | sed -E 's/\t+/\n/g' | grep "Name:" | cut -d ' ' -f2-`
+set author = `whoami | xargs finger | sed -E 's/\t+/\n/g' | grep "Name:\|Office:" | sed -E 's/ +/ /g' | cut -d ' ' -f2 | xargs -n2 | awk '{print $2"."$1}'`
 set author_email = `echo $author"@nyumc.org" | sed 's/ /./g'`
 set abs_analysis_dir = `readlink -f $analysis_path | xargs dirname`
 set PI = `echo $abs_analysis_dir | tr '\/' '\n' | grep -E 'Lab$' | sed -E 's/Lab$//'`

@@ -1,15 +1,14 @@
 #!/bin/tcsh
-source ./code/code.main/custom-tcshrc      # customize shell environment
+source ./code/code.main/custom-tcshrc     # shell settings
 
 ##
 ## USAGE: run [--dry-run]
 ##
 
-#% This step takes HiCPlotter snapshots in pairs of samples. 
+#% This step performs pair-wise fold-change computations of input matrices.  
 #% TABLES: 
 #% FIGURES:
 
-# process command-line inputs
 if ($#argv > 1) then
   grep '^##' $0 | scripts-send2err
   exit
@@ -18,7 +17,7 @@ endif
 set opt = "$1"
 
 # setup
-set op = hicplotter-diff
+set op = domains-diff
 set inpdirs = "inpdirs/*"
 set results = results
 scripts-create-path $results/
@@ -27,11 +26,10 @@ set resources = 1,20G
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
-Rscript ./code/code.main/pipeline-master-explorer.r -v --filter-tuples --filter-branch='matrix-ic.by_group.cutoff_0' "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "." 2
+Rscript ./code/code.main/pipeline-master-explorer.r -v --filter-tuples --exclude-branch='matrix-prep' --filter-branch='matrix-ic.by_sample' --include-obj='T_ALL' "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "." 2
 
 # run and wait until done!
-set max_jobs = 50
+set max_jobs = 
 if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $max_jobs
-
 
 

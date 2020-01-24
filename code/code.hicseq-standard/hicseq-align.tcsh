@@ -46,7 +46,7 @@ if ($aligner == 'gtools') then                    ## Aligner = gtools
     scripts-send2err "Error: gtools-hic align does not allow multiple read pair files."
     exit
   endif
-  gtools-hic align -v --work-dir $out/tmp -p $threads $align_params --bowtie-index $genome_index $fastq1 $fastq2 | samtools view -T $genome_index.fa -b1 - >! $out/alignments.bam
+  gtools-hic align -v --work-dir $out/tmp -p $threads $align_params --reorder --bowtie-index $genome_index $fastq1 $fastq2 | samtools view -T $genome_index.fa -b1 - >! $out/alignments.bam
   rm -rf $out/tmp
 
 
@@ -54,7 +54,7 @@ else if ($aligner == 'bowtie2') then              ## Aligner = bowtie2
 
   set fastq1_comma = `echo $fastq1 | tr ' ' ','`
   set fastq2_comma = `echo $fastq2 | tr ' ' ','`
-  set threads2 = `echo "$threads/2" | bc`
+  set threads2 = `echo "$threads/1" | bc`
 
   # this code seems complicated, but it avoids generating intermediate sam files
   bash -c "paste -d'\n' <(bowtie2 -p $threads2 $align_params --reorder -x $genome_index --sam-nohead -U $fastq1_comma) <(bowtie2 -p $threads2 $align_params --reorder -x $genome_index --sam-nohead -U $fastq2_comma) | samtools view -T $genome_index.fa -b1 - > $out/alignments.bam"

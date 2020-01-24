@@ -1,10 +1,13 @@
 #!/bin/tcsh
 
+source /etc/profile.d/modules.csh
+
 setenv LC_ALL "C"
 set path = `echo $path | tr ' ' '\n' | grep -v '/ifs/home/'`
 set path = ( ./code/code.main $path )
 
 umask 007
 
-module load gtools/3.0
+module load gsl/1.15
+#module load gtools/3.0
 

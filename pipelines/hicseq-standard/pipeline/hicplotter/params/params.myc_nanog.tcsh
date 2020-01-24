@@ -4,7 +4,7 @@ source ./inputs/params/params.tcsh
 
 module unload gcc               # this is necessary in order to take care of module conflicts in our system
 module unload python
-module load python/2.7.3
+module load python/cpu/2.7.15-ES
 
 # HiCplotter path
 set hicplotter_path = ./code/HiCPlotter2.py
@@ -44,9 +44,10 @@ foreach kappa ($kappas)
 end
 
 # regions to plot
-set regions = `cat $genome_dir/gene-name.bed | grep -wiE 'MYC|NANOG' | gtools-regions center | gtools-regions shiftp -5p -4000000 -3p +4000000 | cut -f-3 | sed 's/\t/:/' | sed 's/\t/-/'`
+set genes = 'MYC|NANOG'
+set regions = `cat $genome_dir/gene-name.bed | grep -wiE "$genes" | gtools-regions center | gtools-regions shiftp -5p -4000000 -3p +4000000 | cut -f-3 | sed 's/\t/:/' | sed 's/\t/-/'`
 set tiles = "$outdir/regions.bed"
-cat $genome_dir/gene-name.bed | grep -wiE 'MYC|NANOG' | sed 's/^/0.7\t66,80,209\t/' | tools-cols -t 2 3 4 0 1 5 >! $tiles
+cat $genome_dir/gene-name.bed | grep -wiE "$genes" | sed 's/^/0.7\t66,80,209\t/' | tools-cols -t 2 3 4 0 1 5 >! $tiles
 set tiles_labels = "regions"
 set highlight = 0
 set highlight_bed = ""

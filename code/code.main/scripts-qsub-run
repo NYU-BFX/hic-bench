@@ -20,17 +20,35 @@ shift
 shift
 shift
 
+#scripts-send2err $jpref
+
+#exit
+
 if (-e $jpref.sh) then
   scripts-send2err "Error: [scripts-qsubmem-run] $jpref.sh already exists, cannot overwrite."
   exit 1
 endif
 
-set tmp_resources = `echo 10000/$nthreads | bc`                                     # /tmp space per thread in Mbytes
-set qsub_params = "-l tmp_free=${tmp_resources}M -l tmp_token=${tmp_resources}M"
+#set tmp_resources = `echo 10000/$nthreads | bc`                                     # /tmp space per thread in Mbytes
+#set qsub_params = "-l tmp_free=${tmp_resources}M -l tmp_token=${tmp_resources}M"
  
-scripts-print-cmdline $prog $argv:q >! $jpref.sh
-qsub -q all.q -cwd $qsub_params -l mem_free=$mem -l h_vmem=$mem -l mem_token=$mem -o :$jpref.out -e :$jpref.err -pe threaded $nthreads $jpref.sh >! $jpref.jid
-cat $jpref.jid | cut -d' ' -f3
+#qsub -q all.q -cwd $qsub_params -l mem_free=$mem -l h_vmem=$mem -l mem_token=$mem -o :$jpref.out -e :$jpref.err -pe threaded $nthreads $jpref.sh >! $jpref.jid
+
+scripts-print-cmdline '#\!/bin/tcsh' >! $jpref.sh
+#scripts-print-cmdline '#'SBATCH -J $jobname >> $jpref.sh
+scripts-print-cmdline '#'SBATCH --time=24:00:00 >> $jpref.sh
+scripts-print-cmdline '#'SBATCH -n 1 >> $jpref.sh
+scripts-print-cmdline '#'SBATCH -c $nthreads >> $jpref.sh
+scripts-print-cmdline '#'SBATCH -o $jpref.out >> $jpref.sh
+scripts-print-cmdline '#'SBATCH -e $jpref.err >> $jpref.sh
+scripts-print-cmdline '#'SBATCH --mem=$mem >> $jpref.sh
+#scripts-print-cmdline '#'SBATCH --mem-per-cpu=32G >> $jpref.sh
+
+scripts-print-cmdline $prog $argv:q >> $jpref.sh
+
+sbatch $jpref.sh >! $jpref.jid
+
+cat $jpref.jid | cut -d' ' -f4
 
 
 
