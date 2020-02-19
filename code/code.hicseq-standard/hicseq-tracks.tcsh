@@ -35,8 +35,8 @@ set sample_reads = `echo $sample_paths | tr ' ' '\n' | sed 's/$/\/filtered.reg.g
 
 if ($format == washu) then 
   ./code/hicseq-tracks-washu.tcsh $outdir "$sample_reads" $genome_dir/genome.bed $bin_size
-if ($format == juicer) then 
-  ./code/hicseq-tracks-juicer.sh $outdir "$sample_reads" $genome 
+else if ($format == juicer) then 
+  ./code/hicseq-tracks-juicer.tcsh $outdir "$sample_reads" $genome 
 else
   scripts-send2err "Error: unknown format $format."
   exit 1

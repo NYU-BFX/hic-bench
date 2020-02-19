@@ -20,15 +20,16 @@ set genome = $3     # mm10
 cat $reg | gunzip >! $outdir/filtered.reg
 
 # Convert to bed format
-awk ' BEGIN { OFS="\t"; strand["-"]="1"; strand["+"]="0" } {
-    if ($2 < $6)
-        print $1, strand[$3], $2, $4, 0, strand[$7], $6, $8, 1, 0, 1;
-    else
-        print $1, strand[$7], $6, $8, 1, strand[$3], $2, $4, 0, 0, 1;
+awk ' BEGIN { OFS="\t"; strand["-"]="1"; strand["+"]="0" } {                    \
+    if ($2 < $6)                                                                \
+        print $1, strand[$3], $2, $4, 0, strand[$7], $6, $8, 1, 0, 1;           \
+    else                                                                        \
+        print $1, strand[$7], $6, $8, 1, strand[$3], $2, $4, 0, 0, 1;           \
 }' $outdir/filtered.reg | sort -k3,3d -k7,7d >! $outdir/filtered.bed
 
 # Generate .hic file
-java -Xms512m -Xmx20480m -jar juicer_tools.jar pre $outdir/filtered.bed $outdir/filtered.hic "$genome"
+#juicer_tools pre $outdir/filtered.bed $outdir/filtered.hic "$genome"
+java -Xms512m -Xmx20480m -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar pre $outdir/filtered.bed $outdir/filtered.hic "$genome"
 
 # Cleanup
 rm -f $outdir/filtered.reg $outdir/filtered.bed

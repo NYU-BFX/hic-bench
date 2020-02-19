@@ -27,7 +27,7 @@ set resources = 4,60G
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
-Rscript ./code/code.main/pipeline-master-explorer.r -v "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "group" 1
+Rscript ./code/code.main/pipeline-master-explorer.r -v "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "sample group" 1
 
 # run
 if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run
