@@ -9,13 +9,7 @@ matrix-filtered
 
 matrix-ic
 
-#matrix-diff
-#
-#matrix-estimated
-#
 matrix-stats
-
-matrix-tracks
 
 compare-matrices
 compare-matrices-stats
@@ -29,7 +23,7 @@ domains-stats
 compare-boundaries
 compare-boundaries-stats
 
-boundary-diff
+domains-diff
 
 hicplotter
 hicplotter-diff
