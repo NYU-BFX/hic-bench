@@ -52,11 +52,11 @@ if ($perform_analysis == TRUE) then
 	endif
 
 	# Perform Hi-C fold-change analysis
-	$codedir/run_comparison.sh $codedir/differential_tad_activity.r $branch/$object1 $branch/$object2 $outdir/domains1.tsv $outdir/domains2.tsv $min_tad_size $max_tad_size $is_normalize $centrotelo_file $bin_size $outdir
+	$codedir/run_comparison.sh $codedir/differential_tad_activity.r $branch/$object2 $branch/$object1 $outdir/domains2.tsv $outdir/domains1.tsv $min_tad_size $max_tad_size $is_normalize $centrotelo_file $bin_size $outdir
 
 	# Create boxplot with differentially active TADs
 	R --no-save $outdir/final_results.tsv $gene_name FALSE FALSE \
-		$object1 $object2 $bin_size $min_tad_size $outdir/final_results < $codedir/differential_tad_activity_expression.r
+		$object2 $object1 $bin_size $min_tad_size $outdir/final_results < $codedir/differential_tad_activity_expression.r
 endif
 
 # Integrate RNA-Seq data
@@ -68,7 +68,7 @@ if ($rnaseq == TRUE) then
 
 	# Add boxplot plot with the RNA-Seq integration
 	R --no-save $outdir/final_results.tsv $gene_name $rna1 $rna2 \
-        	$object1 $object2 $bin_size $min_tad_size $outdir/final_results < $codedir/differential_tad_activity_expression.r
+        	$object2 $object1 $bin_size $min_tad_size $outdir/final_results < $codedir/differential_tad_activity_expression.r
 endif
 
 # Integrate superenhancer data
@@ -106,7 +106,7 @@ if ($superenhancers == TRUE) then
 	R --no-save 	$outdir/active_TADs_overlap_se1.tsv $outdir/active_TADs_overlap_se2.tsv \
 			$outdir/inactive_TADs_overlap_se1.tsv $outdir/inactive_TADs_overlap_se2.tsv \
 			$outdir/unchanged_TADs_overlap_se1.tsv $outdir/unchanged_TADs_overlap_se2.tsv \
-                	$object1 $object2 $bin_size $outdir/final_results $analysis_type \
+                	$object2 $object1 $bin_size $outdir/final_results $analysis_type \
 			$num_peaks1 $num_peaks2 $num_common_TADs $outdir/domains_common.tsv \
 			$outdir/final_results_active-TADs.bed $outdir/final_results_inactive-TADs.bed \
 			$outdir/final_results_unchanged-TADs.bed  < $codedir/differential_number_ChIP_Seq_peaks.r
@@ -149,7 +149,7 @@ if ($enhancers == TRUE) then
 	R --no-save 	$outdir/active_TADs_overlap_enhancers1.tsv $outdir/active_TADs_overlap_enhancers2.tsv \
 			$outdir/inactive_TADs_overlap_enhancers1.tsv $outdir/inactive_TADs_overlap_enhancers2.tsv \
 			$outdir/unchanged_TADs_overlap_enhancers1.tsv $outdir/unchanged_TADs_overlap_enhancers2.tsv \
-                	$object1 $object2 $bin_size $outdir/final_results $analysis_type \
+                	$object2 $object1 $bin_size $outdir/final_results $analysis_type \
 			$num_peaks1 $num_peaks2 $num_common_TADs $outdir/domains_common.tsv \
 			$outdir/final_results_active-TADs.bed $outdir/final_results_inactive-TADs.bed \
 			$outdir/final_results_unchanged-TADs.bed  < $codedir/differential_number_ChIP_Seq_peaks.r
@@ -160,7 +160,7 @@ endif
 if ($atacseq == TRUE) then
 	set analysis_type = ATAC_Seq
 	set chip_branch = ../domains-diff-integration/ATAC-Seq
-	set diff_bind_file = $chip_branch/diff_bind."$object1"-vs-"$object2".q100.csv
+	set diff_bind_file = $chip_branch/diff_bind."$object2"-vs-"$object1".q100.csv
 	set chip1 = $chip_branch/$object1/peaks.bed
 	set chip2 = $chip_branch/$object2/peaks.bed
 
@@ -191,7 +191,7 @@ if ($atacseq == TRUE) then
 	R --no-save 	$outdir/active_TADs_overlap_chip1.tsv $outdir/active_TADs_overlap_chip2.tsv \
 			$outdir/inactive_TADs_overlap_chip1.tsv $outdir/inactive_TADs_overlap_chip2.tsv \
 			$outdir/unchanged_TADs_overlap_chip1.tsv $outdir/unchanged_TADs_overlap_chip2.tsv \
-                	$object1 $object2 $bin_size $outdir/final_results $analysis_type  \
+                	$object2 $object1 $bin_size $outdir/final_results $analysis_type  \
 			$num_peaks1 $num_peaks2 $num_common_TADs $outdir/domains_common.tsv \
 			$outdir/final_results_active-TADs.bed $outdir/final_results_inactive-TADs.bed \
 			$outdir/final_results_unchanged-TADs.bed  < $codedir/differential_number_ChIP_Seq_peaks.r
@@ -203,11 +203,11 @@ if ($atacseq == TRUE) then
 	# Determine peaks stronger in obj1 and obj2
 	# I am assuming that the fold calculation will be calculated as obj1 - obj2 
 	# Filtering for significant changes: FDR 0.05
-	awk -F"," '{ if (($9 < 0)&&($11 < 0.05)) { print } }' $diff_bind_file | sed 's/,/\t/g' | sed 's/"//g' | tail -n +2  > $outdir/diff_bind_higher_"$object2".csv 
-	awk -F"," '{ if (($9 > 0)&&($11 < 0.05)) { print }}' $diff_bind_file  | sed 's/,/\t/g' | sed 's/"//g' | tail -n +2  > $outdir/diff_bind_higher_"$object1".csv 
+	awk -F"," '{ if (($9 < 0)&&($11 < 0.05)) { print } }' $diff_bind_file | sed 's/,/\t/g' | sed 's/"//g' | tail -n +2  > $outdir/diff_bind_higher_"$object1".csv 
+	awk -F"," '{ if (($9 > 0)&&($11 < 0.05)) { print }}' $diff_bind_file  | sed 's/,/\t/g' | sed 's/"//g' | tail -n +2  > $outdir/diff_bind_higher_"$object2".csv 
 	
-	bedtools intersect -a $outdir/domains_common.tsv -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/all_TADs_overlap_chip1.tsv
-	bedtools intersect -a $outdir/domains_common.tsv -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/all_TADs_overlap_chip2.tsv
+	bedtools intersect -a $outdir/domains_common.tsv -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/all_TADs_overlap_chip1.tsv
+	bedtools intersect -a $outdir/domains_common.tsv -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/all_TADs_overlap_chip2.tsv
 	
 	# Count the number of common TADs
 	set num_common_TADs=`wc -l $outdir/domains_common.tsv | awk '{print $1}'`	
@@ -217,20 +217,20 @@ if ($atacseq == TRUE) then
 	set num_peaks2=`wc -l $outdir/all_TADs_overlap_chip2.tsv | awk '{print $1}'`	
 
 	# Overlap the peaks with the differentially active TADs
-	bedtools intersect -a $outdir/final_results_active-TADs.bed -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/active_TADs_overlap_diff_bind_chip1.tsv
-        bedtools intersect -a $outdir/final_results_active-TADs.bed -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/active_TADs_overlap_diff_bind_chip2.tsv
+	bedtools intersect -a $outdir/final_results_active-TADs.bed -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/active_TADs_overlap_diff_bind_chip1.tsv
+        bedtools intersect -a $outdir/final_results_active-TADs.bed -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/active_TADs_overlap_diff_bind_chip2.tsv
 
-        bedtools intersect -a $outdir/final_results_inactive-TADs.bed -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/inactive_TADs_overlap_diff_bind_chip1.tsv
-        bedtools intersect -a $outdir/final_results_inactive-TADs.bed -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/inactive_TADs_overlap_diff_bind_chip2.tsv
+        bedtools intersect -a $outdir/final_results_inactive-TADs.bed -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/inactive_TADs_overlap_diff_bind_chip1.tsv
+        bedtools intersect -a $outdir/final_results_inactive-TADs.bed -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/inactive_TADs_overlap_diff_bind_chip2.tsv
 
-        bedtools intersect -a $outdir/final_results_unchanged-TADs.bed -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/unchanged_TADs_overlap_diff_bind_chip1.tsv
-        bedtools intersect -a $outdir/final_results_unchanged-TADs.bed -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/unchanged_TADs_overlap_diff_bind_chip2.tsv
+        bedtools intersect -a $outdir/final_results_unchanged-TADs.bed -b $outdir/diff_bind_higher_"$object2".csv -wa -wb > $outdir/unchanged_TADs_overlap_diff_bind_chip1.tsv
+        bedtools intersect -a $outdir/final_results_unchanged-TADs.bed -b $outdir/diff_bind_higher_"$object1".csv -wa -wb > $outdir/unchanged_TADs_overlap_diff_bind_chip2.tsv
 
 	# Plot the number of differential ATAC-Seq peaks per TAD for TADs in different categories
 	R --no-save 	$outdir/active_TADs_overlap_diff_bind_chip1.tsv $outdir/active_TADs_overlap_diff_bind_chip2.tsv \
 			$outdir/inactive_TADs_overlap_chip1.tsv $outdir/inactive_TADs_overlap_chip2.tsv \
 			$outdir/unchanged_TADs_overlap_chip1.tsv $outdir/unchanged_TADs_overlap_chip2.tsv \
-                	$object1 $object2 $bin_size $outdir/final_results $analysis_type \
+                	$object2 $object1 $bin_size $outdir/final_results $analysis_type \
 			$num_peaks1 $num_peaks2 $num_common_TADs $outdir/domains_common.tsv \
 			$outdir/final_results_active-TADs.bed $outdir/final_results_inactive-TADs.bed \
 			$outdir/final_results_unchanged-TADs.bed  < $codedir/differential_number_ChIP_Seq_peaks.r
@@ -255,26 +255,26 @@ if ($atacseq == TRUE) then
 
 	perl $codedir/overlap_intra_TAD_ChIP_Seq_peaks.pl \
         	$outdir/final_results_active-TADs.tsv \
-        	$outdir/diff_bind."$object1"-vs-"$object2".q100-zscore.bed \
+        	$outdir/diff_bind."$object2"-vs-"$object1".q100-zscore.bed \
         	$extension \
         	$outdir/active-vs-diffBind-FC_intra_TAD.tsv 
 
 	perl $codedir/overlap_intra_TAD_ChIP_Seq_peaks.pl \
         	$outdir/final_results_inactive-TADs.tsv \
-        	$outdir/diff_bind."$object1"-vs-"$object2".q100-zscore.bed \
+        	$outdir/diff_bind."$object2"-vs-"$object1".q100-zscore.bed \
         	$extension \
         	$outdir/inactive-vs-diffBind-FC_intra_TAD.tsv 
 
 	perl $codedir/overlap_intra_TAD_ChIP_Seq_peaks.pl \
         	$outdir/final_results_unchanged-TADs.tsv \
-        	$outdir/diff_bind."$object1"-vs-"$object2".q100-zscore.bed \
+        	$outdir/diff_bind."$object2"-vs-"$object1".q100-zscore.bed \
         	$extension \
         	$outdir/unchanged-vs-diffBind-FC_intra_TAD.tsv 
 
 	R --no-save $outdir/inactive-vs-diffBind-FC_intra_TAD.tsv \
      	   	$outdir/active-vs-diffBind-FC_intra_TAD.tsv \
 		$outdir/unchanged-vs-diffBind-FC_intra_TAD.tsv \
-       		$outdir/"$object1"-vs-"$object2"_diffBind_intra_TAD < $codedir/plot_boxes.r
+       		$outdir/"$object2"-vs-"$object1"_diffBind_intra_TAD < $codedir/plot_boxes.r
 	endif
 exit
 
