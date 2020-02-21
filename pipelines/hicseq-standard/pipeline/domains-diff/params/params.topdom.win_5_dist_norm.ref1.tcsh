@@ -21,7 +21,7 @@ set max_tad_size = 2e6
 set max_boundary_size = 10 # max boundary length in bins.
 
 # determine TAD branch
-set tad_caller = topdom.w_5
+set tad_caller = topdom.win_5
 set branch_short = `echo $branch | sed 's/.*results\///'`
 set group_var = `echo $branch_short | cut -d'/' -f1 | cut -d'.' -f2`
 set domains_branch = ../domains/results/domains.$group_var.$tad_caller/$branch_short

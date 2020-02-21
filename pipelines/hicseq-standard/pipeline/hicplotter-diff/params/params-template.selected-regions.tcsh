@@ -1,26 +1,18 @@
 #!/bin/tcsh
 
-source ./inputs/params/params.tcsh
-
-module unload gcc               # this is necessary in order to take care of module conflicts in our system
-module unload python
-module load python/cpu/2.7.15-ES
-
 # HiCplotter path
 set hicplotter_path = ./code/HiCPlotter4.py
 set gene_path = `readlink -f $genome_dir/hicplotter-genes.bed`
 set chrom_excluded = 'chr[MY]'
 
-#ll $hicplotter_path
-#ll $gene_path
-
 # Get the boundary scores and the domains
 set branch_short = `echo $branch | sed 's/.*results\///' | sed 's/^matrix-distnorm.[^/]\+\///'`
 set group_var = `echo $branch_short | cut -d'/' -f1 | cut -d'.' -f2`
 set bscores_branch = ../boundary-scores/results/boundary-scores.$group_var.activity_500kb/$branch_short
-set domains_branch = ../domains/results/domains.$group_var.hicratio.d_0500/$branch_short
-set domains_diff_branch = ../domains-diff/results/domains-diff.$group_var.hicratio.d_0500_dist_norm.ref1/$branch_short
+set domains_branch = ../domains/results/domains.$group_var.$domains_method/$branch_short
+set domains_diff_branch = ../domains-diff/results/domains-diff.$group_var.$domains_diff_method/$branch_short
 
+# setup 
 set cell_type1 = `./code/code.main/read-sample-sheet.tcsh $sheet "$object1" cell-type`
 set cell_type2 = `./code/code.main/read-sample-sheet.tcsh $sheet "$object2" cell-type`
 set methods = 'ratio'
@@ -77,7 +69,7 @@ end
 
 # regions to plot [TODO: take only $object1.$object2 bdiff?]
 cat $domains_diff_branch/$object1.$object2/final_results.tsv | grep -v logFC | awk '$11<0.001' | awk '$9>0.32 || $9<-0.32' | cut -f1,3,5 | tr '\t' ' '  | sed 's/ /\t/' | vectors format -n 0 | sed 's/ /\t/' > $workdir/selected_regions.bed
-set flank = 200000   # 200kb
+set flank = 500000   # 500kb
 set regions = `cat $workdir/selected_regions.bed | gtools-regions shiftp -5p -$flank -3p +$flank | gtools-regions fix | cut -f-3 | sed 's/\t/:/' | sed 's/\t/-/'`
 set tiles = "params/regions.bed"
 cat $genome_dir/gene-name.bed | sed 's/^/0.7\t66,80,209\t/' | tools-cols -t 2 3 4 0 1 5 >! $tiles
