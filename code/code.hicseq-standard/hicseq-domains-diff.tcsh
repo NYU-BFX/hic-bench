@@ -242,12 +242,9 @@ if ($atacseq == TRUE) then
 	# For this task we need to extend the TAD calls based on the TAD caller to account for mistakes
 	# Extension should be 0 for crane TAD calling and 80kb for hicratio
 	#
-	if ($tad_caller == crane.ins_0500K) then
-		set extension = 0
-	else
-		if ($tad_caller == hicratio.d_0500) then 
-			set extension = 80000
-		endif
+	set extension = 0
+	if ($tad_caller == hicratio.d_0500) then 
+		set extension = 80000
 	endif
 
 	echo $tad_caller

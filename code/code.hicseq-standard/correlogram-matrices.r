@@ -62,7 +62,7 @@ for (i in 1:d_no) {
         	title_part2 <- paste("lambda",lambdas[j],sep="=")
 		title <- paste(title_part1, title_part2, sep=",")
 		cat("Creating correlogram for", title_part1, title_part2, "...\n")
-  		corrplot(m, method="color", col=col(200), type="full", title=sprintf("%s", title), order="original", addCoef.col = "black", tl.cex=0.75, tl.col="black", tl.srt=45, mar=c(0,0,1,0), diag=FALSE)
+  		corrplot(m, method="color", color=col(200), type="full", title=sprintf("%s", title), order="original", addCoef.col = "black", tl.cex=0.75, tl.col="black", tl.srt=45, mar=c(0,0,1,0), diag=FALSE)
 	}
 }
 dev.off()

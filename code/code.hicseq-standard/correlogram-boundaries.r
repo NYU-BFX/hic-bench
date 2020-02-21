@@ -51,7 +51,7 @@ for (kappa in kappas) {
 	plot_title = paste("Overlap (%)", kappa, sep="-")
         m2 <- m[, , kappa] 
 	corrplot.mixed(m2, lower="number", upper="pie",  tl.pos = c("lt"), tl.col="black", 
-	tl.cex=0.8, tl.srt=45, diag = c("l"), cl.lim=c(0,1), col=col3(1000),
+	tl.cex=0.8, tl.srt=45, diag = c("l"), cl.lim=c(0,1), color=col3(1000),
 	title=plot_title, mar=c(0,0,1,0))
 }
 dev.off()
@@ -62,7 +62,7 @@ for (kappa in kappas) {
 	plot_title = paste("Number of boundaries", kappa, sep="-")
         m3 <- m1[, , kappa] 
 	corrplot(m3, mar=c(0,0,1,0), type=c("full"), is.corr=FALSE,  method=c("number"), 
-		col="black", tl.pos = c("lt"), tl.col="black", tl.cex=0.8, diag = TRUE, 
+		color="black", tl.pos = c("lt"), tl.col="black", tl.cex=0.8, diag = TRUE, 
 		cl.pos=c("n"), title=plot_title)
 }
 dev.off()

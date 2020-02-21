@@ -11,9 +11,9 @@ matrix-ic
 
 matrix-stats
 
-compare-matrices
-compare-matrices-stats
-
+#compare-matrices
+#compare-matrices-stats
+#
 boundary-scores
 boundary-scores-pca
 

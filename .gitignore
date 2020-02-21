@@ -8,8 +8,10 @@
 *.so
 code/bin/*
 data-repo/*
-analyses/*
+pipelines/hicseq-standard/inputs/fastq
+pipelines/hicseq-standard/inputs/sample-sheet.tsv
 results
+errors
 .nfs*
 .Rproj.user
 *.Rproj

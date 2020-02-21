@@ -2,11 +2,6 @@
 
 source ./inputs/params/params.tcsh
 
-module unload gcc
-module unload r
-module load r/3.3.2
-module load gcc/6.1.0
-
 set chrom_excluded = 'chr[MY]'       # excluded chromosomes
 
 set centrotelo_file = $genome_dir/centrotelo.bed
