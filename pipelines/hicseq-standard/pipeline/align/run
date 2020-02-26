@@ -23,7 +23,7 @@ set inpdirs = "inputs"
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
-set resources = 16,10G
+set resources = 16,10G,96
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # symlink fastq to results (required for first step of the pipeline)

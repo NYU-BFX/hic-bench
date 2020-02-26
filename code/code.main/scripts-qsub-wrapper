@@ -30,6 +30,10 @@ endif
 
 set nthreads = `echo $resources, | cut -d',' -f1`
 set mem = `echo $resources, | cut -d',' -f2`
+set rtime = `echo $resources, | cut -d',' -f3`   # here, just put the number of hours, e.g. 24
+if ($rtime == '') then
+  set rtime = 24
+endif
 set tmp_resources = `echo 10000/$nthreads | bc`                                     # /tmp space per thread in Mbytes
 
 #set qsub_params = "-l tmp_free=${tmp_resources}M -l tmp_token=${tmp_resources}M"
@@ -41,7 +45,7 @@ set pref = $out/job
 scripts-print-cmdline '#\!/bin/tcsh' >! $pref.sh
 #scripts-print-cmdline './code/sbatch_medium.sh' >> $pref.sh
 scripts-print-cmdline '#'SBATCH -J $jobname >> $pref.sh
-scripts-print-cmdline '#'SBATCH --time=0-24:00:00 >> $pref.sh
+scripts-print-cmdline '#'SBATCH --time=0-${rtime}:00:00 >> $pref.sh
 scripts-print-cmdline '#'SBATCH -n 1 >> $pref.sh
 scripts-print-cmdline '#'SBATCH -c $nthreads >> $pref.sh
 scripts-print-cmdline '#'SBATCH -o $pref.out >> $pref.sh
