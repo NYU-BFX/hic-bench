@@ -68,7 +68,7 @@ foreach kappa ($kappas)
 end
 
 # regions to plot [TODO: take only $object1.$object2 bdiff?]
-cat $domains_diff_branch/$object1.$object2/final_results.tsv | grep -v logFC | awk '$11<0.001' | awk '$9>0.32 || $9<-0.32' | cut -f1,3,5 | tr '\t' ' '  | sed 's/ /\t/' | vectors format -n 0 | sed 's/ /\t/' > $workdir/selected_regions.bed
+cat $domains_diff_branch/$object1.$object2/final_results.tsv | grep -v logFC | awk '$11<0.001' | awk '$9>0.6 || $9<-0.6' | cut -f1,3,5 | tr '\t' ' '  | sed 's/ /\t/' | vectors format -n 0 | sed 's/ /\t/' > $workdir/selected_regions.bed
 set flank = 500000   # 500kb
 set regions = `cat $workdir/selected_regions.bed | gtools-regions shiftp -5p -$flank -3p +$flank | gtools-regions fix | cut -f-3 | sed 's/\t/:/' | sed 's/\t/-/'`
 set tiles = "params/regions.bed"

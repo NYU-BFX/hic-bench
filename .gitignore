@@ -19,3 +19,5 @@ misc/misc_files/
 .Rhistory
 misc_files
 fix_install.R
+*.out
+*.err
