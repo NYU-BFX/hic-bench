@@ -272,8 +272,8 @@ if ($atacseq == TRUE) then
      	   	$outdir/active-vs-diffBind-FC_intra_TAD.tsv \
 		$outdir/unchanged-vs-diffBind-FC_intra_TAD.tsv \
        		$outdir/"$object2"-vs-"$object1"_diffBind_intra_TAD < $codedir/plot_boxes.r
-	endif
-exit
+
+endif
 
 
 # -------------------------------------
