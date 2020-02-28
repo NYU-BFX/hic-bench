@@ -40,7 +40,8 @@ echo "Generating code directory..."
 ln -s ../code.main
 mkdir code
 cd code
-ln -s ../code.main
+ln -s ../../code.main
+ln -s ../../code code.$pipeline
 cd ..
 
 echo "Making parameter directory..."
