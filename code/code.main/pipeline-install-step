@@ -2,47 +2,63 @@
 source ./code/code.main/custom-tcshrc         # customize shell environment
 
 ##
-## USAGE: pipeline-install-step OUT-DIRECTORY INP-DIRECTORIES GROUP-METHOD PARAM-SCRIPTS WRAPPER-SCRIPTS
+## USAGE: pipeline-install-step OUT-DIRECTORY INP-DIRECTORIES GROUP-METHOD
+##
+## EXAMPLE: ./code.main/pipeline-install-step compartments matrix-ic
 ##
 
-if ($#argv < 3) then
+if ($#argv != 2) then
   grep '^##' $0
   exit
 endif
 
 set outdir = $1
 set inpdirs = ($2)
-set group_method = $3
-set params = ($4)
-set wrappers = ($5)
 
 if (-e $outdir) then
   scripts-send2err "Error: specified output directory already exists."
   exit 1
 endif
 
+set pipeline = hicseq       #NOTE: this is hard-coded for now
+
+cd pipeline
+echo "Creating pipeline/$outdir directory..."
 mkdir $outdir
 cd $outdir
 
+echo "Generating symbolic links to inputs..."
 ln -s ../inputs
-ln -s ../code
-ln -s code/clean.tcsh
-ln -s code/run-$outdir.sh run
+mkdir inpdirs
+cd inpdirs
 foreach d ($inpdirs)
-  ln -s ../$d
+  ln -s ../../$d
 end
-
-mkdir params
 cd ..
 
-if ("$params" != "") cp $params $outdir/params/
-if ("$wrappers" != "") cp $wrappers $outdir/code/
+echo "Generating code directory..."
+ln -s ../code.main
+mkdir code
+cd code
+ln -s ../code.main
+cd ..
 
-set inpresults = `echo $inpdirs | tr ' ' '\n' | sed 's/$/\\\/results/'`
-cat code/run-template.sh | sed "s/%%op%%/$outdir/g" | sed 's/%%threads%%/1/g' | sed "s/%%method%%/$group_method/" | sed "s/%%inpresults%%/$inpresults/g" >! code/run-$outdir.sh
-chmod +x code/run-$outdir.sh
+echo "Making parameter directory..."
+mkdir params
 
+echo "Generating run script..."
+cat code.main/template-$pipeline-run | sed "s/%%op%%/$outdir/g" | sed 's/%%cpu_threads%%/1/g' | sed 's/%%cpu_memory%%/10G/g' | sed 's/%%cpu_time%%/24/g' >! run
+chmod +x run
 
+echo "Generating wrapper template script..."
+cp code.main/template-$pipeline-wrapper.tcsh code/$pipeline-$outdir.tcsh
+
+echo
+echo "NEXT STEPS:"
+echo '- Customize run script: computational resources, grouping/splitting variables, object filtering, etc.'
+echo '- Generate parameter scripts: params/params.*.tcsh'
+echo "- Customize wrapper script: code/$pipeline-$outdir.tcsh"
+echo
 
 
 
