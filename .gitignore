@@ -21,3 +21,4 @@ misc_files
 fix_install.R
 *.out
 *.err
+slurm.*
