@@ -1,8 +1,6 @@
 #!/bin/tcsh
 
 source ./inputs/params/params.tcsh
-module unload r
-module load r/3.3.2
 
 set filter_centrotelo = true
 set bscore_params = prep_none
