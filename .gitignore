@@ -22,3 +22,4 @@ fix_install.R
 *.out
 *.err
 slurm.*
+_tmp.*
