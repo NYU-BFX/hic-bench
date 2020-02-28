@@ -8,6 +8,6 @@ set path = ( ./code/code.main $path )
 
 umask 007
 
-module load gsl/1.15
-#module load gtools/3.0
+source inputs/params/params.tcsh
+
 
