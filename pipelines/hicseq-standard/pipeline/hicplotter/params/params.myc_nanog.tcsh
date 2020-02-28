@@ -2,10 +2,6 @@
 
 source ./inputs/params/params.tcsh
 
-module unload gcc               # this is necessary in order to take care of module conflicts in our system
-module unload python
-module load python/cpu/2.7.15-ES
-
 # HiCplotter path
 set hicplotter_path = ./code/HiCPlotter2.py
 set hicplotter_params = "-hmc 1 -ptr 1"
