@@ -1,50 +1,38 @@
-#!/usr/bin/Rscript
-#$ -S /usr/bin/Rscript
+#!/usr/bin/env Rscript
+#$ -S /usr/bin/env Rscript
 
 ##
 ## USAGE: scripts-perform-pca.r [OPTIONS] MATRIX
 ##
-
-plotPCA <- function(mat,show_text,use_short_names,plain)
-{
-  font_cex = 1.0
-  bullet_cex = 2.0
+plotPCA <- function(mat,show_text,use_short_names,plain){
   
   pca = prcomp(t(mat))
-  if (plain==FALSE) {
-    plot(pca)
-    heatmap.2(pca$x,scale='column',key=FALSE,trace='none',margins=c(1,5),Colv=FALSE,dendrogram='row',labCol=NULL,cexRow=0.5)
-  }
+  
+  if (plain==FALSE) {heatmap.2(pca$x,scale='column',key=FALSE,trace='none',margins=c(1,5),Colv=FALSE,dendrogram='row',labCol=NULL,cexRow=0.5)}
+  
   names = colnames(mat)
   fac = factor(sapply(names,function(x){strsplit(x,':')[[1]][1]}))
   short_names = as.vector(sapply(names,function(x){strsplit(x,':')[[1]][2]}))
   if (show_text) { if (use_short_names) { labels = short_names } else { labels = names } } else { labels = NULL }
   colours = rep(c(brewer.pal(7,"Set1"),brewer.pal(7,"Set2"),brewer.pal(7,"Set3")),nlevels(fac))[1:nlevels(fac)]
-
-  if (plain==TRUE) { 
-    pc_list = c(PC2~PC1)
-    f = function(pc) {
-      xyplot(
-        pc, groups=fac, data=as.data.frame(pca$x), pch=16, cex=bullet_cex,
-        panel=function(x, y, ...) { panel.xyplot(x, y, ...); ltext(x=x, y=y, labels=labels, pos=1, offset=0.8, cex=font_cex) },
-        aspect = "fill", col=colours, scales=list(x=list(at=NULL),y=list(at=NULL)), xlab=NULL, ylab=NULL
-      )
+  
+  if (plain==TRUE) { ## Modified by Javier ##
+  print(autoplot(pca,label = F,label.size = 2,colour=colours,size=5)+
+          geom_text_repel(aes(label=colnames(mat)),
+                          segment.size = 0.2,
+                          force = 3,size=5,
+                          point.padding=2,
+                          segment.alpha=0)+
+          scale_color_manual(values=colours)+
+          geom_point(size=2)+
+          theme(panel.background = element_rect(fill = "white"),
+                panel.border = element_rect(colour = "black",fill=NA,size = 2),
+                axis.text.x = element_text(size = 20,colour = "black"),
+                axis.text.y = element_text(size = 20,colour = "black"),  
+                axis.title.x = element_text(size = 20,colour = "black"),
+                axis.title.y = element_text(size = 20,colour = "black")))
     }
-  } else { 
-    pc_list = c(PC2~PC1,PC3~PC2) 
-    f = function(pc) {
-      xyplot(
-        pc, groups=fac, data=as.data.frame(pca$x), pch=16, cex=bullet_cex,
-        panel=function(x, y, ...) { panel.xyplot(x, y, ...); ltext(x=x, y=y, labels=labels, pos=1, offset=0.8, cex=font_cex) },
-        aspect = "fill", col=colours,
-        main = draw.key(key=list(rect=list(col=colours),text=list(levels(fac)),rep=FALSE,cex=font_cex))
-      )
-    }
-  }
-
-  # generate plots
-  lapply(lapply(pc_list,f),print)
-
+  
   return(pca)
 }
 
@@ -75,7 +63,7 @@ option_list <- list(
   make_option(c("--plain"), action="store_true",default=FALSE, help="Create only one page (PC1 vs PC2).")
 );
 usage = 'perform_pca.r [OPTIONS] MATRIX';
-  
+
 # get command line options (if help option encountered print help and exit)
 arguments <- parse_args(args=cmdline_args, OptionParser(usage=usage,option_list=option_list), positional_arguments=c(0,Inf));
 opt <- arguments$options;
@@ -93,13 +81,16 @@ if (file.exists(out_dir)==FALSE) { dir.create(out_dir) } else { write('Warning: 
 
 # load data
 if (opt$'verbose'==TRUE) write('Loading input matrix...',stderr())
-x = as.matrix(read.table(files[1],header=T,row.names=1,check.names=FALSE))
+x = read.table(files[1],stringsAsFactors = F)
 if (sample_labels!="") { colnames(x) = t(read.table(sample_labels,header=F)[,1]) }
+
 
 # load libraries
 library("RColorBrewer")
 library("lattice")
 library("gplots")
+library(ggfortify)
+library(ggrepel)
 
 # PCA on raw input matrix
 if (opt$'verbose'==TRUE) write('Performing PCA on input matrix...',stderr())
@@ -117,7 +108,7 @@ dev.off()
 # PCA on quantile-normalized matrix
 if (opt$'verbose'==TRUE) write('Performing PCA on quantile-normalized matrix...',stderr())
 suppressMessages(library("preprocessCore"))
-y = normalize.quantiles(x)
+y = normalize.quantiles(as.matrix(x))
 rownames(y) = rownames(x)
 colnames(y) = colnames(x)
 pdf(paste(out_dir,'/report.qnorm.pdf',sep=''),useDingbats=FALSE)
