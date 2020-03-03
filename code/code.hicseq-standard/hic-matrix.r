@@ -1237,6 +1237,7 @@ op_stats <- function(cmdline_args)
     make_option(c("-v","--verbose"), action="store_true",default=FALSE, help="Print more messages."),
     make_option(c("-o","--output-dir"), default="", help="Output directory (required) [default \"%default\"]."),
     make_option(c("-b","--bin-size"), default=0, help="Bin size in nucleotides [default \"%default\"]."),
+    make_option(c("-r","--intra-reads"), default="", help="Total good reads in sample [default \"%default\"]."),
 #    make_option(c("-L","--sample-labels"), default="", help="Comma-separated list of sample labels (required) [default \"%default\"]."),
     make_option(c("--features"), default="", help="Feature file [default \"%default\"].")
   );
@@ -1248,6 +1249,8 @@ op_stats <- function(cmdline_args)
   inp_dirs = arguments$args
   out_dir = opt$'output-dir'
   bin_size = as.integer(opt$"bin-size")
+  intra_reads = opt$'intra-reads'
+  if (intra_reads[1] != ""){ intra_reads=as.numeric(unlist(strsplit(intra_reads,split = ","))) }
 #  if (opt$"sample-labels"=="") { write('Error: please specify sample labels!',stderr()); quit(save='no'); }
 #  sample_labels = unlist(strsplit(opt$"sample-labels",split=','))
   sample_labels = sub(".*/","",inp_dirs)
@@ -1266,6 +1269,12 @@ op_stats <- function(cmdline_args)
       if (opt$verbose) write(paste("Processing matrix '",f,"'...",sep=''),stderr())
       x = as.matrix(read.table(f,check.names=F))
       x[is.na(x)] = 0
+      if (intra_reads[1] !=""){ #Use the the intra_reads provided
+        norm.div=intra_reads[k] 
+      } else { #use the total counts in the upper triangle 
+        norm.div=sum(upper.tri(x,diag=T),na.rm = T)
+      }
+      x=x/(norm.div/1000000) #normalization
       counts = calc_counts_per_distance(x)                     # average Hi-C count per distance for each matrix
       counts = c(counts,rep(0,n_bins))[1:n_bins]               # truncate or pad with zeroes
       D[k,] = D[k,] + counts
@@ -1281,7 +1290,7 @@ op_stats <- function(cmdline_args)
   par(mfrow=c(2,1),mar=c(2,4,2,2))
   ylim = c(min(D[D>0]),max(D))
   d = (1:ncol(D))*bin_size/1000
-  plot(d,D[1,],type='l',col=colors[1],log="xy",xlab='distance (kb)',ylab='Average normalized Hi-C count',main='Hi-C count as a function of distance',ylim=ylim)
+  plot(d,D[1,],type='l',col=colors[1],log="xy",xlab='distance (kb)',ylab='Average normalized Hi-C count',main='Hi-C count as a function of distance (kb)',ylim=ylim)
   for (k in 1:nrow(D)) lines(d,D[k,],col=colors[k])
   plot(1, type = "n", axes=FALSE, xlab="", ylab="")
   legend(x='top',cex=0.70,legend=sample_labels,col=colors,lwd=2)
