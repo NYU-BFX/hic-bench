@@ -17,7 +17,7 @@ set branch = $3
 set objects = ($4) 
 
 # read variables from input branch
-source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir enzyme"
+source ./code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir enzyme"
 
 # run parameter script
 source $params

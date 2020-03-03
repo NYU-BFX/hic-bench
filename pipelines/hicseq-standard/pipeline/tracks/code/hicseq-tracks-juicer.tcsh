@@ -4,7 +4,7 @@ source ./code/code.main/custom-tcshrc     # shell settings
 ##
 ## USAGE: hicseq-tracks-juicer.tcsh OUTPUT-DIR HIC-REG-FILES GENOME
 ##
-## Example: ./hicseq-tracks-washu.tcsh mESC_J1-HindIII "mESC_J1-HindIII-rep1*/filtered_reads.reg+" mm10 
+## Example: ./hicseq-tracks-juicer.tcsh mESC_J1-HindIII "mESC_J1-HindIII-rep1*/filtered_reads.reg+" mm10 
 ##
 
 if ($#argv != 3) then
