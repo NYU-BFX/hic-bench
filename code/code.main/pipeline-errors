@@ -2,15 +2,13 @@
 source ./code/code.main/custom-tcshrc      # customize shell environment
 
 ##
-## USAGE: pipeline-errors INPUT-DIRS
+## USAGE: pipeline-errors [INPUT-DIRS]
 ##
 
-if ($#argv != 1) then
-  grep '^##' $0
-  exit
-endif
-
 set inpdirs = "$1"
+if ($inpdirs == "") then
+  set inpdirs = results
+endif
 set outdir = errors
 
 if (-e $outdir) rm -rf $outdir
@@ -20,4 +18,9 @@ mkdir -p $outdir
 # first check job stderr output files
 find $inpdirs -name 'job.*' -print0 | xargs -0 grep -iwE 'usage|error|segmentation|not found|join.*sort|no such file|syntax|terminate|permission denied' | grep -vE 'Tcl command execution failed|Module .* conflicts with the currently loaded module|Module .* depends on one of the module|will result in an error in the future|cannot access matrix.\*.RData|try-error' >&! $outdir/error.log
 
+if (`cat $outdir/error.log | wc -l` != 0) then
+  scripts-send2err "ERRORS FOUND."
+else
+  scripts-send2err "NO ERRORS."
+endif
 
