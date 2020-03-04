@@ -1,0 +1,42 @@
+#!/bin/tcsh
+source ./code/code.main/custom-tcshrc      # customize shell environment
+
+##
+## USAGE: pipeline-check-results
+##
+
+if ($#argv != 0) then
+  grep '^##' $0
+  exit
+endif
+
+set objects = `find results -name job.sh | sed 's/.job.sh$//'`
+
+foreach obj ($objects)
+  if (-e $obj/job.vars.tsv) then 
+    echo -n "COMPLETED  "
+  else
+    if (-e $obj/job.err) then 
+      echo -n "RUNNING    "
+    else
+      echo -n "NOT-RUNNING"
+    endif
+  endif
+
+  echo -n '\t'
+
+  set n_errors = `find $obj -name 'job.*' -print0 | xargs -0 grep -iwE 'usage|error|segmentation|not found|join.*sort|no such file|syntax|terminate|permission denied' | grep -vE 'Tcl command execution failed|Module .* conflicts with the currently loaded module|Module .* depends on one of the module|will result in an error in the future|cannot access matrix.\*.RData|try-error' | wc -l`
+  if ($n_errors == 0) then 
+    echo -n "CORRECT"
+  else
+    echo -n "ERRORS "
+  endif
+
+  echo -n '\t'
+
+  echo $obj
+
+end
+
+
+
