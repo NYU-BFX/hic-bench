@@ -14,12 +14,12 @@ set objects = `find results -name job.sh | sed 's/.job.sh$//'`
 
 foreach obj ($objects)
   if (-e $obj/job.vars.tsv) then 
-    echo -n "COMPLETED  "
+    echo -n "COMPLETED"
   else
     if (-e $obj/job.err) then 
-      echo -n "RUNNING    "
+      echo -n "RUNNING  "
     else
-      echo -n "NOT-RUNNING"
+      echo -n "INITIATED"
     endif
   endif
 
