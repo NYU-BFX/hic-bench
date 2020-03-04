@@ -5,7 +5,6 @@
 ## USAGE: scripts-perform-pca.r [OPTIONS] MATRIX
 ##
 plotPCA <- function(mat,show_text,use_short_names,plain){
-  
   pca = prcomp(t(mat))
   
   if (plain==FALSE) {heatmap.2(pca$x,scale='column',key=FALSE,trace='none',margins=c(1,5),Colv=FALSE,dendrogram='row',labCol=NULL,cexRow=0.5)}
@@ -15,24 +14,25 @@ plotPCA <- function(mat,show_text,use_short_names,plain){
   short_names = as.vector(sapply(names,function(x){strsplit(x,':')[[1]][2]}))
   if (show_text) { if (use_short_names) { labels = short_names } else { labels = names } } else { labels = NULL }
   colours = rep(c(brewer.pal(7,"Set1"),brewer.pal(7,"Set2"),brewer.pal(7,"Set3")),nlevels(fac))[1:nlevels(fac)]
+  groupColor=data.frame(group=as.character(unique(fac)),color=as.character(colours))
+  df=data.frame(sampleName=names,group=fac,color=NA)
+  for (group in df$group){df$color[df$group==group]=as.character(groupColor$color[groupColor$group==group])}
   
   if (plain==TRUE) { ## Modified by Javier ##
-  print(autoplot(pca,label = F,label.size = 2,colour=colours,size=5)+
-          geom_text_repel(aes(label=colnames(mat)),
-                          segment.size = 0.2,
-                          force = 3,size=5,
-                          point.padding=2,
-                          segment.alpha=0)+
-          scale_color_manual(values=colours)+
-          geom_point(size=2)+
-          theme(panel.background = element_rect(fill = "white"),
-                panel.border = element_rect(colour = "black",fill=NA,size = 2),
-                axis.text.x = element_text(size = 20,colour = "black"),
-                axis.text.y = element_text(size = 20,colour = "black"),  
-                axis.title.x = element_text(size = 20,colour = "black"),
-                axis.title.y = element_text(size = 20,colour = "black")))
-    }
-  
+    print(autoplot(pca,label = F,label.size = 2,size=5,col=df$color)+
+            geom_text_repel(aes(label=colnames(mat)),
+                            segment.size = 0,
+                            force = 3,size = 4,
+                            point.padding = 1,
+                            segment.alpha = 0)+
+            geom_point(size=2)+
+            theme(panel.background = element_rect(fill = "white"),
+                  panel.border = element_rect(colour = "black",fill=NA,size = 2),
+                  axis.text.x = element_text(size = 20,colour = "black"),
+                  axis.text.y = element_text(size = 20,colour = "black"),  
+                  axis.title.x = element_text(size = 20,colour = "black"),
+                  axis.title.y = element_text(size = 20,colour = "black")))
+  }
   return(pca)
 }
 
