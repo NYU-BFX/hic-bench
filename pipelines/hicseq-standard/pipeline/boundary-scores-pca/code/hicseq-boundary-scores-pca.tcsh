@@ -47,7 +47,8 @@ foreach inp_var (sample group)
   endif
 end
 set K = `cd $branch/$objects[1]; ls -1 all_scores.k=*.tsv | cut -d'.' -f2`
-set methods = `cat $branch/$objects[1]/all_scores.$K[1].tsv | head -1 | cut -f2-`
+#set methods = `cat $branch/$objects[1]/all_scores.$K[1].tsv | head -1 | cut -f2-`
+set methods = (inter intra-left ratio)
 set m = 2
 foreach method ($methods)
   scripts-send2err "Processing $method..."
@@ -58,7 +59,7 @@ foreach method ($methods)
     end
     cat $outdir/data.tsv | tools-table -c -n 6 | sed 's/ *$//' | tr -s ' ' '\t' >! $outdir/matrix.$method.$k.tsv
     Rscript ./code/code.main/scripts-perform-pca.r -v -o $outdir -L $outdir/labels.tsv $pca_params $outdir/matrix.$method.$k.tsv
-    cp $outdir/report.qnorm.pdf $outdir/pca.$method.$k.pdf
+    cp $outdir/report.mnorm.pdf $outdir/pca.$method.$k.pdf
     rm -f $outdir/data.tsv $outdir/report.*.pdf
   end
   @ m ++
