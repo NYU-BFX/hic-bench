@@ -22,10 +22,10 @@ plotPCA <- function(mat,show_text,use_short_names,plain){
     print(autoplot(pca,label = F,label.size = 2,size=5,col=df$color)+
 #            geom_text_repel(aes(label=colnames(mat)),
             geom_text_repel(aes(label=labels),
-                            segment.size = 0,
+                            segment.size = 0.5,
                             force = 3,size = 4,
                             point.padding = 1,
-                            segment.alpha = 0)+
+                            segment.alpha = 1)+
             geom_point(size=2)+
             theme(panel.background = element_rect(fill = "white"),
                   panel.border = element_rect(colour = "black",fill=NA,size = 2),
