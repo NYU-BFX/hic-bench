@@ -11,6 +11,8 @@ data-repo/*
 pipelines/hicseq-standard/inputs/fastq
 pipelines/hicseq-standard/inputs/sample-sheet.tsv
 results
+results.*
+run-custom
 errors
 .nfs*
 .Rproj.user

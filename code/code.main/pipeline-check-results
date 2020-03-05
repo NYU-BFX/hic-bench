@@ -13,6 +13,10 @@ endif
 set objects = `find results -name job.sh | sed 's/.job.sh$//'`
 
 foreach obj ($objects)
+
+  # search for errors
+  set n_errors = `find $obj -name 'job.*' -print0 | xargs -0 grep -iwE 'usage|error|segmentation|not found|join.*sort|no such file|syntax|terminate|permission denied' | grep -vE 'Tcl command execution failed|Module .* conflicts with the currently loaded module|Module .* depends on one of the module|will result in an error in the future|cannot access matrix.\*.RData|try-error' | wc -l`
+
   if (-e $obj/job.vars.tsv) then 
     echo -n "COMPLETED"
   else
@@ -25,7 +29,6 @@ foreach obj ($objects)
 
   echo -n '\t'
 
-  set n_errors = `find $obj -name 'job.*' -print0 | xargs -0 grep -iwE 'usage|error|segmentation|not found|join.*sort|no such file|syntax|terminate|permission denied' | grep -vE 'Tcl command execution failed|Module .* conflicts with the currently loaded module|Module .* depends on one of the module|will result in an error in the future|cannot access matrix.\*.RData|try-error' | wc -l`
   if ($n_errors == 0) then 
     echo -n "CORRECT"
   else
