@@ -42,7 +42,7 @@ endif
 foreach inp_var (sample group)
   set n = `./code/read-sample-sheet2.tcsh $sheet "$objects" "$inp_var $group_var" | wc -l`
   if ($n > 0) then
-    ./code/read-sample-sheet2.tcsh $sheet "$objects" "$inp_var $group_var" | awk '{print $2":"$1}' | sort -u >! $outdir/labels.tsv
+    ./code/read-sample-sheet2.tcsh $sheet "$objects" "$inp_var $group_var" | awk '{print $2":"$1}' | sort -u | cut -d'-' -f$label_fields >! $outdir/labels.tsv
     break
   endif
 end
