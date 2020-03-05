@@ -20,7 +20,8 @@ plotPCA <- function(mat,show_text,use_short_names,plain){
   
   if (plain==TRUE) { ## Modified by Javier ##
     print(autoplot(pca,label = F,label.size = 2,size=5,col=df$color)+
-            geom_text_repel(aes(label=colnames(mat)),
+#            geom_text_repel(aes(label=colnames(mat)),
+            geom_text_repel(aes(label=labels),
                             segment.size = 0,
                             force = 3,size = 4,
                             point.padding = 1,
