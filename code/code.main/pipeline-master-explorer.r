@@ -290,7 +290,9 @@ obj_db = cbind(obj_db,"command"=generate_command(obj_db))                       
 obj_db = as.data.frame(obj_db)
 
 # remove output objects if input objects appear more than once
-obj_db = obj_db[sapply(obj_db$"inp-object", function(x) { length(unique(strsplit(as.character(x), " ")[[1]])) })==tuples,]
+if (tuples>=2) {
+  obj_db = obj_db[sapply(obj_db$"inp-object", function(x) { length(unique(strsplit(as.character(x), " ")[[1]])) })==tuples,]
+}
 
 # status and stats
 compute = (obj_db[,"status"]=="new")
