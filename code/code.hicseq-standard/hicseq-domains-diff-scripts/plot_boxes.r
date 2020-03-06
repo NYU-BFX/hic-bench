@@ -64,8 +64,7 @@ axis(side = 2, lwd = 8,labels=FALSE)
 dev.off()
 
 
-
-stop(0)
+quit(save='no')
 
 results <- cor.test(less_activity$V1, less_activity$V2,method="spearman")
 png(file=paste(out,"_scatter-Tcell-boundary.png",sep=""),width=2048, height=2048,pointsize=40)

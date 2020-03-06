@@ -23,8 +23,9 @@ gene_bins <- read.csv(file=gene_bins_file, sep="\t", header=TRUE)
 # necessary??
 gene_bins <- gene_bins[gene_bins$type=="protein_coding" | gene_bins$type=="processed_transcript",]
 
-logFC_threshold <- 0.2
-fdr_threshold <- 0.1
+logFC_threshold = 0.2
+fdr_threshold = 0.1
+meanDiff_threshold = 0.1
 
 tad_activity$mean_overall <- apply(tad_activity[,c("sample_1_mean","sample_2_mean")],1,mean)
 tad_activity_up <- (tad_activity[tad_activity$FDR <= fdr_threshold & tad_activity$logFC >= logFC_threshold & abs(tad_activity$mean_diff) >= 0.1,])
@@ -54,14 +55,16 @@ write.table(file=paste(out_prefix,"_active-TADs.tsv",sep=""),tad_activity_up,sep
 write.table(file=paste(out_prefix,"_inactive-TADs.tsv",sep=""),tad_activity_down,sep="\t",quote=FALSE,row.names=FALSE, col.names=FALSE)
 write.table(file=paste(out_prefix,"_unchanged-TADs.tsv",sep=""),tad_activity_unchanged,sep="\t",quote=FALSE,row.names=FALSE, col.names=FALSE)
 
-box.max.y=max(abs(c(tad_activity_up$sample_1_mean,
-                    tad_activity_up$sample_2_mean,
-                    tad_activity_down$sample_1_mean,
-                    tad_activity_down$sample_2_mean,
-                    tad_activity_unchanged_low$sample_1_mean,
-                    tad_activity_unchanged_low$sample_2_mean,
-                    tad_activity_unchanged_high$sample_1_mean,
-                    tad_activity_unchanged_high$sample_2_mean)),na.rm = T)
+#get max absolute lfc & fdr values 
+tad_activity.clean=tad_activity[abs(tad_activity$mean_diff) >= meanDiff_threshold &
+                                  is.finite(tad_activity$sample_1_mean) &
+                                  is.finite(tad_activity$sample_2_mean) &
+                                  is.finite(tad_activity$logFC) &
+                                  is.finite(-log(tad_activity$FDR)),]
+
+abs.max.x=max(abs(tad_activity.clean$logFC),na.rm = T)
+abs.max.y=max(abs(-log(tad_activity.clean$FDR)),na.rm = T)
+box.max.y=max(abs(c(tad_activity.clean$sample_1_mean,tad_activity.clean$sample_2_mean)),na.rm = T)
 
 ### Mean TAD activity BOXPLOTS ###
 png(file=paste(out_prefix, "_mean-TAD_activity.png", sep=""),width=3072, height=2048, pointsize=60)
@@ -83,10 +86,6 @@ legend(x=9,y=box.max.y*0.7,legend = c(paste0("increased activity in ",case_right
        pch=22,col=c("black"),pt.bg=c("darkred","blue","grey","grey"),cex=1,box.col = NA,pt.cex = 2,pt.lwd = 4)
 dev.off()
 
-#get max absolute lfc value
-abs.max.x=max(abs(tad_activity$logFC),na.rm = T)
-#abs.max.x=max(abs(tad_activity$mean_diff),na.rm = T)
-abs.max.y=max(abs(-log(tad_activity$FDR)),na.rm = T)
 
 ### VOLCANO PLOT ###
 png(file=paste(out_prefix, "_volcano_TADs.png", sep=""),width=3755, height=2048, pointsize=110)
@@ -129,8 +128,8 @@ ggplot(tad_activity, aes(sample_2_mean, sample_1_mean,color=activity.group))+
   geom_point(size=3)+
   scale_color_manual(values=keys.df$color)+
   geom_abline(slope = 1,intercept = 0,linetype=3,color="black",size=1)+
-  xlab(paste0("Mean TAD activity [",case_right,"]"))+
-  ylab(paste0("Mean TAD activity [",case_left,"]"))+
+  xlab(paste0("Mean TAD activity [",case_left,"]"))+
+  ylab(paste0("Mean TAD activity [",case_right,"]"))+
   theme_classic(base_size=14)+
   theme(legend.title=element_blank())
 dev.off()
@@ -164,7 +163,7 @@ tad_activity <- cbind(tad_activity,gene_hits)
 write.table(file=paste(out_prefix,"_annotated.tsv",sep=""),tad_activity,sep="\t",quote=FALSE,row.names=FALSE)
 
 if (exprs_file_case_1 == "FALSE") {
-  stop(0)
+  quit(save='no')
 }
 
 # Read gene expression data and filter for expressed genes
