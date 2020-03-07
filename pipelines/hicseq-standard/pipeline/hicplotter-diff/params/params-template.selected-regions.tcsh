@@ -68,10 +68,10 @@ foreach kappa ($kappas)
 end
 
 # regions to plot [TODO: take only $object1.$object2 bdiff?]
-cat $domains_diff_branch/$object1.$object2/final_results.tsv | grep -v logFC | awk '$11<0.001' | awk '$9>0.6 || $9<-0.6' | cut -f1,3,5 | tr '\t' ' '  | sed 's/ /\t/' | tools-vectors format -n 0 | sed 's/ /\t/' > $workdir/selected_regions.bed
+cat $domains_diff_branch/$object1.$object2/final_results.tsv | grep -v logFC | awk -v fdr=$ddiff_fdr '$11<fdr' | awk -v l2fc=$ddiff_l2fc '$9>l2fc || $9<-l2fc' | cut -f1,3,5 | tr '\t' ' '  | sed 's/ /\t/' | tools-vectors format -n 0 | sed 's/ /\t/' > $workdir/selected_regions.bed
 set flank = 500000   # 500kb
 set regions = `cat $workdir/selected_regions.bed | gtools-regions shiftp -5p -$flank -3p +$flank | gtools-regions fix | cut -f-3 | sed 's/\t/:/' | sed 's/\t/-/'`
-set tiles = "params/regions.bed"
+set tiles = "$workdir/regions.bed"
 cat $genome_dir/gene-name.bed | sed 's/^/0.7\t66,80,209\t/' | tools-cols -t 2 3 4 0 1 5 >! $tiles
 set tiles_labels = "regions"
 set domainbars = 1         # Plot the domains as bars
