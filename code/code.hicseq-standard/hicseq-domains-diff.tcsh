@@ -6,7 +6,6 @@ source ./code/code.main/custom-tcshrc    # customize shell environment
 ##
 
 if ($#argv != 5) then
-ste(obj1, "specific SE", sep = " ")
   grep '^##' $0
   exit
 endif
