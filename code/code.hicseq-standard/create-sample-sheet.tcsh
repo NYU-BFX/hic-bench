@@ -44,5 +44,19 @@ echo "Field #3: "
 cat $sheet | scripts-skipn 1 | cut -f1 | cut -d'-' -f3 | sort | uniq -c
 
 echo 
-echo "You can configure processed external data (e.g. ChIP-seq, ATAC-seq) in the data_external directory. Please read the README file. "
+echo "Configuring external data in data_external directory. In this directory, you can include additional processed data, such are RNA-seq, ChIP-seq, ATAC-seq and other meta-data, organized by sample name, group name or cell type:"
+foreach v (sample group cell-type)
+  echo "-- Creating directories for variable $v..."
+  set k = `cat $sheet | head -1 | tr '\t' '\n' | grep -n "^$v"'$' | cut -d':' -f1`
+  set X = `cat $sheet | cut -f$k | scripts-skipn 1 | sort -u`
+  cd data_external
+  mkdir -p $v
+  cd $v
+  mkdir $X
+  cd ../..
+end
 echo
+
+
+
+
