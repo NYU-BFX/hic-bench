@@ -22,14 +22,14 @@ set filter = ""                       # filter input objects
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
-set resources = 1,10G,24
+set resources = 8,40G,24
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
 Rscript ./code/code.main/pipeline-master-explorer.r -v -F "$filter" "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "." 1
 
 # run and wait until done!
-set max_jobs = 50
+set max_jobs = 40
 if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $max_jobs
 
 

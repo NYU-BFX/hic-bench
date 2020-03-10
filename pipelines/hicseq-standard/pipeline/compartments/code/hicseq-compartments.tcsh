@@ -16,7 +16,7 @@ set branch = $3
 set objects = ($4)
 
 # read variables from input branch
-source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir bin_size"
+source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir"
 
 # run parameter script
 source $params
@@ -28,8 +28,14 @@ scripts-create-path $outdir/
 # -----  MAIN CODE BELOW --------------
 # -------------------------------------
 
+# make a list of filtered read files for all input objects
+set reg_files = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/filtered.reg.gz"}'`
 
-
+if ($tool == homer) then
+  ./code/hicseq-compartments-homer.tcsh $outdir $params "$reg_files" $genome
+else
+  echo "Error: Compartment calling tool $tool not supported." | scripts-send2err
+endif
 
 
 # -------------------------------------
