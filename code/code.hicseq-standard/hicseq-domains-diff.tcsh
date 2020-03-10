@@ -2,7 +2,7 @@
 source ./code/code.main/custom-tcshrc    # customize shell environment
 
 ##
-## USAGE: hicseq-matrix-diff.tcsh OUTPUT-DIR PARAM-SCRIPT MATRIX-BRANCH OBJECT1 OBJECT2
+## USAGE: hicseq-domains-diff.tcsh OUTPUT-DIR PARAM-SCRIPT MATRIX-BRANCH OBJECT1 OBJECT2
 ##
 
 if ($#argv != 5) then
