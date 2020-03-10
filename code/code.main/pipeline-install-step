@@ -38,6 +38,7 @@ cd ..
 
 echo "Generating code directory..."
 ln -s ../code.main
+ln -s ../code/clean.tcsh
 mkdir code
 cd code
 ln -s ../../code.main
