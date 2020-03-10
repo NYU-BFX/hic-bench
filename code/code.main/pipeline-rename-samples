@@ -1,0 +1,44 @@
+#!/bin/tcsh
+source ./code/code.main/custom-tcshrc      # customize shell environment
+
+##
+## USAGE: pipeline-rename-sample CURRENT-SAMPLE-IDS NEW-SAMPLE-IDS
+##
+
+if ($#argv != 2) then
+  grep '^##' $0
+  exit
+endif
+
+set current_samples = ($1)
+set new_samples = ($2)
+
+set n_current = $#current_samples
+set n_new = $#new_samples
+
+if ($n_current != $n_new) then
+  echo "Number of samples does not match." | scripts-send2err
+  exit
+endif
+
+set RESULTS = (inputs/fastq `find pipeline -type d -name results`)
+set k = 1
+while ($k <= $n_current)
+  set a = $current_samples[$k]
+  set b = $new_samples[$k]
+  set OBJECTS = `find $RESULTS -type d -name "*$a*"`
+  set OBJECTS = ($OBJECTS `find $RESULTS -type l -name "*$a*"`)
+  echo "Renaming $#OBJECTS objects for sample name $a..."
+  foreach obj ($OBJECTS)
+    set branch = `dirname $obj`
+    set obj_name = `basename $obj`
+    set obj_newname = `echo $obj_name | sed "s/$a/$b/"`
+    # echo "BRANCH = $branch"
+    # echo "-- $obj_name => $obj_newname"
+    # mv $branch/$obj_name $branch/$obj_newname
+    @ k ++
+  end
+end
+
+
+
