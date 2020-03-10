@@ -2,7 +2,7 @@
 source ./code/code.main/custom-tcshrc         # customize shell environment
 
 ##
-## USAGE: pipeline-install-step OUT-DIRECTORY INP-DIRECTORIES GROUP-METHOD
+## USAGE: pipeline-install-step OUT-DIRECTORY INP-DIRECTORIES 
 ##
 ## EXAMPLE: ./code.main/pipeline-install-step compartments matrix-ic
 ##
@@ -41,7 +41,7 @@ ln -s ../code.main
 mkdir code
 cd code
 ln -s ../../code.main
-ln -s ../../code code.$pipeline
+ln -s ../../code code.pipeline
 cd ..
 
 echo "Making parameter directory..."

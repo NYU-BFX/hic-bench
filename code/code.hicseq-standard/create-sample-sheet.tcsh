@@ -43,3 +43,6 @@ cat $sheet | scripts-skipn 1 | cut -f1 | cut -d'-' -f2 | sort | uniq -c
 echo "Field #3: "
 cat $sheet | scripts-skipn 1 | cut -f1 | cut -d'-' -f3 | sort | uniq -c
 
+echo 
+echo "You can configure processed external data (e.g. ChIP-seq, ATAC-seq) in the data_external directory. Please read the README file. "
+echo

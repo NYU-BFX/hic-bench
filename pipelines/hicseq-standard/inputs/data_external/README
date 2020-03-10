@@ -1,0 +1,12 @@
+In this directory, you can include additional data, such are RNA-seq, ChIP-seq, ATAC-seq results, meta-data etc.
+Maximum functionality is achieved if the data is organized in subdirectories per sample, group, cell-type and other variables that are recorded in the sample sheet.
+
+See example directory structure below:
+.
+|-- Bcells
+|   |-- ATAC.bed
+|   `-- H3K27ac.bed
+`-- Tcells
+    |-- ATAC.bed
+    `-- H3K27ac.bed
+
