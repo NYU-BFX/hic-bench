@@ -5,7 +5,7 @@ source ./code/code.main/custom-tcshrc      # customize shell environment
 ## USAGE: run [--dry-run]
 ##
 
-#% <ADD DESCRIPTION>
+#% This step generates PCA plots based on A/B compartment scores. 
 
 # process command-line inputs
 if ($#argv > 1) then
