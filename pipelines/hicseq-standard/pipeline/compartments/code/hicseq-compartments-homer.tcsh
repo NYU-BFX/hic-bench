@@ -41,4 +41,4 @@ findHiCCompartments.pl $outdir/pca_activeMarkFix.PC1.txt -opp >! $outdir/pca_act
 awk '{print $2"\t"$3"\t"$4}' $outdir/pca_activeMarkFix_Acompartments.txt >! $outdir/pca_activeMarkFix_Acompartments.bed
 awk '{print $2"\t"$3"\t"$4}' $outdir/pca_activeMarkFix_Bcompartments.txt >! $outdir/pca_activeMarkFix_Bcompartments.bed
 
-rm -f $outdir/filtered.temp $outdir/filtered.reg $outdir/filtered.bed
+rm -fr $outdir/filtered.temp $outdir/filtered.reg $outdir/filtered.bed $outdir/TAG $outdir/pca_activeMarkFix_Acompartments.txt $outdir/pca_activeMarkFix_Bcompartments.txt

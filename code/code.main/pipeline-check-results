@@ -23,7 +23,7 @@ foreach obj ($objects)
     if (-e $obj/job.err) then 
       echo -n "RUNNING  "
     else
-      echo -n "INITIATED"
+      echo -n "SUBMITTED"
     endif
   endif
 
