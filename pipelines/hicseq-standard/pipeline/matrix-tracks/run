@@ -30,7 +30,7 @@ set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tc
 Rscript ./code/code.main/pipeline-master-explorer.r -v "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "." 1
 
 # run
-if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run
+if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $pipeline_max_jobs
 
 
 

@@ -30,8 +30,7 @@ set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tc
 Rscript ./code/code.main/pipeline-master-explorer.r -v --filter-tuples --filter-branch='matrix-filtered.by_group.res_40kb' "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "." 2
 
 # run and wait until done!
-set max_jobs = 50
-if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $max_jobs
+if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $pipeline_max_jobs
 
 
 

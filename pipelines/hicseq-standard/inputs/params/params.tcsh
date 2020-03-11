@@ -15,3 +15,6 @@ module load bowtie2/2.3.4.1
 # sample sheet file
 set sheet = inputs/sample-sheet.tsv
 
+# global pipeline variables
+set pipeline_max_jobs = 20
+

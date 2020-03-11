@@ -35,7 +35,7 @@ endif
 Rscript ./code/code.main/pipeline-master-explorer.r -v "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "sample" 1
 
 # run and wait until done!
-if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run
+if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $pipeline_max_jobs
 
 
 
