@@ -5,6 +5,8 @@ filter-stats
 
 tracks
 
+compartments
+
 matrix-filtered
 
 matrix-ic

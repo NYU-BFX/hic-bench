@@ -10,7 +10,7 @@ if ($#argv != 0) then
   exit
 endif
 
-set objects = `find results -name job.sh | sed 's/.job.sh$//'`
+set objects = `find results -name job.sh | sed 's/.job.sh$//' | sort`
 
 foreach obj ($objects)
 

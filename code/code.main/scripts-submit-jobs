@@ -15,13 +15,18 @@ set jobs_script = $1
 set max_jobs = $2
 if ($max_jobs == "") set max_jobs = `cat $jobs_script | wc -l`
 
-
 if (`cat $jobs_script | wc -l` > 0) then
-  set script_dir = `readlink -f $jobs_script | sed 's/\/[^/]\+$//'`
-  cat $jobs_script | sed 's/$/ ; sleep 1/' >! $script_dir/__run-with-wait
-  set pref = $script_dir/__run_
-  rm -f ${pref}*
-  split -a 10 -l $max_jobs $script_dir/__run-with-wait $pref
+  set run_dir = `readlink -f $jobs_script | sed 's/\/[^/]\+$//'`/../.run     # store run information here
+  if (-e $run_dir) then
+    echo "ERROR: run directory $run_dir already exists. Check if jobs are currently running." | scripts-send2err
+    exit
+  endif
+
+  mkdir $run_dir
+  set pref = $run_dir/__run_
+  cat $jobs_script | sed 's/$/ ; sleep 1/' >! $run_dir/__run-with-wait   # add waiting time after each job submission
+  split -a 10 -l $max_jobs $run_dir/__run-with-wait $pref                # split into multiple scripts to limit the number of jobs
+
   foreach run (${pref}*)
     scripts-send2err "Running $run script..."
     chmod +x $run
@@ -29,7 +34,9 @@ if (`cat $jobs_script | wc -l` > 0) then
     scripts-send2err "Waiting for all jobs [$jid] to complete..."
     scripts-qsub-wait "$jid"
   end
-  rm -f ${pref}*
+
+  # cleanup
+  rm -rf $run_dir
 endif
 
 scripts-send2err "Done."
