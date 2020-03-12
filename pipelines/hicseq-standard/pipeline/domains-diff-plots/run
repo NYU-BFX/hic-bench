@@ -5,7 +5,8 @@ source ./code/code.main/custom-tcshrc      # customize shell environment
 ## USAGE: run [--dry-run]
 ##
 
-#% <ADD DESCRIPTION>
+#% This step generates plots using the domains-diff results.
+
 
 # process command-line inputs
 if ($#argv > 1) then
@@ -16,13 +17,13 @@ endif
 set opt = "$1"
 
 # setup
-set op = %%op%%
+set op = domains-diff-plots
 set inpdirs = "inpdirs/*"             # indicate input directories
 set filter = ""                       # filter input objects
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
-set resources = %%cpu_threads%%,%%cpu_memory%%,%%cpu_time%%
+set resources = 1,10G,48
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script

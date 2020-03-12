@@ -1,0 +1,8 @@
+This is how I run it. If it's not clear, let me know. 
+
+./differential_rect_binding_for_locus.R --normalize matrix-icTOP matrix-icBOTTOM start end topname bottomname outputfilename
+
+EXAMPLE: 
+./differential_rect_binding_for_locus.R --normalize /gpfs/home/sn1110/carrolllab/0719_diagnosed_relapsed/1019_hic_5pairs_shallow/__05a-matrix-ic/results/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_20kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/D_D_S7/matrix.chr4.tsv  /gpfs/home/sn1110/carrolllab/0719_diagnosed_relapsed/1019_hic_5pairs_shallow/__05a-matrix-ic/results/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_20kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/D_R_S8/matrix.chr4.tsv  73400000  75800000  Diagnosis  Relapse  cxcl8_73.5-75.8mb
+
+
