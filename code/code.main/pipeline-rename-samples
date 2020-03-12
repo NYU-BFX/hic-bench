@@ -40,5 +40,7 @@ while ($k <= $n_current)
   end
 end
 
-echo "DONE. REMEMBER TO GENERATE AN UPDATED SAMPLE SHEET."
+echo "====================================================================="
+echo "    DONE. REMEMBER TO GENERATE AN UPDATED SAMPLE SHEET."
+echo "====================================================================="
 

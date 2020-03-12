@@ -1,0 +1,26 @@
+#!/bin/tcsh
+source ./code/code.main/custom-tcshrc      # customize shell environment
+
+##
+## USAGE: pipeline-remove-sample SAMPLE-IDS
+##
+
+if ($#argv != 1) then
+  grep '^##' $0
+  exit
+endif
+
+set samples = ($1)
+
+set RESULTS = (inputs/fastq `find pipeline -type d -name results`)
+foreach a ($samples)
+  set OBJECTS = `find $RESULTS -type d -name "*$a*"`
+  set OBJECTS = ($OBJECTS `find $RESULTS -type l -name "*$a*"`)
+  echo "Removing $#OBJECTS objects for sample name $a..."
+  rm -rf $OBJECTS
+end
+
+echo "====================================================================="
+echo "    DONE. REMEMBER TO GENERATE AN UPDATED SAMPLE SHEET."
+echo "====================================================================="
+

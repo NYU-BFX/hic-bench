@@ -44,7 +44,8 @@ echo "Field #3: "
 cat $sheet | scripts-skipn 1 | cut -f1 | cut -d'-' -f3 | sort | uniq -c
 
 echo 
-echo "Configuring external data in data_external directory. In this directory, you can include additional processed data, such are RNA-seq, ChIP-seq, ATAC-seq and other meta-data, organized by sample name, group name or cell type:"
+echo "Configuring external data in data_external directory..."
+echo "In this directory, you can include additional processed data, such are RNA-seq, ChIP-seq, ATAC-seq and other meta-data, organized by sample name, group name or cell type:"
 foreach v (sample group cell-type)
   echo "-- Creating directories for variable $v..."
   set k = `cat $sheet | head -1 | tr '\t' '\n' | grep -n "^$v"'$' | cut -d':' -f1`
