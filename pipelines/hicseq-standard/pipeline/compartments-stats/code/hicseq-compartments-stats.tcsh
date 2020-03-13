@@ -2,7 +2,7 @@
 source ./code/code.main/custom-tcshrc     # shell settings
 
 ##
-## USAGE: hicseq-compartments-pca.tcsh OUTDIR PARAM-SCRIPT BOUNDARY-SCORES-BRANCH [OBJECTS]
+## USAGE: hicseq-compartments-stats.tcsh OUTDIR PARAM-SCRIPT BOUNDARY-SCORES-BRANCH [OBJECTS]
 ##
 
 if (($#argv < 3) || ($#argv > 4)) then

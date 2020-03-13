@@ -6,6 +6,7 @@ filter-stats
 tracks
 
 compartments
+compartments-stats
 
 matrix-filtered
 

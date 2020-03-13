@@ -5,7 +5,7 @@ source ./code/code.main/custom-tcshrc      # customize shell environment
 ## USAGE: run [--dry-run]
 ##
 
-#% This step generates PCA plots based on A/B compartment scores. 
+#% This step generates PCA, heatmap and scatter plots based on A/B compartment scores. 
 
 # process command-line inputs
 if ($#argv > 1) then
@@ -16,7 +16,7 @@ endif
 set opt = "$1"
 
 # setup
-set op = compartments-pca
+set op = compartments-stats
 set inpdirs = "inpdirs/*"             # indicate input directories
 set filter = ""                       # filter input objects
 set results = results

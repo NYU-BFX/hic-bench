@@ -10,7 +10,5 @@
 
 source ./code/code.main/custom-tcshrc      # customize shell environment
 
-#file_to_write=$1
-
 echo "Done waiting." >! $1
 

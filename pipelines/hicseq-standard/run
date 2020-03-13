@@ -27,7 +27,11 @@ foreach d (__*)
   
   # enter directory and run
   cd $d
-  ./run $dry_run
+  if (! -e run-custom) then
+    ./run $dry_run
+  else 
+    ./run-custom $dry_run
+  endif
   
   if ($dry_run == "") then
     # check for errors

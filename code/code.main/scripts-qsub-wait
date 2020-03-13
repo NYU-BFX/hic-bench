@@ -26,5 +26,5 @@ while (1)
 #  ls *.done
   if (-e $flag.done) break
 end
-rm -f ${flag}*
+rm -f ${flag}* \$\{1}.out \$\{1}.err
 
