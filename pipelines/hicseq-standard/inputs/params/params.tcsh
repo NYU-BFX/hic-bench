@@ -6,7 +6,7 @@ module load python/cpu/2.7.15
 module load samtools/1.3
 module load bedtools/2.27.1
 module load java/1.8
-#module load gsl/1.15
+module load gsl/1.15
 #module load gtools/3.0
 
 # load tools required for each step of the pipeline (this can be overriden in local param scripts)
