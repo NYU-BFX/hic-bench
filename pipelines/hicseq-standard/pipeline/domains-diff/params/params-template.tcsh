@@ -5,9 +5,7 @@ source ./inputs/params/params.tcsh
 set chrom_excluded = 'chr[MY]'       # excluded chromosomes
 
 set centrotelo_file = $genome_dir/centrotelo.bed
-
-set gene_name = $genome_dir/gene-name_${bin_size}.tsv    # NOTE: needs to be automated for any bin size
-set genome_file = $genome_dir/gene-info.bed              # NOTE: test whether it is necessary
+set gene_tss = $genome_dir/gene-tss_annot.bed
 
 # basic params
 set printShowCases= FALSE

@@ -52,9 +52,9 @@ if ($perform_analysis == TRUE) then
 
 	# Perform Hi-C fold-change analysis
 	$codedir/run_comparison.sh $codedir/differential_tad_activity.r $branch/$object2 $branch/$object1 $outdir/domains2.tsv $outdir/domains1.tsv $min_tad_size $max_tad_size $is_normalize $centrotelo_file $bin_size $outdir
-
+	
 	# Create boxplot with differentially active TADs
-	R --no-save $outdir/final_results.tsv $gene_name FALSE FALSE \
+	R --no-save $outdir/final_results.tsv $gene_tss FALSE FALSE \
 		$object2 $object1 $bin_size $min_tad_size $outdir/final_results < $codedir/differential_tad_activity_expression.r
 endif
 
