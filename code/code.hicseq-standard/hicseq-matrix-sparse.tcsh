@@ -35,6 +35,10 @@ set filtered_reads = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/
 echo "Preprocessing filtered reads..." | scripts-send2err
 scripts-smartcat $filtered_reads | cut -f2- | cut -d' ' -f1,3,5,7 | awk -v d=$maxdist '($1==$3)&&(($2-$4<=d)||($2-$4>=d))' >! $outdir/filtered.txt
 
+# Split by chromosome
+echo "Splitting by chromosome..." | scripts-send2err
+(cd $outdir; awk -F' ' '{print>$1}' filtered.txt)
+
 # Analyze one chromosome at a time
 set CHR = `cat $genome_dir/genome.bed | cut -f1`
 foreach chr ($CHR)
@@ -42,7 +46,7 @@ foreach chr ($CHR)
 
   # Obtain sparse matrix info
   echo "Processing chromosome $chr..." | scripts-send2err
-  cat $outdir/filtered.txt | grep -w $chr | cut -d' ' -f2,4 | sed 's/.. / /' | sed 's/..$//' | sort | uniq -c | sed 's/^ *//' >! $outmat.out
+  cat $outdir/$chr | cut -d' ' -f2,4 | sed 's/.. / /' | sed 's/..$//' | sort | uniq -c | sed 's/^ *//' >! $outmat.out
   set n = `cat $outmat.out | awk '{print $2,$3}' | tr ' ' '\n' | sort -rn | head -1`
   set N = `cat $outmat.out | wc -l`
 
@@ -52,7 +56,7 @@ foreach chr ($CHR)
   cat $outmat.out | awk '{print $2,$3,$1}' >> $outmat
 
   # Clean up
-  rm -f $outmat.out
+  rm -f $outdir/$chr $outmat.out
 end
 
 # Clean up
