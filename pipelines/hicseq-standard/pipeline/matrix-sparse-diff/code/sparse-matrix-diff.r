@@ -51,19 +51,20 @@ write("Loading matrix 1...",stderr())
 X <- readMM(mat1)
 Xcpm = sum(X)/1000000
 X = X+t(X); diag(X) = diag(X)/2
-print(object.size(X), units = "auto", standard = "SI",stderr())
+write(format(object.size(X),units="auto",standard="SI"),file=stderr())
 
 # load matrix 2
 write("Loading matrix 2...",stderr())
 Y <- readMM(mat2)
 Ycpm = sum(Y)/1000000
 Y = Y+t(Y); diag(Y) = diag(Y)/2
-print(object.size(Y), units = "auto", standard = "SI",stderr())
+write(format(object.size(Y),units="auto",standard="SI"),file=stderr())
 
 # load gene information
 G = read.table(opt$"gene-file")
 colnames(G) = c("chr","start","end","gene","score","strand")
-G = G[G$chr==chrname,]
+G = G[G$chr==chrname,,drop=FALSE]
+if (nrow(G)==0) { write(paste("No viewpoints found on chromosome ",chrname,".",sep=''),stderr()); quit(save='no') }
 
 # virtual 4C functions
 v4C = function(X,VP,R,D,W) 
@@ -78,14 +79,14 @@ v4C = function(X,VP,R,D,W)
 vp_list = as.numeric(apply(G,1,function(v) { if (v["strand"]=='+') { v["start"] } else { v["end"] } })) %/% U
 
 # initialize viewpoint stats matrix
-vp_stats = matrix(0,length(vp_list),7)
+col_labels = c( paste(L1,"max CPM"), paste(L2,"max CPM"), paste(L1,"mean CPM"), paste(L2,"mean CPM"), paste(L1,"-high bins",sep=''), paste(L2,"-high bins",sep=''), "Max CPM", "Log2FC CPM", "Diff CPM", "Diff bins")
+vp_stats = matrix(0,length(vp_list),length(col_labels))
 rownames(vp_stats) = G$gene
-colnames(vp_stats) = c( paste(L1,"max CPM"), paste(L2,"max CPM"), paste(L1,"-high bins",sep=''), paste(L2,"-high bins",sep=''), "Max CPM", "Diff CPM", "Diff bins")
+colnames(vp_stats) = col_labels
 
+write(paste("Testing",length(vp_list),"viewpoints..."),stderr())
 for (k in 1:length(vp_list)) 
 {
-  print(k)
-
   # generate raw virtual 4Cs
   VP = vp_list[k]
   x = v4C(X,VP,R,D,W)
@@ -103,22 +104,27 @@ for (k in 1:length(vp_list))
   dxy = ys - xs
   
   # generate stats
-  x_cpm_max = max(x_cpm)              # max CPM value in sample X
-  y_cpm_max = max(y_cpm)              # max CPM value in Y
-  n_dx = sum(dxy<=-mindiff)           # number of bins higher in sample X (above tolerance)
-  n_dy = sum(dxy>=+mindiff)           # number of bins higher in Y
-  cpm_max = max(x_cpm_max,y_cpm_max)  # max CPM value across X and Y
-  delta_max = y_cpm_max - x_cpm_max   # difference in max CPM (Y vs X)
-  delta_n = n_dy - n_dx               # difference in bins (Y vs X)
+  x_cpm_max = max(x_cpm)                    # max CPM value in sample X
+  y_cpm_max = max(y_cpm)                    # max CPM value in Y
+  x_cpm_mean = mean(x_cpm)                  # mean CPM value in sample X
+  y_cpm_mean = mean(y_cpm)                  # mean CPM value in Y
+  n_dx = sum(dxy<=-mindiff)                 # number of bins higher in sample X (above tolerance)
+  n_dy = sum(dxy>=+mindiff)                 # number of bins higher in Y
+  cpm_max = max(x_cpm_max,y_cpm_max)        # max CPM value across X and Y
+  cpm_logfc = log2(y_cpm_mean/x_cpm_mean)   # log2 CPM ratio (Y vs X)
+  delta_max = y_cpm_max - x_cpm_max         # difference in max CPM (Y vs X)
+  delta_n = n_dy - n_dx                     # difference in bins (Y vs X)
 
   # generate v4C files
-  filename = paste(outdir,'/v4C-',G$gene[k],'.csv',sep='')                        # NOTE: problem with duplicate gene names
-  dataset = round(cbind(x_cpm,y_cpm,xs,ys,dxy),3)
-  colnames(dataset) = c( paste(L1,"CPM"), paste(L2,"CPM"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff") 
-  write.table(file=filename,dataset,quote=F,col.names=T,row.names=F,sep=',') 
+  if (cpm_max>=5.0) {
+    filename = paste(outdir,'/v4C-',G$gene[k],'.csv',sep='') 
+    dataset = round(cbind(x_cpm,y_cpm,xs,ys,dxy),3)
+    colnames(dataset) = c( paste(L1,"CPM"), paste(L2,"CPM"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff") 
+    write.table(file=filename,dataset,quote=F,col.names=T,row.names=F,sep=',') 
+  }
   
   # store stats and virtual 4C data
-  vp_stats[k,] = c( x_cpm_max, y_cpm_max, n_dx, n_dy, cpm_max, delta_max, delta_n )
+  vp_stats[k,] = c( x_cpm_max, y_cpm_max, x_cpm_mean, y_cpm_mean, n_dx, n_dy, cpm_max, cpm_logfc, delta_max, delta_n )
 }
 
 # write output

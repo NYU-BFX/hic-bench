@@ -45,8 +45,8 @@ foreach chr ($CHR)
   set outmat = $outdir/matrix.$chr.mtx
 
   # Obtain sparse matrix info
-  echo "Processing chromosome $chr..." | scripts-send2err
-  cat $outdir/$chr | cut -d' ' -f2,4 | sed 's/.. / /' | sed 's/..$//' | sort | uniq -c | sed 's/^ *//' >! $outmat.out
+  echo "Storing chromosome $chr at 100bp resolution..." | scripts-send2err
+  cat $outdir/$chr | cut -d' ' -f2,4 | awk '($1>100)&&($2>100)' | sed 's/.. / /' | sed 's/..$//' | sort | uniq -c | sed 's/^ *//' >! $outmat.out         # NOTE: hardcoded 100bp resolution
   set n = `cat $outmat.out | awk '{print $2,$3}' | tr ' ' '\n' | sort -rn | head -1`
   set N = `cat $outmat.out | wc -l`
 
