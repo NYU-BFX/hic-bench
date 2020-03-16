@@ -130,5 +130,7 @@ for (k in 1:length(vp_list))
 # write output
 write.table(file=paste(outdir,'/stats.csv',sep=''),vp_stats,quote=F,col.names=NA,row.names=T,sep=',')                                 # NOTE: add GeneName to column labels
 
+write("Done.",stderr())
+
 quit(save='no')
 

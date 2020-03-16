@@ -7,7 +7,7 @@ module load samtools/1.9
 module load bedtools/2.27.1
 module load java/1.8
 module load gsl/2.5
-#module load gtools/3.0
+module load gtools/3.0.0
 
 # load tools required for each step of the pipeline (this can be overriden in local param scripts)
 module load bowtie2/2.3.5.1
