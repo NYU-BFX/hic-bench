@@ -43,11 +43,13 @@ echo "Splitting by chromosome..." | scripts-send2err
 set CHR = `cat $genome_dir/genome.bed | cut -f1`
 foreach chr ($CHR)
   set outmat = $outdir/matrix.$chr.mtx
-
-  # Obtain sparse matrix info
   echo "Storing chromosome $chr at 100bp resolution..." | scripts-send2err
-  cat $outdir/$chr | cut -d' ' -f2,4 | awk '($1>100)&&($2>100)' | sed 's/.. / /' | sed 's/..$//' | sort | uniq -c | sed 's/^ *//' >! $outmat.out         # NOTE: hardcoded 100bp resolution
-  set n = `cat $outmat.out | awk '{print $2,$3}' | tr ' ' '\n' | sort -rn | head -1`
+
+  # Obtain matrix size (in 100bp resolution; 100bp is hardcoded)
+  set n = `cat $genome_dir/genome.bed | awk -v c=$chr '{if ($1==c) print $3+100}' | sed 's/..$//'`
+  
+  # Obtain matrix data
+  cat $outdir/$chr | cut -d' ' -f2,4 | awk '($1>100)&&($2>100)' | sed 's/.. / /' | sed 's/..$//' | awk -v n=$n '($1<=n)&&($2<=n)' | sort | uniq -c | sed 's/^ *//' >! $outmat.out
   set N = `cat $outmat.out | wc -l`
 
   # Generate sparse matrices
