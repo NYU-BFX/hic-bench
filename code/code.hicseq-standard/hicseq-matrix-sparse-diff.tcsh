@@ -38,7 +38,7 @@ scripts-create-path $outdir/
 
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
-foreach chr (chr1 chr8)  #($CHR)
+foreach chr ($CHR)
   echo "Chromosome $chr..." | scripts-send2err
   mkdir -p $outdir/$chr
   set jpref = $outdir/__jdata/job.$chr
