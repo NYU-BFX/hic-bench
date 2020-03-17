@@ -52,9 +52,15 @@ scripts-send2err "Waiting until all jobs are completed..."
 scripts-qsub-wait "$jid"
 
 # combine results from all chromosomes
-cat $outdir/*/stats.csv | grep -vE '^==> |^$' | sort -u | sed 's/^,/Gene,/' >! $outdir/stats.csv
+cat $outdir/*/stats.csv | grep '^,' | sort -u | sed 's/^,/Gene,/' >! $outdir/stats.csv
 cat $outdir/*/stats.csv | grep -v '^,' >> $outdir/stats.csv
 
+# organize virtual 4Cs into a single directory
+mkdir $outdir/v4C
+foreach chr ($CHR)
+  mv $outdir/$chr/*-v4C.csv $outdir/v4C
+  rm -rf $outdir/$chr
+end
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------

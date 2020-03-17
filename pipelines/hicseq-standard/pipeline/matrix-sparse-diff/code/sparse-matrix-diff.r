@@ -11,9 +11,10 @@ usage = "\
 ##
 
 option_list <- list(
+  make_option(c("--gene-file"),default="protein_coding.bed", help="gene bed file"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
   make_option(c("-w","--window"),default=20000, help="size of rolling window (bp)"),
-  make_option(c("--gene-file"),default="protein_coding.bed", help="gene bed file"),
+  make_option(c("--mincount"),default=50, help="minimum viewpoint count for virtual 4Cs")
   make_option(c("--mindiff"),default=0.1, help="minimum difference (fraction)")
 )
 
@@ -26,10 +27,11 @@ if (length(inputs) != 6) { write("Error: wrong number of inputs! Use --help to s
 # input parameters
 outdir = inputs[1]
 chrname = inputs[2]
-d = as.integer(opt$maxdist)        # maximum distance from viewpoint
-w = as.integer(opt$window)         # rolling window size
-mindiff = as.numeric(opt$mindiff)  # minimum difference
-r = 5000                           # radius around viewpoint (bp)
+d = as.integer(opt$maxdist)           # maximum distance from viewpoint
+w = as.integer(opt$window)            # rolling window size
+mincount = as.integer(opt$mincount)   # minimum viewpoint count for virtual 4Cs
+mindiff = as.numeric(opt$mindiff)     # minimum difference
+r = 5000                              # radius around viewpoint (bp)
 
 # input matrices
 mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
@@ -131,8 +133,8 @@ for (k in 1:length(vp_list))
   abs_delta_area_scaled = sum(abs(dxy))/max(sum(ys),sum(xs))        # normalized total absolute scaled difference (Y vs X)
 
   # generate v4C files
-  if (x_max>=50) {
-    filename = paste(outdir,'/v4C-',G$gene[k],'.csv',sep='') 
+  if (max_xy>=mincount) {
+    filename = paste(outdir,'/',G$gene[k],'-',chrname,'-v4C.csv',sep='') 
     dataset = round(cbind(x,y,xs,ys,dxy),3)
     colnames(dataset) = c( paste(L1,"counts"), paste(L2,"adjusted counts"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff-scaled") 
     write.table(file=filename,dataset,quote=F,col.names=T,row.names=F,sep=',') 
