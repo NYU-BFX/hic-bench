@@ -49,16 +49,18 @@ W = w %/% U
 # load matrix 1
 write("Loading matrix 1...",stderr())
 X <- readMM(mat1)
-Xcpm = sum(X)/1000000
 X = X+t(X); diag(X) = diag(X)/2
 write(format(object.size(X),units="auto",standard="SI"),file=stderr())
 
 # load matrix 2
 write("Loading matrix 2...",stderr())
 Y <- readMM(mat2)
-Ycpm = sum(Y)/1000000
 Y = Y+t(Y); diag(Y) = diag(Y)/2
 write(format(object.size(Y),units="auto",standard="SI"),file=stderr())
+
+# adjust counts in second sample
+a = sum(X)/sum(Y)
+Y = a*Y
 
 # load gene information
 G = read.table(opt$"gene-file")
@@ -79,7 +81,21 @@ v4C = function(X,VP,R,D,W)
 vp_list = as.numeric(apply(G,1,function(v) { if (v["strand"]=='+') { v["start"] } else { v["end"] } })) %/% U
 
 # initialize viewpoint stats matrix
-col_labels = c( paste(L1,"max CPM"), paste(L2,"max CPM"), paste(L1,"mean CPM"), paste(L2,"mean CPM"), paste(L1,"-high bins",sep=''), paste(L2,"-high bins",sep=''), "Max CPM", "Log2FC CPM", "Diff CPM", "Diff bins")
+col_labels = c( 
+	paste(L1,"max count"), 
+	paste(L2,"max adjusted count"), 
+	paste(L1,"sum counts"), 
+	paste(L2,"sum adjusted counts"), 
+	paste(L1,"-high bins",sep=''), 
+	paste(L2,"-high bins",sep=''), 
+	"Max count", 
+	"Sum count", 
+	"Log2FC",
+	"Diff area",
+	"Diff area scaled",
+	"Absolute diff area",
+	"Absolute diff area scaled"
+)
 vp_stats = matrix(0,length(vp_list),length(col_labels))
 rownames(vp_stats) = G$gene
 colnames(vp_stats) = col_labels
@@ -92,10 +108,6 @@ for (k in 1:length(vp_list))
   x = v4C(X,VP,R,D,W)
   y = v4C(Y,VP,R,D,W)
   
-  # scale to CPM
-  x_cpm = x/Xcpm
-  y_cpm = y/Ycpm
-  
   # scale to max
   xs = x/max(x)
   ys = y/max(y)
@@ -104,27 +116,30 @@ for (k in 1:length(vp_list))
   dxy = ys - xs
   
   # generate stats
-  x_cpm_max = max(x_cpm)                    # max CPM value in sample X
-  y_cpm_max = max(y_cpm)                    # max CPM value in Y
-  x_cpm_mean = mean(x_cpm)                  # mean CPM value in sample X
-  y_cpm_mean = mean(y_cpm)                  # mean CPM value in Y
-  n_dx = sum(dxy<=-mindiff)                 # number of bins higher in sample X (above tolerance)
-  n_dy = sum(dxy>=+mindiff)                 # number of bins higher in Y
-  cpm_max = max(x_cpm_max,y_cpm_max)        # max CPM value across X and Y
-  cpm_logfc = log2(y_cpm_mean/x_cpm_mean)   # log2 CPM ratio (Y vs X)
-  delta_max = y_cpm_max - x_cpm_max         # difference in max CPM (Y vs X)
-  delta_n = n_dy - n_dx                     # difference in bins (Y vs X)
+  x_max = max(x)                                                    # max value in sample X
+  y_max = max(y)                                                    # max value in Y (adjuected)
+  x_sum = sum(x)                                                    # sum values in sample X
+  y_sum = sum(y)                                                    # sum values in Y (adjusted)
+  n_dx = sum(dxy<=-mindiff)                                         # number of bins higher in sample X (above tolerance)
+  n_dy = sum(dxy>=+mindiff)                                         # number of bins higher in Y
+  max_xy = max(x_max,y_max)                                         # max value across X and Y
+  sum_xy = max(x_sum,y_sum)                                         # max sum value across X and Y
+  logfc = log2(y_sum/x_sum)                                         # log2 ratio (Y vs X)
+  delta_area = (y_sum-x_sum)/max(x_sum,y_sum)                       # normalized total difference (Y vs X)
+  delta_area_scaled = sum(dxy)/max(sum(ys),sum(xs))                 # normalized total scaled difference (Y vs X)
+  abs_delta_area = abs(y_sum-x_sum)/max(x_sum,y_sum)                # normalized total absolute difference (Y vs X)
+  abs_delta_area_scaled = sum(abs(dxy))/max(sum(ys),sum(xs))        # normalized total absolute scaled difference (Y vs X)
 
   # generate v4C files
-  if (cpm_max>=5.0) {
+  if (x_max>=50) {
     filename = paste(outdir,'/v4C-',G$gene[k],'.csv',sep='') 
-    dataset = round(cbind(x_cpm,y_cpm,xs,ys,dxy),3)
-    colnames(dataset) = c( paste(L1,"CPM"), paste(L2,"CPM"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff") 
+    dataset = round(cbind(x,y,xs,ys,dxy),3)
+    colnames(dataset) = c( paste(L1,"counts"), paste(L2,"adjusted counts"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff-scaled") 
     write.table(file=filename,dataset,quote=F,col.names=T,row.names=F,sep=',') 
   }
   
   # store stats and virtual 4C data
-  vp_stats[k,] = c( x_cpm_max, y_cpm_max, x_cpm_mean, y_cpm_mean, n_dx, n_dy, cpm_max, cpm_logfc, delta_max, delta_n )
+  vp_stats[k,] = c( x_max, y_max, x_sum, y_sum, n_dx, n_dy, max_xy, sum_xy, logfc, delta_area, delta_area_scaled, abs_delta_area, abs_delta_area_scaled )
 }
 
 # write output

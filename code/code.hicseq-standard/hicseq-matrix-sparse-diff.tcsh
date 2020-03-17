@@ -42,7 +42,7 @@ foreach chr ($CHR)
   echo "Chromosome $chr..." | scripts-send2err
   mkdir -p $outdir/$chr
   set jpref = $outdir/__jdata/job.$chr
-  set mem = 20G
+  set mem = 40G
   scripts-create-path $jpref
   set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/sparse-matrix-diff.r --gene-file=$viewpoints_file $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2`)
 end
