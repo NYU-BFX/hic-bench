@@ -14,7 +14,7 @@ option_list <- list(
   make_option(c("--gene-file"),default="protein_coding.bed", help="gene bed file"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
   make_option(c("-w","--window"),default=20000, help="size of rolling window (bp)"),
-  make_option(c("--mincount"),default=50, help="minimum viewpoint count for virtual 4Cs")
+  make_option(c("--mincount"),default=50, help="minimum viewpoint count for virtual 4Cs"),
   make_option(c("--mindiff"),default=0.1, help="minimum difference (fraction)")
 )
 
