@@ -38,7 +38,7 @@ if ($#objects < 2) then
 	exit 1
 endif 
 
-# Generate PCA plots
+# Generate Compartments Plots
 foreach inp_var (sample group)
   set n = `./code/read-sample-sheet2.tcsh $sheet "$objects" "$inp_var $group_var" | wc -l`
   if ($n > 0) then
@@ -48,12 +48,12 @@ foreach inp_var (sample group)
 end
 echo -n "" >! $outdir/data.tsv
 foreach object ($objects)
-  cat $branch/$object/all_scores.$k.tsv | grep -vwE "$chrom_excluded" | sed "s/\t/\t$object\t/" >> $outdir/data.tsv      # REPLACE all_scores with PCA bedgraph
+	cat $branch/$object/pca_activeMarkFix.PC1.bedGraph | cut -f1-4 | sed '1d' | grep -vwE "$chrom_excluded" | awk '{print $1":"$2"-"$3"\t"$4}' | sed "s/\t/\t$object\t/" >> $outdir/data.tsv
 end
-cat $outdir/data.tsv | tools-table -c -n 6 | sed 's/ *$//' | tr -s ' ' '\t' >! $outdir/matrix.tsv
-Rscript ./code/code.main/scripts-perform-pca.r -v -o $outdir -L $outdir/labels.tsv $pca_params $outdir/matrix.$method.$k.tsv
-cp $outdir/report.mnorm.pdf $outdir/pca.$method.$k.pdf
-rm -f $outdir/data.tsv $outdir/report.*.pdf
+cat $outdir/data.tsv | tools-table -c -n 6 | sed 's/ *$//' | tr -s ' ' '\t' >! $outdir/pca1.matrix.tsv
+Rscript ./code/scripts-compartments-stats.r -v -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -c $centrotelo_file $pca_params
+
+rm -f $outdir/data.tsv
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
