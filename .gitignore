@@ -12,6 +12,7 @@ pipelines/hicseq-standard/inputs/fastq*
 pipelines/hicseq-standard/inputs/sample-sheet*.tsv
 results
 results*
+ANALYSES
 run-custom*
 errors
 .nfs*
