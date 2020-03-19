@@ -8,8 +8,8 @@
 *.so
 code/bin/*
 data-repo/*
-pipelines/hicseq-standard/inputs/fastq
-pipelines/hicseq-standard/inputs/sample-sheet.tsv
+pipelines/hicseq-standard/inputs/fastq*
+pipelines/hicseq-standard/inputs/sample-sheet*.tsv
 results
 results*
 run-custom*
