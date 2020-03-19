@@ -61,6 +61,10 @@ foreach chr ($CHR)
   rm -f $outdir/$chr $outmat.out
 end
 
+# Calculate statistics
+set stats = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/stats.tsv"}'`
+cat $stats | cut -f-2 | sort | tools-mergeuniq -merge | tools-vectors sum -n 0 >! $outdir/stats.tsv
+
 # Clean up
 rm -f $outdir/filtered.txt
 
