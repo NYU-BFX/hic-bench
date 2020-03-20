@@ -39,12 +39,15 @@ scripts-create-path $outdir/
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)
-  echo "Chromosome $chr..." | scripts-send2err
   mkdir -p $outdir/$chr
-  set jpref = $outdir/__jdata/job.$chr
-  set mem = 40G
-  scripts-create-path $jpref
-  set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/sparse-matrix-diff.r --gene-file=$viewpoints_file $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2`)
+  cat $viewpoints_file | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
+  if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
+    echo "Chromosome $chr..." | scripts-send2err
+    set jpref = $outdir/__jdata/job.$chr
+    set mem = 40G
+    scripts-create-path $jpref
+    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/sparse-matrix-diff.r --gene-file=$viewpoints_file $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2`)
+  endif
 end
 
 # wait until all jobs are completed
@@ -54,6 +57,11 @@ scripts-qsub-wait "$jid"
 # combine results from all chromosomes
 cat $outdir/*/stats.csv | grep '^,' | sort -u | sed 's/^,/Gene,/' >! $outdir/stats.csv
 cat $outdir/*/stats.csv | grep -v '^,' >> $outdir/stats.csv
+set diff_files = $outdir/*/diff-regions.csv
+head -1 $diff_files[1] >! $outdir/diff-regions.csv
+foreach diff_file ($diff_files)
+  cat $diff_file | scripts-skipn 1 >> $outdir/diff-regions.csv
+end
 
 # organize virtual 4Cs into a single directory
 mkdir $outdir/v4C

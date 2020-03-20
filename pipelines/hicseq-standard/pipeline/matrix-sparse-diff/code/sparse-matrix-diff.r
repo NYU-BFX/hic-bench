@@ -10,6 +10,57 @@ usage = "\
 ## Rscript ./code/sparse-matrix-diff.r --gene-file='protein_coding2.bed' out chr8 X/matrix.chr8.mtx Y/matrix.chr8.mtx DP TALL
 ##
 
+######################################################################
+## 
+## FUNCTION findSegments | Find segments above a threshold
+## 
+######################################################################
+findSegments <- function(x, y, min_diff, min_region_size=5000%/%U) 
+{
+  
+  findSegmentsAux <- function(dxy, threshold) 
+  {
+    hit <- which(dxy > threshold)
+    n <- length(hit)
+    ind <- which(hit[-1] - hit[-n] > 1)
+	if (length(ind)==0) return(c())
+    starts <- c(hit[1], hit[ ind+1 ])
+    ends <- c(hit[ ind ], hit[n])
+    size <- ends - starts + 1
+    return(cbind(starts,ends,size))
+  }
+
+  # init
+  dxy = y - x
+  seg = seg1 = seg2 = c()
+  
+  # find maxima
+  dd = rollmax(dxy,k=min_region_size,na.pad=T,align="center")
+  if (max(dd,na.rm=T)>=min_diff) seg1 = findSegmentsAux(dd,min_diff)
+
+  # find minima
+  dd = rollmax(-dxy,k=min_region_size,na.pad=T,align="center")
+  if (max(dd,na.rm=T)>=min_diff) seg2 = rbind(seg, findSegmentsAux(dd,min_diff))
+
+  #print("diagnostics:");  print(seg1);   print(seg2)
+  
+  seg = rbind(seg1,seg2)
+  if (is.null(seg)==FALSE) {
+    xvalue = apply(seg,1,function(v) mean(x[v[1]:v[2]]))           # add mean value for sample x
+    yvalue = apply(seg,1,function(v) mean(y[v[1]:v[2]]))           # add mean value for sample y
+	dvalue = yvalue - xvalue                                       # add difference of mean values
+	seg = cbind(seg,xvalue,yvalue,dvalue)
+  }
+ 
+  return(seg)
+}
+
+
+######################################################################
+## 
+## MAIN
+## 
+######################################################################
 option_list <- list(
   make_option(c("--gene-file"),default="protein_coding.bed", help="gene bed file"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
@@ -52,13 +103,18 @@ W = w %/% U
 write("Loading matrix 1...",stderr())
 X <- readMM(mat1)
 X = X+t(X); diag(X) = diag(X)/2
+Xn = nrow(X)
 write(format(object.size(X),units="auto",standard="SI"),file=stderr())
 
 # load matrix 2
 write("Loading matrix 2...",stderr())
 Y <- readMM(mat2)
 Y = Y+t(Y); diag(Y) = diag(Y)/2
+Yn = nrow(Y)
 write(format(object.size(Y),units="auto",standard="SI"),file=stderr())
+
+# check matrix sizes
+if (Xn!=Yn) { write("Error: input matrices have different sizes!\n",file=stderr()); quit(save='no') }
 
 # adjust counts in second sample
 a = sum(X)/sum(Y)
@@ -79,6 +135,14 @@ v4C = function(X,VP,R,D,W)
   return (x)
 }
 
+# identify differential regions
+regdiff = function(z,min_diff,min_region_size=1000%/%U)
+{
+  z[z<min_diff] = NA
+  sum(diff(which(!is.na(z)))>=min_region_size)
+}
+
+
 # determine viewpoints
 vp_list = as.numeric(apply(G,1,function(v) { if (v["strand"]=='+') { v["start"] } else { v["end"] } })) %/% U
 
@@ -90,6 +154,8 @@ col_labels = c(
 	paste(L2,"sum adjusted counts"), 
 	paste(L1,"-high bins",sep=''), 
 	paste(L2,"-high bins",sep=''), 
+	paste(L1,"-high regions",sep=''), 
+	paste(L2,"-high regions",sep=''), 
 	"Max count", 
 	"Sum count", 
 	"Log2FC",
@@ -103,12 +169,19 @@ rownames(vp_stats) = G$gene
 colnames(vp_stats) = col_labels
 
 write(paste("Testing",length(vp_list),"viewpoints..."),stderr())
+file_diff_regions = paste(outdir,'/diff-regions.csv',sep='')
+cat("vp-name,vp-chr,vp-start,vp-end,target-distance,target-start,target-end,target-length,sample1-value,sample2-value,diff\n",file=file_diff_regions)
 for (k in 1:length(vp_list)) 
 {
   # generate raw virtual 4Cs
   VP = vp_list[k]
+  vp_label = as.character(G$gene[k])
   x = v4C(X,VP,R,D,W)
   y = v4C(Y,VP,R,D,W)
+  
+  # generate coordinates
+  coord_end = U*(max(VP-D,1):min(VP+D,Xn))
+  coord_start = coord_end - U
   
   # scale to max
   xs = x/max(x)
@@ -124,6 +197,8 @@ for (k in 1:length(vp_list))
   y_sum = sum(y)                                                    # sum values in Y (adjusted)
   n_dx = sum(dxy<=-mindiff)                                         # number of bins higher in sample X (above tolerance)
   n_dy = sum(dxy>=+mindiff)                                         # number of bins higher in Y
+  nreg_dx = regdiff(-dxy,mindiff)                                   # number of regions higher in sample X (above tolerance)
+  nreg_dy = regdiff(dxy,mindiff)                                    # number of regions higher Y
   max_xy = max(x_max,y_max)                                         # max value across X and Y
   sum_xy = max(x_sum,y_sum)                                         # max sum value across X and Y
   logfc = log2(y_sum/x_sum)                                         # log2 ratio (Y vs X)
@@ -132,16 +207,30 @@ for (k in 1:length(vp_list))
   abs_delta_area = abs(y_sum-x_sum)/max(x_sum,y_sum)                # normalized total absolute difference (Y vs X)
   abs_delta_area_scaled = sum(abs(dxy))/max(sum(ys),sum(xs))        # normalized total absolute scaled difference (Y vs X)
 
+  # generate differential regions
+  seg = findSegments(xs,ys,min_diff=mindiff)
+  if (is.null(seg)==FALSE) {
+    vp_chr = chrname
+	vp_start = (VP-1)*U
+	vp_end = (VP+1)*U
+    seg[,1] = coord_start[seg[,1]]                                  # fix coordinates
+    seg[,2] = coord_end[seg[,2]]
+	seg[,3] = seg[,2]-seg[,1]
+    loop_dist = (seg[,1]+seg[,2])/2-mean(vp_start,vp_end)           # target anchor distance from viewpoint
+	seg = cbind(vp_label,vp_chr,vp_start,vp_end,loop_dist,seg)
+    write.table(file=file_diff_regions,seg,append=T,quote=F,col.names=F,row.names=F,sep=',') 
+  }
+ 
   # generate v4C files
   if (max_xy>=mincount) {
-    filename = paste(outdir,'/',G$gene[k],'-',chrname,'-v4C.csv',sep='') 
+    filename = paste(outdir,'/',vp_label,'-',chrname,'-v4C.csv',sep='') 
     dataset = round(cbind(x,y,xs,ys,dxy),3)
     colnames(dataset) = c( paste(L1,"counts"), paste(L2,"adjusted counts"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff-scaled") 
     write.table(file=filename,dataset,quote=F,col.names=T,row.names=F,sep=',') 
   }
   
   # store stats and virtual 4C data
-  vp_stats[k,] = c( x_max, y_max, x_sum, y_sum, n_dx, n_dy, max_xy, sum_xy, logfc, delta_area, delta_area_scaled, abs_delta_area, abs_delta_area_scaled )
+  vp_stats[k,] = c( x_max, y_max, x_sum, y_sum, n_dx, n_dy, nreg_dx, nreg_dy, max_xy, sum_xy, logfc, delta_area, delta_area_scaled, abs_delta_area, abs_delta_area_scaled )
 }
 
 # write output
