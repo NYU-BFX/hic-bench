@@ -2,15 +2,18 @@
 source ./code/code.main/custom-tcshrc      # customize shell environment
 
 ##
-## USAGE: pipeline-check-results
+## USAGE: pipeline-check-results [RESULTS-DIR]
 ##
 
-if ($#argv != 0) then
+if ("$1" == "--help") then
   grep '^##' $0
   exit
 endif
 
-set objects = `find results -name job.sh | sed 's/.job.sh$//' | sort`
+set results = $1
+if ($results == "") set results = results
+
+set objects = `find $results -name job.sh | sed 's/.job.sh$//' | sort`
 
 foreach obj ($objects)
 
