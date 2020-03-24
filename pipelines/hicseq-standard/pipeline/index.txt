@@ -28,6 +28,11 @@ compare-boundaries-stats
 
 domains-diff
 
+matrix-sparse
+matrix-sparse-diff
+
+virtual4C
+
 hicplotter
 hicplotter-diff
 
