@@ -65,6 +65,20 @@ else if ($aligner == 'bowtie2') then              ## Aligner = bowtie2
   # paste -d'\n' $out/alignments.R1.sam $out/alignments.R2.sam | samtools view -T $genome_index.fa -b1 - >! $out/alignments.bam
   # rm -f $out/alignments.R1.sam $out/alignments.R2.sam
 
+else if ($aligner == 'bwa') then              ## Aligner = bwa 
+
+  # align R1 reads
+  echo "Aligning R1 reads using BWA..." | scripts-send2err
+  cat $fastq1 >! $out/R1.fastq.gz
+  bwa mem $align_params -t $threads $genome_index $out/R1.fastq.gz | samtools view -Shb - >! $out/R1.bam
+  rm -f $out/R1.fastq.gz
+  
+  # align R2 reads
+  echo "Aligning R2 reads using BWA..." | scripts-send2err
+  cat $fastq2 >! $out/R2.fastq.gz
+  bwa mem $align_params -t $threads $genome_index $out/R2.fastq.gz | samtools view -Shb - >! $out/R2.bam
+  rm -f $out/R2.fastq.gz
+  
 else
   scripts-send2err "Error: unknown aligner $aligner."
   exit
