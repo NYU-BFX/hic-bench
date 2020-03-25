@@ -47,11 +47,16 @@ foreach inp_var (sample group)
   endif
 end
 echo -n "" >! $outdir/data.tsv
+echo -n "" >! $outdir/metrics.tsv
+
 foreach object ($objects)
-	cat $branch/$object/pca_activeMarkFix.PC1.bedGraph | cut -f1-4 | sed '1d' | grep -vwE "$chrom_excluded" | awk '{print $1":"$2"-"$3"\t"$4}' | sed "s/\t/\t$object\t/" >> $outdir/data.tsv
+	cat $branch/$object/pca_HKgenesFix.PC1.bedGraph | cut -f1-4 | sed '1d' | grep -vwE "$chrom_excluded" | awk '{print $1":"$2"-"$3"\t"$4}' | sed "s/\t/\t$object\t/" >> $outdir/data.tsv
+	cat $branch/$object/pc1_metrics_summary.txt >> $outdir/metrics.tsv
 end
+
 cat $outdir/data.tsv | tools-table -c -n 6 | sed 's/ *$//' | tr -s ' ' '\t' >! $outdir/pca1.matrix.tsv
-Rscript ./code/scripts-compartments-stats.r -v -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -c $centrotelo_file $pca_params
+
+Rscript ./code/scripts-compartments-stats.r -v -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -r $outdir/metrics.tsv -c $centrotelo_file $pca_params
 
 rm -f $outdir/data.tsv
 
@@ -65,7 +70,3 @@ source ./code/code.main/scripts-save-job-vars
 
 # done
 scripts-send2err "Done."
-
-
-
-
