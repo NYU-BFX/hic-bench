@@ -154,17 +154,17 @@ col_labels = c(
 	paste(L2,"max2 adjusted count"), 
 	paste(L1,"sum counts"), 
 	paste(L2,"sum adjusted counts"), 
-	paste(L1,"-high bins",sep=''), 
-	paste(L2,"-high bins",sep=''), 
-	paste(L1,"-high regions",sep=''), 
-	paste(L2,"-high regions",sep=''), 
+	paste(L1,"-high regions (scaled1)",sep=''), 
+	paste(L2,"-high regions (scaled1)",sep=''), 
+	paste(L1,"-high regions (scaled2)",sep=''), 
+	paste(L2,"-high regions (scaled2)",sep=''), 
 	"Max count", 
 	"Max2 count", 
 	"Log2FC",
-	"Diff area",
-	"Diff area scaled",
-	"Absolute diff area",
-	"Absolute diff area scaled"
+	"Diff area (scaled1)",
+	"Diff area (scaled2)",
+	"Absolute diff area (scaled1)",
+	"Absolute diff area (scaled2)"
 )
 vp_stats = matrix(0,length(vp_list),length(col_labels))
 rownames(vp_stats) = G$gene
@@ -185,38 +185,43 @@ for (k in 1:length(vp_list))
   coord_end = U*(max(VP-D,1):min(VP+D,Xn))
   coord_start = coord_end - U
   
-  # scale to max
-  xs = x/max(x)
-  ys = y/max(y)
-  
-  # v4C difference
-  dxy = ys - xs
-  
-  # generate stats
+  # generate max & sum stats
   x_max = max(x)                                                    # max value in sample X
   y_max = max(y)                                                    # max value in Y (adjusted)
-  imax = which.max(x)
+  imax = which.max(x)                                               # max value outside the main peak area in sample X
   xx = x; xx[max(1,imax-20*R):min(imax+20*R,Xn)] = NA
-  x_max2 = max(xx,na.rm=T)                                          # max value outside the main peak area in sample X
-  imax = which.max(y)
+  x_max2 = max(xx,na.rm=T)
+  imax = which.max(y)                                               # max value outside the main peak area in sample Y
   yy = y; yy[max(1,imax-20*R):min(imax+20*R,Xn)] = NA
-  y_max2 = max(yy,na.rm=T)                                          # max value outside the main peak area in sample Y
+  y_max2 = max(yy,na.rm=T)
   x_sum = sum(x)                                                    # sum values in sample X
   y_sum = sum(y)                                                    # sum values in Y (adjusted)
-  n_dx = sum(dxy<=-mindiff)                                         # number of bins higher in sample X (above tolerance)
-  n_dy = sum(dxy>=+mindiff)                                         # number of bins higher in Y
-  nreg_dx = regdiff(-dxy,mindiff)                                   # number of regions higher in sample X (above tolerance)
-  nreg_dy = regdiff(dxy,mindiff)                                    # number of regions higher Y
   max_xy = max(x_max,y_max)                                         # max value across X and Y
   max2_xy = max(x_max2,y_max2)                                      # max2 value across X and Y
+
+  # scale to max and maxmax and calculate differences
+  xs1 = x/x_max
+  ys1 = y/y_max
+  dxy1 = ys1 - xs1
+  xs2 = x/max_xy
+  ys2 = y/max_xy
+  dxy2 = ys2 - xs2
+  
+  # generate diff regions stats
+  nreg_dx1 = regdiff(-dxy1,mindiff)                                 # max-scaling: number of regions higher in sample X (above tolerance)
+  nreg_dy1 = regdiff(dxy1,mindiff)                                  # max-scaling: number of regions higher Y
+  nreg_dx2 = regdiff(-dxy2,mindiff)                                 # maxmax-scaling: number of regions higher in sample X (above tolerance)
+  nreg_dy2 = regdiff(dxy2,mindiff)                                  # maxmax-scaling: number of regions higher Y
+
+  # generate diff metrics
   logfc = log2(y_sum/x_sum)                                         # log2 ratio (Y vs X)
-  delta_area = (y_sum-x_sum)/max(x_sum,y_sum)                       # normalized total difference (Y vs X)
-  delta_area_scaled = sum(dxy)/max(sum(ys),sum(xs))                 # normalized total scaled difference (Y vs X)
-  abs_delta_area = abs(y_sum-x_sum)/max(x_sum,y_sum)                # normalized total absolute difference (Y vs X)
-  abs_delta_area_scaled = sum(abs(dxy))/max(sum(ys),sum(xs))        # normalized total absolute scaled difference (Y vs X)
+  delta_area_scaled1 = sum(dxy1)/max(sum(ys1),sum(xs1))             # normalized total max-scaled difference (Y vs X)
+  delta_area_scaled2 = sum(dxy2)/max(sum(ys2),sum(xs2))             # normalized total maxmax-scaled difference (Y vs X)
+  abs_delta_area_scaled1 = sum(abs(dxy1))/max(sum(ys1),sum(xs1))    # normalized total absolute max-scaled difference (Y vs X)
+  abs_delta_area_scaled2 = sum(abs(dxy2))/max(sum(ys2),sum(xs2))    # normalized total absolute maxmax-scaled difference (Y vs X)
 
   # generate differential regions
-  seg = findSegments(xs,ys,min_diff=mindiff)
+  seg = findSegments(xs2,ys2,min_diff=mindiff)                      # use max-max scaling for differential regions
   if (is.null(seg)==FALSE) {
     vp_chr = chrname
 	vp_start = (VP-1)*U
@@ -232,13 +237,31 @@ for (k in 1:length(vp_list))
   # generate v4C files
   if (max_xy>=mincount) {
     filename = paste(outdir,'/',vp_label,'-',chrname,'-v4C.csv',sep='') 
-    dataset = round(cbind(x,y,xs,ys,dxy),3)
+    dataset = round(cbind(x,y,xs1,ys1,dxy1),3)
     colnames(dataset) = c( paste(L1,"counts"), paste(L2,"adjusted counts"), paste(L1,"max-scaled"), paste(L2,"max-scaled"), "Diff-scaled") 
     write.table(file=filename,dataset,quote=F,col.names=T,row.names=F,sep=',') 
   }
   
-  # store stats and virtual 4C data
-  vp_stats[k,] = c( x_max, y_max, x_max2, y_max2, x_sum, y_sum, n_dx, n_dy, nreg_dx, nreg_dy, max_xy, max2_xy, logfc, delta_area, delta_area_scaled, abs_delta_area, abs_delta_area_scaled )
+  # store stats 
+  vp_stats[k,] = c( 
+		x_max, 
+		round(y_max,0), 
+		x_max2, 
+		round(y_max2,0), 
+		x_sum, 
+		round(y_sum,0), 
+		nreg_dx1, 
+		nreg_dy1, 
+		nreg_dx2, 
+		nreg_dy2, 
+		round(max_xy,0), 
+		round(max2_xy,0), 
+		round(logfc,3), 
+		round(delta_area_scaled1,3), 
+		round(delta_area_scaled2,3), 
+		round(abs_delta_area_scaled1,3), 
+		round(abs_delta_area_scaled2,3)
+	)
 }
 
 # write output

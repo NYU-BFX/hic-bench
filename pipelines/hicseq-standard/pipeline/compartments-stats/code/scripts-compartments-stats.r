@@ -61,7 +61,7 @@ getBarPlot=function(df.sizes, x, y, grid){
                   label = sizeLabel),colour="white",
               size = sz,
               vjust = 0.5)+
-    scale_x_discrete(labels= as.character(labels))+
+    scale_x_discrete(labels= as.character(labelsMat))+
     theme(axis.text.x = element_text(angle = 45, hjust = 1))+
     guides(fill=guide_legend(""))
 }
@@ -70,7 +70,7 @@ getDensPlot=function(mat, x, y){
   temp=data.frame(PC1=c(mat[,names(mat)[x]],mat[,names(mat)[y]]),group=rep(c(names(mat)[y],names(mat)[x]),each=nrow(mat)),stringsAsFactors = F)
   ggplot(data = temp, aes(x=PC1,fill=group))+
     geom_density(show.legend = T,alpha=0.5)+
-    scale_fill_manual(values=c("green","purple"),labels=labels[c(x,y)])+
+    scale_fill_manual(values=c("green","purple"),labels=labelsMat[c(x,y)])+
     theme(legend.position = c(.95, .95),
           legend.justification = c("right", "top"),
           legend.box.just = "right",
@@ -92,8 +92,8 @@ getHexPlot <- function(mat, x, y, grid){
   
   ggplot(data = mat, aes_string(x=names(mat)[x],y=names(mat)[y]))+ 
     stat_binhex(bins=70) +
-    xlab(labels[x])+
-    ylab(labels[y])+
+    xlab(labelsMat[x])+
+    ylab(labelsMat[y])+
     xlim(min.pc1,max.pc1)+
     ylim(min.pc1,max.pc1)+
     scale_fill_gradientn(colours=c("blue","orange","red"),trans="log10","  log10 count\n(eigenvector-1)\n")+
@@ -107,7 +107,7 @@ getHexPlot <- function(mat, x, y, grid){
 
 getEigenPairs=function(mat){
   grid=T
-  p=ggpairs(mat,lower="blank",diag="blank",upper="blank",columnLabels = labels,legend=c(2,1))+
+  p=ggpairs(mat,lower="blank",diag="blank",upper="blank",columnLabels = labelsMat,legend=c(2,1))+
     theme_bw(base_size=14)+
     theme(panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(), 
@@ -165,8 +165,8 @@ getEigenHmap=function(mat,bins.fraction=0.3){ #tot.bins = number of top most var
             main="",
             col=colorRampPalette(rev(brewer.pal(n = 10, name ="RdBu")))(100),
             dendrogram = "both",
-            scale= "row",
-            labCol=labels,
+            scale= "none",
+            labCol=labelsMat,
             hclustfun = function(x){hclust(x, method="ward.D2")},
             distfun = function(x) {dist(x, method="manhattan")},
             labRow = FALSE,
@@ -205,8 +205,8 @@ classifyPc1Bins=function(mat){
         df.switch$AB.number[nr]=sum(df.mat$switch=="AB",na.rm = T)
         df.switch$BB.number[nr]=sum(df.mat$switch=="BB",na.rm = T)
         df.switch$BA.number[nr]=sum(df.mat$switch=="BA",na.rm = T)
-        df.switch$sampleName1[nr]=labels[y]
-        df.switch$sampleName2[nr]=labels[x]
+        df.switch$sampleName1[nr]=labelsMat[y]
+        df.switch$sampleName2[nr]=labelsMat[x]
         write.table(df.mat,paste0(out_dir,'/pc1.switch_',names(mat)[y],"_vs_",names(mat)[x],'.tsv'),sep='\t',row.names = F,col.names=T,quote=F)
         nr=nr+1
       }
@@ -243,7 +243,6 @@ getBarSwitch=function(df.switch){
           coord_flip()+
           guides(fill=guide_legend("")))
 }
-
 
 # Metrics boxplot
 getMetricsBox=function(metrics){
@@ -351,11 +350,11 @@ df.sizes=as.data.frame(matAndSizes$df.sizes)
 mat=mat[,4:ncol(mat)]
 
 # set label format
-if (sample_labels!="") { colnames(mat) = t(read.table(sample_labels,header=F)[,1]) } 
-labels=names(mat) 
-test.1st.char=as.numeric(substr(x = labels,start = 1,stop = 1)) #to avoid ggplot error when first character of label is numeric
+if (sample_labels!="") { labels = as.character(t(read.table(sample_labels,header=F)[,1])) } else {print("Error: labels.tsv file is missing!")} 
+labelsMat=names(mat)
+test.1st.char=as.numeric(substr(x = labelsMat,start = 1,stop = 1)) #to avoid ggplot error when first character of label is numeric
 test.1st.char=test.1st.char[!is.na(test.1st.char)]
-if(length(test.1st.char)>0){labels=paste0("S",labels)}
+if(length(test.1st.char)>0){labelsMat=paste0("S",labelsMat)}
 isBygroup = substr(x = labels,start = 1,stop = 1)[1] == ":"
 if(isBygroup){labels=gsub(labels,pattern = ":",replacement = "")}
 
@@ -367,12 +366,14 @@ df=data.frame(sampleName=labels,group=fac,color=NA)
 for (group in df$group){df$color[df$group==group]=as.character(groupColor$color[groupColor$group==group])}
 
 # avoid ggplot errors when using certain symbols
-labels=gsub(labels,pattern = "-",replacement = "_")
-labels=gsub(labels,pattern = ":",replacement = ".")
-colnames(mat)=labels
-df.sizes$sampleName=labels #for labels consistency
-short_names = as.vector(sapply(labels,function(x){strsplit(x,'.',fixed=T)[[1]][2]}))
-if(!isBygroup){ if (show_text) { if (use_short_names) { labels = short_names } else { labels = labels } } else { labels = NULL } }
+labelsMat=gsub(labelsMat,pattern = "-",replacement = "_")
+labelsMat=gsub(labelsMat,pattern = ":",replacement = ".")
+colnames(mat)=labelsMat
+df.sizes$sampleName=labelsMat #for labels consistency
+short_names = as.vector(sapply(labels,function(x){strsplit(x,':',fixed=T)[[1]][2]}))
+short_names=gsub(short_names,pattern = "-",replacement = "_")
+short_names=gsub(short_names,pattern = ":",replacement = ".")
+if(!isBygroup){ if (show_text) { if (use_short_names) { labels = short_names } else { labels = labelsMat } }}
 
 
 ### MAKE PLOTS ### 
