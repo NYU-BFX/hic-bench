@@ -41,13 +41,14 @@ getBarPlot=function(df.sizes, x, y, grid){
                          perc.size=c(df.sizes$perc.compA,df.sizes$perc.compB))
   df.sizes.gg$sampleCompartment=paste0(df.sizes.gg$group,".",df.sizes.gg$class)
   df.sizes.gg$size=round(df.sizes.gg$size/1000000)
-  if(grid==T){ df.sizes.gg=df.sizes.gg[as.character(df.sizes.gg$group)==names(mat)[x] | as.character(df.sizes.gg$group)==names(mat)[x],] }
+  if(grid){ df.sizes.gg=df.sizes.gg[as.character(df.sizes.gg$group)==names(mat)[x] | as.character(df.sizes.gg$group)==names(mat)[x],] }
   df.sizes.gg=df.sizes.gg[order(df.sizes.gg$group),]
   df.sizes.gg$sizeLab.pos=df.sizes.gg$size*0.5
   df.sizes.gg$perc.size=round(df.sizes.gg$perc.size*100,1)
   df.sizes.gg$sizeLab.pos[df.sizes.gg$class=="compartment A"]=(df.sizes.gg$size[df.sizes.gg$class=="compartment A"])/2+df.sizes.gg$size[df.sizes.gg$class=="compartment B"]
   df.sizes.gg$sizeLabel[df.sizes.gg$class=="compartment A"]=paste0(df.sizes.gg$size[df.sizes.gg$class=="compartment A"]," Mb\nA (",df.sizes.gg$perc.size[df.sizes.gg$class=="compartment A"],"%)")
   df.sizes.gg$sizeLabel[df.sizes.gg$class=="compartment B"]=paste0(df.sizes.gg$size[df.sizes.gg$class=="compartment B"]," Mb\nB (",df.sizes.gg$perc.size[df.sizes.gg$class=="compartment B"],"%)")
+  if(grid){sz=3}else{sz=2}
   
   ggplot(data = df.sizes.gg, aes(x = group, y = size, fill = class)) + 
     geom_bar(stat = "identity",colour="black",position = "stack",width = 0.6)+
@@ -58,7 +59,7 @@ getBarPlot=function(df.sizes, x, y, grid){
               aes(x = group,
                   y = sizeLab.pos,
                   label = sizeLabel),colour="white",
-              size = 4,
+              size = sz,
               vjust = 0.5)+
     scale_x_discrete(labels= as.character(labels))+
     theme(axis.text.x = element_text(angle = 45, hjust = 1))+
@@ -80,16 +81,21 @@ getDensPlot=function(mat, x, y){
           panel.background = element_blank(),
           axis.line = element_line(colour = "black"))+
     geom_vline(xintercept = 0,linetype = "dotdash",color="darkred")
-
+  
 }
 
 getHexPlot <- function(mat, x, y, grid){
-  if(grid==T){sz=3} else {sz=5}
+  if(grid){sz=3} else {sz=5}
+  max.pc1=(max(mat,na.rm = T))
+  min.pc1=(min(mat,na.rm = T))
   correl=round(cor(mat[,names(mat)[x]],mat[,names(mat)[y]]),digits = 3)
+  
   ggplot(data = mat, aes_string(x=names(mat)[x],y=names(mat)[y]))+ 
     stat_binhex(bins=70) +
     xlab(labels[x])+
     ylab(labels[y])+
+    xlim(min.pc1,max.pc1)+
+    ylim(min.pc1,max.pc1)+
     scale_fill_gradientn(colours=c("blue","orange","red"),trans="log10","  log10 count\n(eigenvector-1)\n")+
     geom_abline(slope = 1,intercept = 0,linetype=2)+
     annotate(geom = 'text', label = paste0('r = ',correl), x = -Inf, y = Inf, hjust = -0.2, vjust = 1.5,size=sz)+
@@ -130,11 +136,6 @@ getEigenPairs=function(mat){
 getEigenPCA=function(mat,df.color){
   pca = prcomp(t(mat))
   names = colnames(mat)
-  #fac = factor(sapply(names,function(x){strsplit(x,'.')[[1]][1]}))
-  #colours = rep(c(brewer.pal(7,"Set1"),brewer.pal(7,"Set2"),brewer.pal(7,"Set3")),nlevels(fac))[1:nlevels(fac)]
-  #groupColor=data.frame(group=as.character(unique(fac)),color=as.character(colours))
-  #df=data.frame(sampleName=names,group=fac,color=NA)
-  #for (group in df$group){df$color[df$group==group]=as.character(groupColor$color[groupColor$group==group])}
   print(autoplot(pca,label = F,label.size = 2,size=5,col=df$color)+
           geom_text_repel(aes(label=labels),
                           segment.size = 0.5,
@@ -151,15 +152,17 @@ getEigenPCA=function(mat,df.color){
                 legend.position="none"))
 }
 
-getEigenHmap=function(mat,tot.bins=3000){ #tot.bins = number of top most variable pc1 bins to plot
+getEigenHmap=function(mat,bins.fraction=0.3){ #tot.bins = number of top most variable pc1 bins to plot
   n_samples=ncol(mat)
+  tot.bins=round(nrow(mat)*bins.fraction)
   mat$sd=rowSds(as.matrix(mat),na.rm=T)
   mat=mat[order(mat$sd,decreasing = T),]
   mat=mat[,1:n_samples]
   names=names(mat)
   fac = factor(sapply(names,function(x){strsplit(x,'.')[[1]][1]}))
- 
+  
   heatmap.2(as.matrix(mat[1:tot.bins,1:n_samples]),
+            main="",
             col=colorRampPalette(rev(brewer.pal(n = 10, name ="RdBu")))(100),
             dendrogram = "both",
             scale= "row",
@@ -175,10 +178,13 @@ getEigenHmap=function(mat,tot.bins=3000){ #tot.bins = number of top most variabl
             key = TRUE,
             keysize = 1.5,
             density.info=c("none"))
+  title("30% most variable genomic bins \n(Eigenvector-1)", cex.main = 0.7)
+  
 }
 
 # classify switched pc1 bins (pairwise-comparison)
 classifyPc1Bins=function(mat){
+  delta.cut=1.5
   df.switch=data.frame(sampleName1=character(choose(ncol(mat),2)),sampleName2=NA,AA.number=NA,AB.number=NA,BB.number=NA,BA.number=NA,stringsAsFactors = F)
   seq=1:ncol(mat)
   nr=1
@@ -187,16 +193,14 @@ classifyPc1Bins=function(mat){
       if(y>x){
         df.mat=mat[,c(names(mat)[x],names(mat)[y])]
         df.mat$pc1.diff=df.mat[,1]-df.mat[,2]
-        pc1Diff_q50=quantile(abs(df.mat$pc1.diff),0.5)
-        #pc1.diff.cut=pc1Diff_q50
-        pc1.diff.cut=0.0008
+        df.mat$delta=df.mat[,1]-df.mat[,2,]/df.mat[,1]
         df.mat$switch=NA
         df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] > 0]="AA"
         df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] < 0]="BB"
-        df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] < 0 & abs(df.mat$pc1.diff) >= pc1.diff.cut]="AB"
-        df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] > 0 & abs(df.mat$pc1.diff) >= pc1.diff.cut]="BA"
-        df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] < 0 & abs(df.mat$pc1.diff) < pc1.diff.cut]="AA"
-        df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] > 0 & abs(df.mat$pc1.diff) < pc1.diff.cut]="BB"
+        df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] < 0 & abs(df.mat$delta) >= delta.cut]="AB"
+        df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] > 0 & abs(df.mat$delta) >= delta.cut]="BA"
+        df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] < 0 & abs(df.mat$delta) < delta.cut]="AA"
+        df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] > 0 & abs(df.mat$delta) < delta.cut]="BB"
         df.switch$AA.number[nr]=sum(df.mat$switch=="AA",na.rm = T)
         df.switch$AB.number[nr]=sum(df.mat$switch=="AB",na.rm = T)
         df.switch$BB.number[nr]=sum(df.mat$switch=="BB",na.rm = T)
@@ -228,14 +232,51 @@ getBarSwitch=function(df.switch){
   
   df.t$class=gsub(df.t$class,pattern = ".number",replacement = "")
   df.t$comparisonID=gsub(df.t$comparisonID,pattern = ":",replacement = " vs ",fixed = T)
+  df.t$class=as.factor(df.t$class)
+  df.t$class=factor(df.t$class,levels=c("AB","AA","BB","BA"))
   
   print(ggplot(data = df.t, aes(x = comparisonID, y = number, fill = class)) + 
           geom_bar(stat = "identity",colour="black",position = "stack",width = 0.6,size=0.5)+
           xlab("")+
           ylab("number of eigenvector-1 bins")+
-          scale_fill_manual(values=c("darkred","blue","red","darkblue"))+
+          scale_fill_manual(values=c("blue","darkred","darkblue","red"))+
           coord_flip()+
           guides(fill=guide_legend("")))
+}
+
+
+# Metrics boxplot
+getMetricsBox=function(metrics){
+  n_samples=length(unique(metrics$sampleName))
+  n_metrics=5
+  
+  df.gg = data.frame(logratio.AB=numeric(n_samples*n_metrics*length(unique(metrics$chromosome))),metric=NA,chr=as.character(rep(unique(metrics$chromosome),each=n_metrics*n_samples)),stringsAsFactors = F)
+  for (chrom in unique(metrics$chromosome)){
+    print(chrom) 
+    metrics.chr=metrics[metrics$chr == chrom & metrics$signGroup == "log(ratio[1:-1])",]
+    
+    df.gg$logratio.AB[df.gg$chr == chrom] = unlist(metrics.chr[,3:(3+n_metrics-1)])
+    df.gg$metric[df.gg$chr == chrom] = rep(colnames(metrics.chr[3:(3+n_metrics-1)]),each=n_samples)
+  }
+  
+  df.gg2=df.gg
+  df.gg2$logratio.AB=as.numeric(df.gg2$logratio.AB)
+  df.gg2$chr=as.factor(df.gg2$chr)
+  df.gg2$chr=factor(df.gg2$chr,levels=unique(df.gg2$chr))
+  df.gg2$metric=as.factor(df.gg2$metric)
+  df.gg2$logratio.AB[df.gg2$metric %in% c("size.per.count.HK","size.per.count.TSS", "size.bp")]=df.gg2$logratio.AB[df.gg2$metric %in% c("size.per.count.HK","size.per.count.TSS", "size.bp")]*-1
+  df.gg2=df.gg2[df.gg2$metric %in% c("size.per.count.HK","size.per.count.TSS","size.bp"),]
+  
+  print(ggplot(df.gg2, aes(x=metric, y=logratio.AB, fill=metric))+
+          geom_boxplot()+
+          xlab("")+
+          geom_jitter(width=0.1,alpha=0.2) +
+          geom_hline(yintercept = 0,linetype=4, color="darkred")+
+          facet_wrap(~chr,nrow=1) +
+          theme(panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.text.x = element_blank(),
+                axis.line = element_line(colour = "black")))
 }
 
 ### RUN ################################################################################
@@ -269,6 +310,7 @@ option_list <- list(
   make_option(c("-L","--sample-labels"), default="", help="A file containing sample labels in its first column [default \"%default\"]."),
   make_option(c("-c","--centrotelo-file"), default="", help="A bed file containing centromere and telomere coordinates [default \"%default\"]."),
   make_option(c("-m","--pca1-matrix"), default="", help="A matrix containing the samples PC1 values for each sample [default \"%default\"]."),
+  make_option(c("-r","--metrics-file"), default="", help="A text file containing the AB logratio metrics for each sample [default \"%default\"]."),
   make_option(c("--show-text"), action="store_true",default=TRUE, help="Display sample label text on PCA plot."),
   make_option(c("--use-short-names"), action="store_true",default=FALSE, help="Use only second part of the name (after the colon)."),
   make_option(c("--plain"), action="store_true",default=FALSE, help="Create only PCA and heatmap plots.")
@@ -276,10 +318,11 @@ option_list <- list(
 usage = 'scripts-compartments-stats.r [OPTIONS] MATRIX';
 
 # get command line options & input arguments
-arguments <- parse_args(args=cmdline_args, OptionParser(usage=usage,option_list=option_list), positional_arguments=c(0,Inf));
-opt <- arguments$options;
-files <- opt$'pca1-matrix'
+arguments = parse_args(args=cmdline_args, OptionParser(usage=usage,option_list=option_list), positional_arguments=c(0,Inf));
+opt = arguments$options;
+files = opt$'pca1-matrix'
 if (length(files)!=1) { write('Error: this operation requires an input matrix!',stderr()); quit(save='no'); }
+metrics_file = opt$'metrics-file'
 out_dir = opt$'output-dir'
 sample_labels = opt$'sample-labels'
 show_text = opt$'show-text'
@@ -294,6 +337,10 @@ if (file.exists(paste0(out_dir,"/density_plots"))==FALSE) { dir.create(paste0(ou
 
 # load input files
 pca1.matrix=read.table(files,stringsAsFactors = F) 
+metrics=read.table(metrics_file,header = T,stringsAsFactors = F)
+metrics=metrics[!metrics$chromosome %in% c("chromosome","chrY"),]
+metrics=metrics[,!colnames(metrics) %in%"invertSign"]
+
 centrotelo=read.table(centrotelo_file,stringsAsFactors = F) 
 bed.cols=c("chr","start","end")
 names(centrotelo)=bed.cols
@@ -309,6 +356,8 @@ labels=names(mat)
 test.1st.char=as.numeric(substr(x = labels,start = 1,stop = 1)) #to avoid ggplot error when first character of label is numeric
 test.1st.char=test.1st.char[!is.na(test.1st.char)]
 if(length(test.1st.char)>0){labels=paste0("S",labels)}
+isBygroup = substr(x = labels,start = 1,stop = 1)[1] == ":"
+if(isBygroup){labels=gsub(labels,pattern = ":",replacement = "")}
 
 # set color groups
 fac = factor(sapply(labels,function(x){strsplit(x,':',fixed = T)[[1]][1]}))
@@ -323,7 +372,7 @@ labels=gsub(labels,pattern = ":",replacement = ".")
 colnames(mat)=labels
 df.sizes$sampleName=labels #for labels consistency
 short_names = as.vector(sapply(labels,function(x){strsplit(x,'.',fixed=T)[[1]][2]}))
-if (show_text) { if (use_short_names) { labels = short_names } else { labels = labels } } else { labels = NULL }
+if(!isBygroup){ if (show_text) { if (use_short_names) { labels = short_names } else { labels = labels } } else { labels = NULL } }
 
 
 ### MAKE PLOTS ### 
@@ -332,14 +381,14 @@ if(length(names(mat))>2){ # make pca & hmap only when the number of samples > 2
   getEigenPCA(mat,df.color = df.color)
   dev.off()
   
-  pdf(paste(out_dir,'/eigenHMAP.pdf',sep=''),width =10,useDingbats=FALSE)
+  pdf(paste(out_dir,'/eigenHMAP.pdf',sep=''),width = 10,useDingbats=FALSE)
   getEigenHmap(mat)
   dev.off()
 }
 
 if (plain==FALSE){
   # make hexbin-bar-density grid plot (all vs all)
-  pdf(paste(out_dir,'/eigenPairsGrid.pdf',sep=''),height = 10,width =14,useDingbats=FALSE)
+  pdf(paste(out_dir,'/eigenPairsGrid.pdf',sep=''),height = 14,width =16,useDingbats=FALSE)
   getEigenPairs(mat)
   dev.off()
   
@@ -360,15 +409,20 @@ if (plain==FALSE){
   }
   
   # get all barplots in one plot
-  pdf(paste0(out_dir,'/size_barplots.pdf'),width = 9,useDingbats=FALSE)
+  pdf(paste0(out_dir,'/size_barplots.pdf'),width = 9,height = 5,useDingbats=FALSE)
   print(getBarPlot(df.sizes,x=1,y=1,grid = F))
   dev.off()
   
   # classify pc1 bin in AA, AB, BB, BA
   df.switch=classifyPc1Bins(mat)
-
-    #plot bars for pc1 classified bins
+  write.table(df.switch,paste0(out_dir,'/pc1.switch_summary.tsv'),sep='\t',row.names = F,col.names=T,quote=F)
+  
+  #plot bars for pc1 classified bins
   pdf(paste0(out_dir,'/switch_bins_barplot.pdf'),width = 12,useDingbats=FALSE)
   getBarSwitch(df.switch)
+  dev.off()
+  
+  pdf(paste0(out_dir,'/metrics_logratio.AB.pdf'),width = 14,height = 7,useDingbats=FALSE)
+  getMetricsBox(metrics)
   dev.off()
 }
