@@ -2,22 +2,24 @@
 source ./code/code.main/custom-tcshrc     # shell settings
 
 ##
-## USAGE: calculate-fragment-biases.tcsh OUTPUT-DIR FRAGMENTS-BED GENOME-DIR
+## USAGE: calculate-fragment-biases.tcsh OUTPUT-DIR FRAGMENTS-BED GENOME-DIR WINDOW
 ##
 
-if ($#argv != 3) then
+if ($#argv != 4) then
   grep '^##' $0
   exit
 endif
 
-set outdir = $1
-set frag = $2
-set genome_dir = $3
+set outdir = $1          # Arima
+set frag = $2            # genome/Arima.fragments.bed
+set genome_dir = $3      # genome
+set window = $4          # 20000
 
+rm -rf $outdir
 mkdir -p $outdir
 
 # Analyze one chromosome at a time
-set CHR = (chr10)   #`cat $genome_dir/genome.bed | cut -f1`
+set CHR = `cat $genome_dir/genome.bed | cut -f1`
 foreach chr ($CHR)
   set outmat = $outdir/matrix.$chr.mtx
   echo "Storing fragment coordinates in $chr at 100bp resolution..." | scripts-send2err
@@ -33,10 +35,16 @@ foreach chr ($CHR)
   echo '%%MatrixMarket matrix coordinate integer general' >! $outmat
   echo 1 $n $N >> $outmat
   cat $outmat.out | awk '{print 1,$2,$1}' >> $outmat
-
-  # Clean up
   rm -f $outmat.out
+
+  # Generate bedgraph biases file
+  echo "Generating bedgraph biases file using a sliding window of ${window}bp..." | scripts-send2err
+  Rscript ./code/calculate-fragment-biases.r -w $window $outdir/$chr.bedgraph $outmat
+  rm -f $outmat
+  
 end
 
-
+echo "Combining chromosomes into a single bedgraph (printing 1 every 10 entries only)..." | scripts-send2err
+(echo "track type=bedGraph name=$outdir"; cat $outdir/*.bedgraph | grep -v '^track' | awk 'NR % 10 == 0') | gzip >! $outdir/biases.bedgraph.gz
+rm -f $outdir/*.bedgraph 
 
