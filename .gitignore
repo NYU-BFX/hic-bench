@@ -8,6 +8,7 @@
 *.so
 code/bin/*
 data-repo/*
+data_external
 pipelines/hicseq-standard/inputs/fastq*
 pipelines/hicseq-standard/inputs/sample-sheet*.tsv
 results
