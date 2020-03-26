@@ -16,7 +16,10 @@ if (-e $outdir) rm -rf $outdir
 mkdir -p $outdir
 
 # first check job stderr output files
-find $inpdirs -name 'job.*' -print0 | xargs -0 grep -iwE 'usage|error|segmentation|not found|join.*sort|no such file|syntax|terminate|permission denied' | grep -vE 'Tcl command execution failed|Module .* conflicts with the currently loaded module|Module .* depends on one of the module|will result in an error in the future|cannot access matrix.\*.RData|try-error|cannot be loaded due to a conflict' >&! $outdir/error.log
+find $inpdirs -name 'job.*' -print0 | xargs -0 grep -iwE 'usage|error|segmentation|not found|join.*sort|no such file|syntax|terminate|permission denied' \
+	| grep -vE 'Tcl command execution failed|Module .* conflicts with the currently loaded module|Module .* depends on one of the module|will result in an error in the future|cannot access matrix.\*.RData|try-error|cannot be loaded due to a conflict|ERROR: Load of requirement' \
+	| grep -vE 'cannot access TAG/HiCbackground_|Background for resolution .* not found for|chr.*Error:|cannot remove .*coBoundBy|coBoundBy.*.txt: No such file or directory|chrM.PCA.txt.: No such file|Error in read.table.*chrM'	\
+	>&! $outdir/error.log
 
 if (`cat $outdir/error.log | wc -l` != 0) then
   scripts-send2err "ERRORS FOUND."
