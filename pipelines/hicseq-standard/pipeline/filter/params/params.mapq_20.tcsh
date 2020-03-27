@@ -2,5 +2,7 @@
 
 source ./inputs/params/params.tcsh
 
-set filter_params = "--mapq 20 --min-dist 25000 --max-offset 500"
+set mapq = 20 
+set mindist = 25000
+set filter_params = "--mapq $mapq --min-dist $mindist --max-offset 500"
 
