@@ -92,7 +92,7 @@ else
 	set n_mhits = `cat $outdir/filtered_uniq.reg | wc -l | awk -v n=$n_reads '{print n-$1}'`
 	set n_single = `cat $outdir/filtered_uniq.reg | awk '$6==""' | wc -l`
 	set n_dups = `cat $outdir/filtered_nodups.reg | wc -l | awk -v n=$n_reads -v m=$n_mhits -v s=$n_single '{print n-m-s-$1}'`
-	set n_close = `cat $outdir/filtered_nodups.reg | awk '$2==$6' | gtools-regions dist | sed 's/	-/	/' | awk -v d=$mindist '$2<d'`
+	set n_close = `cat $outdir/filtered_nodups.reg | awk '$2==$6' | gtools-regions dist | sed 's/	-/	/' | awk -v d=$mindist '$2<d' | wc -l`
     set n_inter = `cat $outdir/filtered_notclose.reg | awk '$2!=$6' | wc -l`
     set n_intra = `cat $outdir/filtered_notclose.reg | awk '$2==$6' | wc -l`
 
