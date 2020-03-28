@@ -6,10 +6,10 @@ library(GenomicRanges)
 args <- commandArgs()
 tad_activity_file <- args[3]
 gene_tss_file <- args[4]
-exprs_file_case_1 <- args[5]
+exprs_file_case_1 <- args[5] 
 exprs_file_case_2 <- args[6]
-case_left <- args[7]
-case_right <- args[8]
+case_right <- args[7] #object1 -> S2 
+case_left <- args[8] #object2 -> S1 -> fold-change is S2/S1
 bin.size <-  as.numeric(args[9])
 min.TAD.size <- as.numeric(args[10])
 out_prefix <- args[11]
@@ -20,7 +20,10 @@ fdr_threshold = 0.1
 meanDiff_threshold = 0.1
 tad_extension=bin.size/2 #for gene annotation
 
-tad_activity <- read.csv(file=tad_activity_file,header=TRUE,sep="\t")
+tad_activity=read.csv(file=tad_activity_file,header=TRUE,sep="\t")
+names(tad_activity)[6:7]=c("sample_2_mean","sample_1_mean") 
+write.table(tad_activity,paste0(out_prefix,".tsv"),col.names = T,row.names = F,quote = F,sep="\t")
+
 tad_activity <- tad_activity[(tad_activity$j - tad_activity$i) >= (min.TAD.size/bin.size),] # min-TAD size requirement
 gene_tss <- read.csv(file=gene_tss_file, sep="\t", header=F)
 gene_tss=gene_tss[,1:4]
@@ -83,13 +86,13 @@ boxplot(tad_activity_up$sample_2_mean,
         tad_activity_unchanged_low$sample_2_mean,
         tad_activity_unchanged_low$sample_1_mean,
         tad_activity_unchanged_high$sample_2_mean,
-        tad_activity_unchanged_high$sample_2_mean,
+        tad_activity_unchanged_high$sample_1_mean,
         tad_activity_down$sample_1_mean,
         tad_activity_down$sample_2_mean,
         beside=TRUE, col=c("darkred","darkred","grey","grey","grey","grey","blue","blue"),bty="n",axes=FALSE,xlab="",ylab="Mean TAD activity",
         lwd=7,pch=20)
 box(lwd=7)
-axis(side=1,lwd=7,labels=c(case_left,case_right,case_left,case_right,case_left,case_right,case_right,case_left),at=seq(1,8,1),las=2)
+axis(side=1,lwd=7,labels=c(case_right,case_left,case_right,case_left,case_right,case_left,case_left,case_right),at=seq(1,8,1),las=2)
 axis(side=2,lwd=7,las=2)
 legend(x=9,y=box.max.y*0.7,legend = c(paste0("increased activity in ",case_right),paste0("decreased activity in ",case_right),"stable TADs (Low)","stable TADs (High)"),
        pch=22,col=c("black"),pt.bg=c("darkred","blue","grey","grey"),cex=1,box.col = NA,pt.cex = 2,pt.lwd = 4)
@@ -120,7 +123,7 @@ keys.df$color[keys.df$keys =="increased activity"]="darkred"
 keys.df$color[keys.df$keys =="decreased activity"]="blue"
 
 pdf(file=paste0(out_prefix,"_scatter_meanTadActivity.pdf"),width = 10,height = 6)
-ggplot(tad_activity, aes(sample_2_mean, sample_1_mean,color=activity.group))+ 
+ggplot(tad_activity, aes(sample_1_mean, sample_2_mean,color=activity.group))+ 
   geom_point(size=3)+
   scale_color_manual(values=keys.df$color)+
   geom_abline(slope = 1,intercept = 0,linetype=3,color="black",size=1)+
