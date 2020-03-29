@@ -207,7 +207,7 @@ classifyPc1Bins=function(mat){
         df.switch$BA.number[nr]=sum(df.mat$switch=="BA",na.rm = T)
         df.switch$sampleName1[nr]=labelsMat[y]
         df.switch$sampleName2[nr]=labelsMat[x]
-        write.table(df.mat,paste0(out_dir,'/pc1.switch_',names(mat)[y],"_vs_",names(mat)[x],'.tsv'),sep='\t',row.names = F,col.names=T,quote=F)
+        write.table(df.mat,paste0(out_dir,'/pc1.switch_',names(mat)[y],"_vs_",names(mat)[x],'.tsv'),sep='\t',row.names = T,col.names=T,quote=F)
         nr=nr+1
       }
     }
