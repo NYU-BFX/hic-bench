@@ -27,6 +27,8 @@ if ($n_jobs > 0) then
   endif
   mkdir $run_dir
 
+  set n_cpu = 1
+  set mem = 1G
   set rtime = `cat $job_file | cut -d' ' -f2 | cut -d',' -f3`
   if ($rtime=="") set rtime = 24
   set jobname = `pwd | sed 's/.*[/]//'`
@@ -45,8 +47,9 @@ if ($n_jobs > 0) then
   echo '#'SBATCH -e $run_dir/${jobname}_%A_%a.err                         ; \
   echo '#'SBATCH --array=1-$n_jobs%$max_jobs                              ; \
   echo '#'SBATCH --time=0-${rtime}:00:00                                  ; \
-  echo '#'SBATCH -n 1                                                     ; \
-  echo '#'SBATCH -c 1                                                     ; \
+  echo '#'SBATCH --ntasks=1                                               ; \
+  echo '#'SBATCH --cpus-per-task=$n_cpu                                   ; \
+  echo '#'SBATCH --mem=$mem                                               ; \
   echo                                                                    ; \
   echo 'set script = `'ls $pref'* | sed -n ${SLURM_ARRAY_TASK_ID}p`'      ; \
   echo 'set jid = `$script`'                                              ; \
