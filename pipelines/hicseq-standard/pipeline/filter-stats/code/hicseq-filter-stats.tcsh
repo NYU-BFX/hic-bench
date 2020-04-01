@@ -29,4 +29,8 @@ scripts-create-path $outdir/
 # Plot barplots
 Rscript ./code/hicseq-filter-stats.r $outdir "$sample_paths"
 
+# save variables
+set >! $outdir/job.vars.tsv
+
+scripts-send2err "Done."
 

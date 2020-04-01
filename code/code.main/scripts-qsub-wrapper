@@ -28,9 +28,9 @@ if (-e $out) then
   exit 1
 endif
 
-set nthreads = `echo $resources, | cut -d',' -f1`
-set mem = `echo $resources, | cut -d',' -f2`
-set rtime = `echo $resources, | cut -d',' -f3`   # here, just put the number of hours, e.g. 24
+set nthreads = `echo $resources,, | cut -d',' -f1`
+set mem = `echo $resources,, | cut -d',' -f2`
+set rtime = `echo $resources,, | cut -d',' -f3`   # here, just put the number of hours, e.g. 24
 if ($rtime == '') then
   set rtime = 24
 endif
