@@ -1,0 +1,71 @@
+#!/bin/tcsh
+#$ -S /bin/tcsh
+source ./code/code.main/custom-tcshrc    # customize shell environment
+
+##
+## USAGE: scripts-submit-job-array JOBLIST-FILE [MAX-JOBS]
+##
+
+if ($#argv < 1) then
+  grep '^##' $0
+  exit
+endif
+
+set job_file = $1
+set max_jobs = $2
+
+set n_jobs = `cat $job_file | wc -l`
+if ($max_jobs == "") set max_jobs = $n_jobs
+
+if ($n_jobs > 0) then
+
+  # create run directory (all job info will be stored here)
+  set run_dir = `readlink -f $job_file | sed 's/\/[^/]\+$//'`/../.run
+  if (-e $run_dir) then
+    echo "ERROR: run directory $run_dir already exists. Check if jobs are currently running." | scripts-send2err
+    exit
+  endif
+  mkdir $run_dir
+
+  set rtime = `cat $job_file | cut -d' ' -f2 | cut -d',' -f3`
+  if ($rtime=="") set rtime = 24
+  set jobname = `pwd | sed 's/.*[/]//'`
+  
+  # split job file into separate files to be run individually
+  set pref = $run_dir/job_
+  split -l 1 $job_file $pref
+  chmod +x ${pref}*
+
+  # create script to run job array
+  set run = $run_dir/run.sh
+  (                                                                         \
+  echo '#\!/bin/tcsh'                                                     ; \
+  echo '#'SBATCH -J $jobname                                              ; \
+  echo '#'SBATCH -o $run_dir/${jobname}_%A_%a.out                         ; \
+  echo '#'SBATCH -e $run_dir/${jobname}_%A_%a.err                         ; \
+  echo '#'SBATCH --array=1-$n_jobs%$max_jobs                              ; \
+  echo '#'SBATCH --time=0-${rtime}:00:00                                  ; \
+  echo '#'SBATCH -n 1                                                     ; \
+  echo '#'SBATCH -c 1                                                     ; \
+  echo                                                                    ; \
+  echo 'set script = `'ls $pref'* | sed -n ${SLURM_ARRAY_TASK_ID}p`'      ; \
+  echo 'set jid = `$script`'                                              ; \
+  echo 'scripts-send2err "Waiting for job array [$jid] to complete..."'   ; \
+  echo 'scripts-qsub-wait "$jid"'                                         ; \
+  echo                                                                      \
+  ) >! $run
+  chmod +x $run
+
+  scripts-send2err "Submitting job array..."
+  set jid = `sbatch $run | tr ' ' '\n' | tail -1`
+  scripts-send2err "Waiting for job array [$jid] to complete..."
+  scripts-qsub-wait "$jid"
+
+  # cleanup
+#  rm -rf $run_dir
+endif
+
+scripts-send2err "Done."
+
+
+
