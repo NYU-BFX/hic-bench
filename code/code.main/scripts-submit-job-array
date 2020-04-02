@@ -20,13 +20,15 @@ if ($max_jobs == "") set max_jobs = $n_jobs
 if ($n_jobs > 0) then
 
   # create run directory (all job info will be stored here)
-  set run_dir = `readlink -f $job_file | sed 's/\/[^/]\+$//'`/../.run
+  set results_dir = `echo $job_file | sed 's/\/[^/]\+$//' | sed 's/\/[^/]\+$//'`
+  set run_dir = $results_dir/.run
   if (-e $run_dir) then
     echo "ERROR: run directory $run_dir already exists. Check if jobs are currently running." | scripts-send2err
     exit
   endif
   mkdir $run_dir
-
+  (cd $run_dir; ln -s .. $results_dir)
+  
   # determine computational resourses
   set n_cpu = `head -1 $job_file | cut -d' ' -f2 | cut -d',' -f1`
   if ("$n_cpu" == "") set n_cpu = 1
@@ -41,15 +43,18 @@ if ($n_jobs > 0) then
 
   # create output directories for each job
   set id = 1
-  foreach tmp_job ($run_dir/temp_job_*)
-    set outdir = `cat $tmp_job | cut -d' ' -f2`
+  set n_jobs = 0
+  foreach tmp_job (`cd $run_dir; ls -1 temp_job_*`)
+    set outdir = `cat $run_dir/$tmp_job | cut -d' ' -f2`
     if (-e $outdir) then
 	  echo "Output directory $outdir already exists, skipping..." | scripts-send2err
 	else
       mkdir -p $outdir
-	  cat $tmp_job >! $run_dir/job_$id
-      chmod +x $run_dir/job_$id
-	  @ id ++
+	  (cd $run_dir; ln -s $outdir job_$id)
+      cat $run_dir/$tmp_job >! $run_dir/job_$id/job.sh
+      chmod +x $run_dir/job_$id/job.sh
+      @ id ++
+      @ n_jobs ++
     endif
   end
   rm -f $run_dir/temp_job_*
@@ -59,15 +64,15 @@ if ($n_jobs > 0) then
   (                                                                         \
   echo '#\!/bin/tcsh'                                                     ; \
   echo '#'SBATCH -J $jobname                                              ; \
-  echo '#'SBATCH -o $run_dir/out_job_%a.out                                   ; \
-  echo '#'SBATCH -e $run_dir/out_job_%a.err                                   ; \
+  echo '#'SBATCH -o $run_dir/job_%a/job.out                               ; \
+  echo '#'SBATCH -e $run_dir/job_%a/job.err                               ; \
   echo '#'SBATCH --array=1-$n_jobs%$max_jobs                              ; \
   echo '#'SBATCH --time=0-${rtime}:00:00                                  ; \
   echo '#'SBATCH --ntasks=1                                               ; \
   echo '#'SBATCH --cpus-per-task=$n_cpu                                   ; \
   echo '#'SBATCH --mem=$mem                                               ; \
   echo                                                                    ; \
-  echo "set script = $run_dir"'/job_${SLURM_ARRAY_TASK_ID}'               ; \
+  echo "set script = $run_dir"'/job_${SLURM_ARRAY_TASK_ID}/job.sh'        ; \
   echo '$script'                                                          ; \
   echo                                                                      \
   ) >! $run
@@ -76,18 +81,12 @@ if ($n_jobs > 0) then
   # submit job array
   scripts-send2err "Submitting job array..."
   set jid = `sbatch $run | tr ' ' '\n' | tail -1`
+  foreach x ($run_dir/job_*)
+    echo $jid >! $x/job.id
+  end
   scripts-send2err "Waiting for job array [$jid] to complete..."
   scripts-qsub-wait "$jid"
 
-  # distribute input/output files into the output directories
-  foreach job (`cd $run_dir; ls -1 job_*`)
-    set outdir = `cat $run_dir/$job | cut -d' ' -f2`
-	cp $run_dir/$job $outdir/job.sh
-	echo $jid >! $outdir/job.id
-	cp $run_dir/out_$job.out $outdir/job.out
-	cp $run_dir/out_$job.err $outdir/job.err
-  end
-  
   # cleanup
 #  rm -rf $run_dir
 endif
