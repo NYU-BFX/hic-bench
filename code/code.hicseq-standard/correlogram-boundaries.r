@@ -48,8 +48,9 @@ corrs      <- paste(dir,"correlograms.pdf",sep="/")
 # Get the raw numbers
 pdf(sprintf("%s",corrs))
 for (kappa in kappas) { 
-	plot_title = paste("Overlap (%)", kappa, sep="-")
+	plot_title = ""   # paste("Overlap (%)", kappa, sep="-")
         m2 <- m[, , kappa] 
+	m2[is.na(m2)] = 0
 	corrplot.mixed(m2, lower="number", upper="pie",  tl.pos = c("lt"), tl.col="black", 
 	tl.cex=0.8, tl.srt=45, diag = c("l"), cl.lim=c(0,1), color=col3(1000),
 	title=plot_title, mar=c(0,0,1,0))
