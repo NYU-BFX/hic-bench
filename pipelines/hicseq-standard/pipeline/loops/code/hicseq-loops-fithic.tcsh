@@ -74,6 +74,6 @@ gzip -f all_loops_filtered.bedpe
 rm -f temp.tsv
 
 # Clean up
-rm -fr bedpe bins chr* slurm* all_loops_unfiltered.tsv all_loops_filtered.tsv filtered.reg 
+rm -fr bedpe bins chr* slurm* filtered.reg 
 
 
