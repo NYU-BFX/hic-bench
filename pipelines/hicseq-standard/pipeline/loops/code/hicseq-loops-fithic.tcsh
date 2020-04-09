@@ -26,7 +26,8 @@ set n_chromosomes = $#chromosomes
 @ n_chromosomes --                                           # this is because we want to run an array job --array=0:(n-1)
 
 # Create uncompressed version of mapped read pairs
-cat $reg | gunzip >! $outdir/filtered.reg
+echo "Uncompressing filtered reads..." | scripts-send2err
+scripts-smartcat $reg | gunzip >! $outdir/filtered.reg
 
 # Enter object's directory
 set main_dir = `echo ${cwd}`
