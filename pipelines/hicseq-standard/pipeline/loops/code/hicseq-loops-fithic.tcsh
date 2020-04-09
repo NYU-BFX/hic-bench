@@ -27,12 +27,13 @@ set n_chromosomes = $#chromosomes
 
 # Create uncompressed version of mapped read pairs
 echo "Uncompressing filtered reads..." | scripts-send2err
-scripts-smartcat $reg | gunzip >! $outdir/filtered.reg
+cat $reg | gunzip >! $outdir/filtered.reg
 
 # Enter object's directory
 set main_dir = `echo ${cwd}`
 
 # Create bin files
+echo "Creating bin files..." | scripts-send2err
 mkdir -p $outdir/bins
 cd $outdir/bins
 windowMaker -g $main_dir/$genome_file -w $winsize >! x.bed
@@ -42,6 +43,7 @@ rm -f x.bed
 cd $main_dir
 
 # Convert filtered.reg bed file to bedpe format
+echo "Converting reg to bedpe format..." | scripts-send2err
 mkdir -p $outdir/bedpe
 awk -v OFS='\t' '{if ($2 == $6) {print $2,$4,$5,$6,$8,$9,$1,".",$3,$7}}' $outdir/filtered.reg >! $outdir/bedpe/intra_converted.reg
 cd $outdir/bedpe/
