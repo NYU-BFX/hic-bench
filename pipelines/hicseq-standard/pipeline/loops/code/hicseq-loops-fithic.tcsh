@@ -73,6 +73,9 @@ awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"
 gzip -f all_loops_filtered.bedpe
 rm -f temp.tsv
 
+# create IGV junction format (loops-like)
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' all_loops_filtered.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! all_loops_filtered.igv.bed
+
 # Clean up
 rm -fr bedpe bins chr* slurm* filtered.reg 
 

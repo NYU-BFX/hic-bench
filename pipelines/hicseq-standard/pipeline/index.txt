@@ -33,10 +33,7 @@ matrix-sparse-diff
 
 virtual4C
 
+loops
+
 hicplotter
 hicplotter-diff
-
-interactions
-
-annotations
-#annotations-stats
