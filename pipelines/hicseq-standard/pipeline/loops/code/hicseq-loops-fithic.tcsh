@@ -72,7 +72,7 @@ rm -f temp.tsv
 # filtered loops
 cat chr*/loops_filtered.tsv >! temp.tsv
 awk 'NR <= 1 || \!/fragment/' temp.tsv >! all_loops_filtered.tsv
-awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)}' all_loops_filtered.tsv >! all_loops_filtered.bedpe
+awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' all_loops_filtered.tsv >! all_loops_filtered.bedpe
 rm -f temp.tsv
 
 # create IGV junction format (loops-like)
