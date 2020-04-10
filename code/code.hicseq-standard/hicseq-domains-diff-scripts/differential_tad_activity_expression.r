@@ -6,9 +6,9 @@ library(GenomicRanges)
 args <- commandArgs()
 tad_activity_file <- args[3]
 gene_tss_file <- args[4]
-exprs_file_case_1 <- args[5] 
+exprs_file_case_1 <- args[5]
 exprs_file_case_2 <- args[6]
-case_right <- args[7] #object1 -> S2 
+case_right <- args[7] #object1 -> S2
 case_left <- args[8] #object2 -> S1 -> fold-change is S2/S1
 bin.size <-  as.numeric(args[9])
 min.TAD.size <- as.numeric(args[10])
@@ -18,7 +18,6 @@ out_prefix <- args[11]
 logFC_threshold = 0.2
 fdr_threshold = 0.1
 meanDiff_threshold = 0.1
-tad_extension=bin.size/2 #for gene annotation
 
 tad_activity=read.csv(file=tad_activity_file,header=TRUE,sep="\t")
 names(tad_activity)[6:7]=c("sample_2_mean","sample_1_mean") 
@@ -58,6 +57,23 @@ tad_activity=tad_activity[order(tad_activity$activity.group),]
 
 # annotate gene-TADs
 tad_activity$geneIDs=NA
+tad_activity$start=tad_activity$TAD_start
+tad_activity$end=tad_activity$TAD_end
+
+for (tad.num in 1:nrow(tad_activity)){ # extend TAD coordinates to cover the boundaries
+  if(tad.num > 1 & tad.num < nrow(tad_activity)){
+    if(tad_activity$chr[tad.num-1] == tad_activity$chr[tad.num]) { tad_activity$start[tad.num]=tad_activity$TAD_end[tad.num-1] }
+    if(tad_activity$chr[tad.num+1] == tad_activity$chr[tad.num]) { tad_activity$end[tad.num]=tad_activity$TAD_start[tad.num+1] }
+  } else {
+    if (tad.num == 1){ 
+      if(tad_activity$chr[tad.num+1] == tad_activity$chr[tad.num]) { tad_activity$end[tad.num]=tad_activity$TAD_start[tad.num+1] }
+    }
+    if (tad.num == nrow(tad_activity)){ 
+      if(tad_activity$chr[tad.num-1] == tad_activity$chr[tad.num]) { tad_activity$start[tad.num]=tad_activity$TAD_end[tad.num-1] }
+    }
+  }
+}
+
 gene_tss.gr=makeGRangesFromDataFrame(gene_tss,keep.extra.columns = T)
 tad_activity.gr=makeGRangesFromDataFrame(tad_activity,keep.extra.columns = T)
 
@@ -67,7 +83,7 @@ for (tad.num in 1:nrow(tad_activity)) {
 }
 write.table(file=paste(out_prefix,"_annotated.tsv",sep=""),tad_activity,sep="\t",quote=FALSE,row.names=FALSE)
 
-#get max absolute lfc & fdr values (helps setting axes limits)
+# get max absolute lfc & fdr values (helps to set axes limits)
 tad_activity.clean=tad_activity[abs(tad_activity$mean_diff) >= meanDiff_threshold &
                                   is.finite(tad_activity$sample_1_mean) &
                                   is.finite(tad_activity$sample_2_mean) &
@@ -78,9 +94,20 @@ abs.max.x=max(abs(tad_activity.clean$logFC),na.rm = T)
 abs.max.y=max(abs(-log(tad_activity.clean$FDR)),na.rm = T)
 box.max.y=max(abs(c(tad_activity.clean$sample_1_mean,tad_activity.clean$sample_2_mean)),na.rm = T)
 
+# get label character count to adjust margins
+bottom.mar=5 #default bottom margin 
+right.mar=15 #default right margin
+max.char=max(c(nchar(case_right),nchar(case_left)),na.rm = T) #max label character value
+char.diff.r=max.char-9 #9 is the max num of label characters that fit using the default right margin value
+char.diff.b=max.char-7 #7 is the max num of label characters that fit using the default bottom margin value
+
+mcf=0.55 # margin correction factor: total extra characters (char.diff) * mcf
+if (char.diff.b > 0){b=bottom.mar+(char.diff.b*mcf)} else {b=bottom.mar} 
+if (char.diff.r > 0){r=right.mar+(char.diff.r*mcf)} else {r=right.mar}
+
 ### Mean TAD activity BOXPLOTS ###
 png(file=paste(out_prefix, "_mean-TAD_activity.png", sep=""),width=3072, height=2048, pointsize=60)
-par(mar=c(5,4,0.1,15),xpd=T)
+par(mar=c(b,4,1.1,r),xpd=T)
 boxplot(tad_activity_up$sample_2_mean,
         tad_activity_up$sample_1_mean,
         tad_activity_unchanged_low$sample_2_mean,
@@ -99,16 +126,22 @@ legend(x=9,y=box.max.y*0.7,legend = c(paste0("increased activity in ",case_right
 dev.off()
 
 ### VOLCANO PLOT ###
+#adjust margins
+right.mar=10 #default right margin
+mcf=0.4 
+char.diff.r=max.char-8 #8 is the max num of label characters that fit using the default right margin value
+if (char.diff.r > 0){r=right.mar+(char.diff.r*mcf)} else {r=right.mar}
+
 png(file=paste(out_prefix, "_volcano_TADs.png", sep=""),width=3755, height=2048, pointsize=110)
-par(mar=c(4.2,4,2,10),xpd=T)
+par(mar=c(4.2,4,2,r),xpd=T)
 plot(tad_activity$logFC, -log(tad_activity$FDR), xlab="Mean TAD activity logFC",ylab="-log(FDR)",pch=20,col="light grey",
-     cex=1.5,bty="n",main = paste0("Intra-TAD activity (",case_right, " / ",case_left,")"),cex.main=0.8,xlim = c(-abs.max.x,abs.max.x),ylim=c(0,abs.max.y*1.1))
+     cex=1,bty="n",main = paste0(case_right, " vs ",case_left),cex.main=0.6,xlim = c(-abs.max.x,abs.max.x),ylim=c(0,abs.max.y*1.1))
 box(lwd=8)
 axis(side = 1, lwd = 8)
 axis(side = 2, lwd = 8)
-points(tad_activity_unchanged$logFC, -log(tad_activity_unchanged$FDR),col="grey",pch=20,cex=1.5)
-points(tad_activity_up$logFC, -log(tad_activity_up$FDR),col="darkred",pch=20,cex=1.5)
-points(tad_activity_down$logFC, -log(tad_activity_down$FDR),col="blue",pch=20,cex=1.5)
+points(tad_activity_unchanged$logFC, -log(tad_activity_unchanged$FDR),col="grey",pch=20,cex=1)
+points(tad_activity_up$logFC, -log(tad_activity_up$FDR),col="darkred",pch=20,cex=1)
+points(tad_activity_down$logFC, -log(tad_activity_down$FDR),col="blue",pch=20,cex=1)
 abline(h=-log(fdr_threshold), col="red", lwd=8, lty=2,xpd=F)
 abline(v=-logFC_threshold,col="red",lwd=8,lty=2,xpd=F)
 abline(v=logFC_threshold,col="red",lwd=8,lty=2,xpd=F)
