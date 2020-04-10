@@ -1,1 +1,1 @@
-code/clean.tcsh
+../code/clean.tcsh
