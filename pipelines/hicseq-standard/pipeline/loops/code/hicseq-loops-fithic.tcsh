@@ -36,7 +36,7 @@ cat $reg | gunzip >! $outdir/filtered.reg
 
 # Count intra-reads
 set intra_reads = `cat $outdir/filtered.reg | awk '$2 == $6' | wc -l`
-echo "ds-accepted-intra-reads = $intra_reads" | script-send2err
+echo "ds-accepted-intra-reads = $intra_reads" | scripts-send2err
 
 # Enter object's directory
 set main_dir = `echo ${cwd}`
