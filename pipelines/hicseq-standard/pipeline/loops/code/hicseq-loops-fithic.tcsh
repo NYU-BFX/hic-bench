@@ -20,16 +20,6 @@ set objects = ($6)
 # if objects is empty, use all objects in the branch
 if ("$objects" == "") set objects = `cd $branch; ls -1d *`
 
-# get ds-accepted-intra read-pairs count (will be used for contactCount CPM normalization)
-set matrix_filtered_branch = `ls -d ../matrix-filtered/results/matrix-filtered.by_sample.res_*/*/* | awk '{if(NR<2) print $1}'` # I have to revise this because: if more than 1 aligner params is used in the hicbench-run, here we will only use stats.tsv of the 1st one in the list.
-
-@ intra_reads = 0
-foreach obj ($objects)
-  @ x = `cat $matrix_filtered_branch/$obj/stats.tsv | grep ^ds-accepted-intra | cut -f2`
-  @ intra_reads = $intra_reads + $x
-end
-echo "ds-accepted-intra-reads = $intra_reads"
-
 # Run the parameter script
 source $params
 
@@ -43,6 +33,10 @@ set n_chromosomes = $#chromosomes
 # Create uncompressed version of mapped read pairs
 echo "Uncompressing filtered reads..." | scripts-send2err
 cat $reg | gunzip >! $outdir/filtered.reg
+
+# Count intra-reads
+set intra_reads = `cat $outdir/filtered.reg | awk '$2 == $6' | wc -l`
+echo "ds-accepted-intra-reads = $intra_reads" | script-send2err
 
 # Enter object's directory
 set main_dir = `echo ${cwd}`
