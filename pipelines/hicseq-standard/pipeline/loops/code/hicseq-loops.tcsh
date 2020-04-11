@@ -32,9 +32,9 @@ scripts-create-path $outdir/
 set reg_files = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/filtered.reg.gz"}'`
 
 if ($tool == fithic) then
-	./code/hicseq-loops-fithic.tcsh $outdir $params "$reg_files" $genome
+	./code/hicseq-loops-fithic.tcsh $outdir $params "$reg_files" $genome $branch "$objects"
 else
-  	echo "Error: Compartment calling tool $tool not supported." | scripts-send2err
+  	echo "Error: Loops calling tool $tool not supported." | scripts-send2err
 endif
 
 
