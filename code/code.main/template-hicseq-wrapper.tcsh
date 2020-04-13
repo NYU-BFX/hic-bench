@@ -15,6 +15,14 @@ set params = $2
 set branch = $3
 set objects = ($4)
 
+# does this operation allow grouping of input objects?
+if ($#objects>1) then
+  send2err "Error: this operation is not implemented for multi-object grouping."
+  exit 1
+else 
+  set object = $objects[1]
+endif
+
 # read variables from input branch
 source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir bin_size"
 
