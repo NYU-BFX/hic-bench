@@ -1,0 +1,103 @@
+%------------------------------------------------
+\begin{frame}
+\frametitle{Methods and References}
+\begin{small}
+\begin{left}
+
+\newline This HiC analysis was performed using the HiC-Bench pipeline.
+\newline
+\newline Steps: align, filter, filter-stats, tracks, compartments, compartments-stats, matrix-ic, matrix-stats, boundary-scores, bondary-scores-pca, domains, domains-stats, compare-boundaries, compare-boundaries-stats and domains-diff. 
+\newline
+\newline HiC-Bench Pipeline: https://github.com/NYU-BFX/hic-bench
+\newline
+\newline Lazaris, C., Kelly, S., Ntziachristos, P., Aifantis, I. & Tsirigos, A. HiC-bench: comprehensive and reproducible Hi-C data analysis designed for parameter exploration and benchmarking. BMC Genomics 18, 22 (2017).
+\newline
+\newline Tsirigos, A., Haiminen, N., Bilal, E. & Utro, F. GenomicTools: a computational platform for developing high-throughput analytics in genomics. Bioinformatics 28, 282–283 (2012).
+\newline 
+\end{small}
+\end{left}
+\end{frame}
+
+%------------------------------------------------
+\begin{frame}
+\frametitle{Methods and References}
+\begin{small}
+\begin{left}
+%\begin{parse lines}
+
+\newline Processing and Filtering of read-pairs: Parameters. Genome-build=GENOME_BUILD; Aligner=ALIGNER_TOOL (ALIGNMENT_FILTER_PARAMS)
+\newline
+\newline Read-pairs Count by Distance: IC-normalized matrices were used and re-normalized by the total number of reads in sample.
+\newline
+\newline Pincipal Component Analysis: IC-normalized matrices were used to compute insulation scores (Ratio index) and activity scores (Intra-left index) genome-wide by RESOLUTIONkb bins.
+\newline
+\newline Identification of Topological Domains and Boundaries: The Hicratio method was used. --min-lambda=0.0 --max-lambda=1.0 --n-lambda=6 --gamma=0 --distance=500kb --fdr=0.1
+
+\end{small}
+\end{left}
+%\end{parse lines}
+\end{frame}
+
+%------------------------------------------------
+\begin{frame}
+\frametitle{Methods and References}
+\begin{small}
+\begin{left}
+%\begin{parse lines}
+
+\newline HiC files were generated using the Juicer 'pre' tool with default parameters.
+\newline
+\newline Juicer Tools: https://github.com/aidenlab/juicer
+\newline
+\newline Neva C. Durand, Erez Lieberman Aiden et al. "Juicer provides a one-click system for analyzing loop-resolution Hi-C experiments." Cell Systems 3(1), 2016.
+\newline
+\newline Compartments Analysis: The HOMER tool was used genome-wide by COMP_BINSIZEkb bins. We considered eigenvector-1 bin shifts (AB and BA) when the bin sign changed and the delta value was higher than 1.5. 
+\newline
+\newline Homer tool: http://homer.ucsd.edu/homer/index.html
+\newline
+\newline Heinz S, Benner C, Spann N, Bertolino E et al. Simple Combinations of Lineage-Determining Transcription Factors Prime cis-Regulatory Elements Required for Macrophage and B Cell Identities. Mol Cell 2010 May 28;38(4):576-589. PMID: 20513432
+
+
+\end{small}
+\end{left}
+%\end{parse lines}
+\end{frame}
+
+%------------------------------------------------
+\begin{frame}
+\frametitle{Methods and References}
+\begin{small}
+\begin{left}
+%\begin{parse lines}
+
+\newline Intra-TAD Activity Analysis: IC-normalized matrices were re-normalized by CPM or Distance. Threshold: logFC=0.2; FDR=0.1, mean-difference=0.1. 
+\newline
+\newline Common TADs approach: TADs across two samples are considered 'common' if their boundaries are as close as ±120 kb. A paired two-sided t-test is performed on each single interaction bin within each common TAD between the two samples. It calculates the difference between the average scores of all interaction intensities within such TADs. A multiple testing correction by calculating the false-discovery rate per common TAD is also computed.
+\newline
+\newline Reference TADs approach. All the TADs identified in the 'sample 1' are used as the reference TADs to compute the intra-TAD activity changes. Therefore, the "Reference TADs" figures show the fold changes for S2 / S1.
+\end{small}
+\end{left}
+%\end{parse lines}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{Verbatim}
+\Huge{\centerline{\textbf{\emph{\color{violet}Applied Bioinformatics Lab}}}}
+\begin{figure}
+\includegraphics[width=0.6\linewidth]{report-repo/nyu_logo.jpeg}
+\includegraphics[width=0.3\linewidth]{report-repo/bigpurple_logo.png}
+\begin{small}
+\begin{center}
+\newline
+\href{https://med.nyu.edu/research/scientific-cores-shared-resources/applied-bioinformatics-laboratories/leadership}{\emph{\color{blue}\underline{website}}}
+\end{small}
+\end{center}
+\end{Verbatim}
+\end{figure}
+\end{frame}
+
+%------------------------------------------------
+
+\end{document}

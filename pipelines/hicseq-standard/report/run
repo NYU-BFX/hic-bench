@@ -5,37 +5,233 @@
 ##
 
 if ($#argv != 0) then
-  grep '^##' $0
+  grep "^##" $0
   exit
 endif
 
-set report = report
+# Set parameters
+source ./params/params_report.tcsh
+set genome = `cat ../pipeline/align/results/align.by_sample.bowtie2/*/job.vars.tsv | fgrep "genome" | fgrep -v "index" | sort -k1 | uniq | awk '{print $2}'`
+set main_branch = filter.by_sample.mapq_$mapq/align.by_sample.$aligner/
+set bscore_method = activity_500kb
+if ($transferGdrive == "TRUE") then
+	set gdrive_remote = "$gdrive_remote_path""$report"
+endif
+
+#########################################################################################
+#                                  MAIN CODE BELOW                                      #
+#########################################################################################
+
+#### COPY PLOTS ####
 rm -rf $report
 mkdir $report
 
-set mapq = 30
-set main_branch = filter.by_sample.mapq_$mapq/align.by_sample.bowtie2
-set domains_method = domains.by_sample.hicratio.d_0500
-
+#filter-stats
 cp ../pipeline/filter-stats/results/filter-stats.standard/$main_branch/all-samples/counts.pdf $report/read-counts-classification.pdf
 cp ../pipeline/filter-stats/results/filter-stats.standard/$main_branch/all-samples/percent.pdf $report/read-percentages-classification.pdf
 
-cp ../pipeline/matrix-stats/results/matrix-stats.standard/matrix-filtered.by_sample.res_40kb/$main_branch/all-samples/stats.pdf $report/read-average-by-distance.pdf
+#compartments-stats
+cp ../pipeline/compartments-stats/results/compartments-stats.standard/compartments.by_sample.homer.res_${compBinSize}kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/all-samples/*.pdf $report/
 
-set bscore_method = activity_500kb
-cp ../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.$bscore_method/matrix-filtered.by_sample.res_40kb/$main_branch/all-samples/pca.intra-left.k=001.pdf $report/pca-by-activity.pdf
-cp ../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.$bscore_method/matrix-filtered.by_sample.res_40kb/$main_branch/all-samples/pca.ratio.k=001.pdf $report/pca-by-insulation-score.pdf
+#matrix-stats
+cp ../pipeline/matrix-stats/results/matrix-stats.standard/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/$main_branch/all-samples/stats.pdf $report/read-average-by-distance_byGroup.pdf
+cp ../pipeline/matrix-stats/results/matrix-stats.standard/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/$main_branch/all-samples/stats.pdf $report/read-average-by-distance_bySample.pdf
 
-cp ../pipeline/domains-stats/results/domains-stats.standard/$domains_method/matrix-filtered.by_sample.res_40kb/$main_branch/all-samples/domains-stats.k=001.pdf $report/domains-stats.pdf
+#boundary-scores
+cp ../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.$bscore_method/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/$main_branch/all-samples/pca.intra-left.k=001.pdf $report/pca-by-activity.pdf
+cp ../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.$bscore_method/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/$main_branch/all-samples/pca.ratio.k=001.pdf $report/pca-by-insulation-score.pdf
 
-# run latex here
+#domains-stats
+cp ../pipeline/domains-stats/results/domains-stats.standard/domains.by_group.hicratio.d_0500/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/$main_branch/all-samples/domains-stats.k=001.pdf $report/domains-stats_byGroup.pdf
+cp ../pipeline/domains-stats/results/domains-stats.standard/domains.by_sample.hicratio.d_0500/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/$main_branch/all-samples/domains-stats.k=001.pdf $report/domains-stats_bySample.pdf
+
+#compare-boundaries
+cp ../pipeline/compare-boundaries-stats/results/compare-boundaries-stats.standard/compare-boundaries.by_group.standard/domains.by_group.hicratio.d_0500/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/$main_branch/all-samples/correlograms.pdf $report/correlograms_byGroup.pdf
+cp ../pipeline/compare-boundaries-stats/results/compare-boundaries-stats.standard/compare-boundaries.by_sample.standard/domains.by_sample.hicratio.d_0500/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/$main_branch/all-samples/correlograms.pdf $report/correlograms_bySample.pdf
+
+
+#### MAKE STEPS SOFT-LINKS #### (will be used to upload the files of interest to the gdrive)
+cd $report
+
+#compartments
+ln -sf ../../pipeline/compartments/results/compartments.by_group.homer.res_${compBinSize}kb/${main_branch} compartments-by-group
+ln -sf ../../pipeline/compartments/results/compartments.by_sample.homer.res_${compBinSize}kb/${main_branch} compartments-by-sample
+
+#compartments-stats
+ln -sf ../../pipeline/compartments-stats/results/compartments-stats.standard/compartments.by_sample.homer.res_${compBinSize}kb/${main_branch}/all-samples/ compartments-stats-by-sample
+ln -sf ../../pipeline/compartments-stats/results/compartments-stats.standard/compartments.by_group.homer.res_${compBinSize}kb/${main_branch}/all-samples/ compartments-stats-by-group
+
+#tracks
+ln -sf ../../pipeline/tracks/results/tracks.by_sample.juicer/${main_branch} hicfiles-juicer-by-sample
+ln -sf ../../pipeline/tracks/results/tracks.by_group.juicer/${main_branch} hicfiles-juicer-by-group
+
+#boundary-scores
+mkdir boundary-scores
+cp ../../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.activity_500kb/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/${main_branch}/all-samples/matrix.ratio.k\=001.tsv boundary-scores/matrix.insulation.scores.tsv 
+cp ../../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.activity_500kb/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/${main_branch}/all-samples/matrix.intra-left.k\=001.tsv boundary-scores/matrix.activity.scores.tsv
+
+#domains
+ln -sf ../../pipeline/domains/results/domains.by_group.hicratio.d_0500/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} domains
+
+#hicplotter
+#ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_group.hicratio-selected-regions/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} hicplotter-diff
+#rm -f hicplotter-diff/*/job* hicplotter-diff/*/*.png
+
+
+#### CREATE DOMAINS-DIFF tex-templates FOR ALL THE COMPARISONS SELECTED ####
+mkdir domains-diff
+
+#BY GROUP
+if ("$by_group" == "TRUE") then
+	if ("$comparisons_group" == "") then
+		echo 'Warning: No group-comparisons have been set in the 'params' file. All the group-wise comparisons will be created.'
+		set comparisons_group = `ls ../../pipeline/domains-diff/results/domains-diff.by_group."$caller".d_0500.cpm.common/matrix-"$matrix".by_group.cutoff_0/matrix-filtered.by_group.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
+	endif
+	
+foreach comparison ($comparisons_group)
+	mkdir domains-diff/"${comparison}"
+
+	foreach intraTAD_method (common ref1)
+	mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/
+
+		foreach norm_method (cpm dist_norm)
+			mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
+			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
+
+			foreach plot (final_results_volcano_TADs.png final_results_mean-TAD_activity.png final_results_scatter_meanTadActivity.pdf)		
+				cp ../../pipeline/domains-diff/results/domains-diff.by_group."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_group.cutoff_0/matrix-filtered.by_group.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/"${plot}" "${plotPath}"/
+				cp ../../pipeline/domains-diff/results/domains-diff.by_group."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_group.cutoff_0/matrix-filtered.by_group.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/final_results* "${plotPath}"/
+			end
+		end
+	end
+end
+
+foreach comparison ($comparisons_group)	# generate intraTAD templates
+	foreach intraTAD_method (common ref1)
+		foreach norm_method (cpm dist_norm)
+			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
+			cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex	
+			sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
+			sed 's/INTRATAD_METHOD/'${intraTAD_method}'/g' $plotPath/template_intraTAD_tmp1.tex > $plotPath/template_intraTAD_tmp2.tex
+			sed 's/NORM_METHOD/'${norm_method}'/g' $plotPath/template_intraTAD_tmp2.tex > $plotPath/template_intraTAD_tmp3.tex
+			sed 's PLOT_PATH '${plotPath}' g' $plotPath/template_intraTAD_tmp3.tex > $plotPath/template_intraTAD.tex
+			rm -f $plotPath/template_intraTAD_tmp*.tex
+		end
+	end
+end
+endif
+
+#BY SAMPLE
+if ("$by_sample" == "TRUE") then
+	if ("$comparisons_sample" == "") then
+			echo 'Warning: No sample-comparisons have been selected. All the possible comparisons will be created'
+			set comparisons_sample = `ls ../../pipeline/domains-diff/results/domains-diff.by_sample."$caller".d_0500.cpm.common/matrix-"$matrix".by_sample.cutoff_0/matrix-filtered.by_sample.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
+	endif
+
+foreach comparison ($comparisons_sample)
+	mkdir domains-diff/"${comparison}"
+
+	foreach intraTAD_method (common ref1)
+	mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/
+
+		foreach norm_method (cpm dist_norm)
+			mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
+			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
+
+			foreach plot (final_results_volcano_TADs.png final_results_mean-TAD_activity.png final_results_scatter_meanTadActivity.pdf)		
+				cp ../../pipeline/domains-diff/results/domains-diff.by_sample."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_sample.cutoff_0/matrix-filtered.by_sample.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/"${plot}" "${plotPath}"/
+				cp ../../pipeline/domains-diff/results/domains-diff.by_sample."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_sample.cutoff_0/matrix-filtered.by_sample.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/final_results* "${plotPath}"/
+			end
+		end
+	end
+end
+
+foreach comparison ($comparisons_sample)	# generate intraTAD templates
+	foreach intraTAD_method (common ref1)
+		foreach norm_method (cpm dist_norm)
+			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
+			cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex	
+			sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
+			sed 's/INTRATAD_METHOD/'${intraTAD_method}'/g' $plotPath/template_intraTAD_tmp1.tex > $plotPath/template_intraTAD_tmp2.tex
+			sed 's/NORM_METHOD/'${norm_method}'/g' $plotPath/template_intraTAD_tmp2.tex > $plotPath/template_intraTAD_tmp3.tex
+			sed 's PLOT_PATH '${plotPath}' g' $plotPath/template_intraTAD_tmp3.tex > $plotPath/template_intraTAD.tex
+			rm -f $plotPath/template_intraTAD_tmp*.tex
+		end
+	end
+end
+endif
+
+# CONCATENATE TEMPLATES
+cp ../report-repo/tex-templates/template_standard.tex template_standard_tmp.tex	
+sed 's/REPORT_NAME/'${report}'/g' template_standard_tmp.tex > template_standard_custom.tex
+cp ../report-repo/tex-templates/template_end.tex template_end_tmp1.tex	
+sed 's/REPORT_NAME/'${report}'/g' template_end_tmp1.tex > template_end_tmp2.tex
+
+if ("$aligner" == "bowtie2") then
+	sed 's/ALIGNER_TOOL/bowtie2/g' template_end_tmp2.tex > template_end_tmp3.tex
+	sed "s/ALIGNMENT_FILTER_PARAMS/--very-sensitive-local --local; mapq="$mapq"; --min-dist "$mindist" --max-offset 500./g" template_end_tmp3.tex > template_end_custom.tex 
+else
+	sed 's/ALIGNER_TOOL/bwa/g' template_end_tmp2.tex > template_end_tmp3.tex 
+	sed "s/ALIGNMENT_FILTER_PARAMS/-A1 -B4 -E50 -L0; mapq="$mapq"; --min-dist "$mindist" --max-offset 500./g" template_end_tmp3.tex > template_end_custom.tex
+endif
+
+if ("$by_sample" == "TRUE" || "$by_group" == "TRUE") then
+	cat template_standard_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom_tmp1.tex
+else
+	cat template_standard_custom.tex template_end_custom.tex > full_template_custom_tmp1.tex
+endif
+
+sed 's/dist_norm)/distnorm)/g' full_template_custom_tmp1.tex > full_template_custom_tmp2.tex
+sed 's/GENOME_BUILD/'${genome}'/g' full_template_custom_tmp2.tex > full_template_custom_tmp3.tex
+sed 's/COMP_BINSIZE/'${compBinSize}'/g' full_template_custom_tmp3.tex > full_template_custom_tmp4.tex
+sed 's/RESOLUTION/'${binsize}'/g' full_template_custom_tmp4.tex > full_template_custom.tex
+rm -f template_*_tmp*.tex
+
+#### MAKE REPORT/PRESENTATION ####
+cd ..
 set title = `cd ..; pwd | sed 's/.*\///'`
-cat presentation.template.tex | sed "s/____PROJECT-TITLE_____/$title/g" >! presentation.tex
-pdflatex -interaction nonstopmode -file-line-error presentation.tex
-bibtex presentation.aux
-pdflatex -interaction nonstopmode -file-line-error presentation.tex
-pdflatex -interaction nonstopmode -file-line-error presentation.tex
+cat $report/full_template_custom.tex | sed "s/____PROJECT-TITLE_____/$title/g" >! report.tex
+pdflatex -interaction nonstopmode -file-line-error report.tex
+bibtex report.aux
+pdflatex -interaction nonstopmode -file-line-error report.tex
+pdflatex -interaction nonstopmode -file-line-error report.tex
+rm -rf report.{bbl,blg,nav,out,aux,log,ps,dvi,snm,toc,tex}
+rm -f $report/*.tex
 
-rm -rf presentation.{bbl,blg,nav,out,aux,log,ps,dvi,snm,toc}
+#### ORGANIZE DATA/FILES ####
+mkdir "${report}"/report-figures
+mkdir "${report}"/report-figures/domains-diff
+mv $report/*.png $report/report-figures/
+mv $report/*.pdf $report/report-figures/
+mv report.pdf $report/
+cp -r $report/domains-diff/* $report/report-figures/domains-diff/
+rm -f $report/report-figures/domains-diff/*/*/*/*.tsv $report/report-figures/domains-diff/*/*/*/*.bed
+rm -f $report/domains-diff//*/*/*/*pdf $report/domains-diff//*/*/*/*png $report/domains-diff/*/*/*/template_intraTAD.tex
+mkdir $report/report-figures/compartments-densityPlots-by-sample $report/report-figures/compartments-hexbinPlots-by-sample
+mkdir $report/report-figures/compartments-densityPlots-by-group  $report/report-figures/compartments-hexbinPlots-by-group 
+cp $report/compartments-stats-by-sample/density_plots/* $report/report-figures/compartments-densityPlots-by-sample/
+cp $report/compartments-stats-by-group/density_plots/* $report/report-figures/compartments-densityPlots-by-group/
+cp $report/compartments-stats-by-sample/hexbin_plots/* $report/report-figures/compartments-hexbinPlots-by-sample/
+cp $report/compartments-stats-by-group/hexbin_plots/* $report/report-figures/compartments-hexbinPlots-by-group/
 
 
+#########################################################################################
+#                                  MAIN ABOVE BELOW                                      #
+#########################################################################################
+
+#### TRANSFER REPORT & DATA TO AN EXTERNAL GDRIVE ACCOUNT ####
+if ($transferGdrive == "TRUE") then
+echo $gdrive_remote
+	module unload r
+	module load rclone
+	rclone copy -P -L --exclude-from report-repo/exclude_files.txt $report $gdrive_remote
+	module unload rclone
+endif
+
+#### TRANSFER REPORT MAIN DATA TO AN EXTERNAL HPC DIRECTORY #### (only for ABL employees with special HPC permissions)
+if ($transferExternal == "TRUE") then
+	module unload r
+        module load rclone
+        rclone copy -P -L --exclude-from report-repo/exclude_files.txt $report /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report"
+        module unload rclone
+endif
