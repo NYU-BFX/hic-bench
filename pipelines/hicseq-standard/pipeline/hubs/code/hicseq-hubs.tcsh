@@ -37,7 +37,7 @@ scripts-create-path $outdir/
 # -------------------------------------
 
 # input loop file
-set bedpe = $branch/$object/all_loops_filtered_cpm.bedpe
+set bedpe = $branch/$object/all_loops_filtered_nobias_cpm.bedpe
 
 # make loops symmetric and filter by CPM and minimum distance anchor distance
 ( cat $bedpe ; cat $bedpe | tools-cols -t 3 4 5 0 1 2 6 ) | awk -v c=$min_cpm '$7>=c' | awk -v d=$min_dist '($2-$5>=d) || ($5-$2>=d)' | cut -f-6 | sort -u >! $outdir/filtered.bedpe

@@ -104,8 +104,8 @@ awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"
 rm -f temp.tsv
 
 # create IGV junction format (loops-like)
-awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_bias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_bias.igv.bed
-awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_nobias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_nobias.igv.bed
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t.\t1.0"}' loops_filtered_bias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_bias.igv.bed
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t.\t1.0"}' loops_filtered_nobias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_nobias.igv.bed
 
 # Create CPM normalized loops files (bias)
 awk -v var="$intra_reads" '{                                                              \
@@ -128,4 +128,5 @@ awk -v var="$intra_reads" '{                                                    
 awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7/(var/1000000)}' loops_filtered_nobias_raw.bedpe >! loops_filtered_nobias_cpm.bedpe
 
 # Clean up
-rm -fr bedpe bins chr* slurm* filtered.reg
+rm -rf bedpe bins chr* slurm* filtered.reg
+
