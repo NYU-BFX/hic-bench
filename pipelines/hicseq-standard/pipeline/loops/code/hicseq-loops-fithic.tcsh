@@ -16,7 +16,6 @@ set reg = ($3)      # *.reg.gz files
 set genome = $4     # hg19
 set branch = $5
 set objects = ($6)
-
 # if objects is empty, use all objects in the branch
 if ("$objects" == "") set objects = `cd $branch; ls -1d *`
 
@@ -54,15 +53,23 @@ cd $main_dir
 # Convert filtered.reg bed file to bedpe format
 echo "Converting reg to bedpe format..." | scripts-send2err
 mkdir -p $outdir/bedpe
-awk -v OFS='\t' '{if ($2 == $6) {print $2,$4,$5,$6,$8,$9,$1,".",$3,$7}}' $outdir/filtered.reg >! $outdir/bedpe/intra_converted.reg
+
+awk -v OFS='\t' '{                                                        \
+  	if ($2 == $6 && $5 < $8)     			                  \
+		print $2,$4,$5,$6,$8,$9,$1,".",$3,$7;                     \
+	else if ($2 == $6 && $5 > $8)                                     \
+		print $2,$8,$9,$6,$4,$5,$1,".",$3,$7;                     \
+}' $outdir/filtered.reg >! $outdir/bedpe/intra_converted.reg
+
 cd $outdir/bedpe/
 awk '{print >$1}' intra_converted.reg #splits the bedpe file by chromosome
 cd $main_dir
 
 # Call loops for each chromosome in a separate folder
+echo "Calling loops for each chromosome..." | scripts-send2err
 set job_dir = $outdir/__jdata
-mkdir $job_dir
-set jid = `sbatch --array=0-$n_chromosomes --output="$job_dir/job.%a.out" --error="$job_dir/job.%a.err" ./code/scripts-loops-fithic-chr.sh $outdir $outdir/bins $winsize "$chromosomes"`
+mkdir -p $job_dir
+set jid = `sbatch --array=0-$n_chromosomes --output="$job_dir/job.%a.out" --error="$job_dir/job.%a.err" ./code/scripts-loops-fithic-chr.sh $outdir $outdir/bins $winsize "$chromosomes" "$qval"`
 set jid = `echo $jid | sed 's/.* //'`
 echo $jid >! $job_dir/job.id
 scripts-send2err "Waiting for job array [$jid] to complete..."
@@ -72,24 +79,53 @@ scripts-qsub-wait "$jid"
 scripts-send2err "Combining chromosome loops into one file..."
 cd $outdir 
 
-# unfiltered loops
-cat chr*/loops_unfiltered.tsv >! temp.tsv
-awk 'NR <= 1 || \!/fragment/' temp.tsv >! all_loops_unfiltered.tsv
-gzip -f all_loops_unfiltered.tsv
+# unfiltered loops (bias)
+cat chr*/loops_unfiltered_bias_raw.tsv >! temp.tsv
+awk 'NR <= 1 || \!/fragment/' temp.tsv >! loops_unfiltered_bias_raw.tsv
+gzip -f loops_unfiltered_bias_raw.tsv
 rm -f temp.tsv
 
-# filtered loops
-cat chr*/loops_filtered.tsv >! temp.tsv
-awk 'NR <= 1 || \!/fragment/' temp.tsv >! all_loops_filtered.tsv
-awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' all_loops_filtered.tsv >! all_loops_filtered.bedpe
+# unfiltered loops (no bias)
+cat chr*/loops_unfiltered_nobias_raw.tsv >! temp.tsv
+awk 'NR <= 1 || \!/fragment/' temp.tsv >! loops_unfiltered_nobias_raw.tsv
+gzip -f loops_unfiltered_nobias_raw.tsv
+rm -f temp.tsv
+
+# filtered loops (bias)
+cat chr*/loops_filtered_bias_raw.tsv >! temp.tsv
+awk 'NR <= 1 || \!/fragment/' temp.tsv >! loops_filtered_bias_raw.tsv
+awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' loops_filtered_bias_raw.tsv >! loops_filtered_bias_raw.bedpe
+rm -f temp.tsv
+
+# filtered loops (no bias)
+cat chr*/loops_filtered_nobias_raw.tsv >! temp.tsv
+awk 'NR <= 1 || \!/fragment/' temp.tsv >! loops_filtered_nobias_raw.tsv
+awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' loops_filtered_nobias_raw.tsv >! loops_filtered_nobias_raw.bedpe
 rm -f temp.tsv
 
 # create IGV junction format (loops-like)
-awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' all_loops_filtered.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! all_loops_filtered.igv.bed
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_bias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_bias.igv.bed
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_nobias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_nobias.igv.bed
 
-# Create CPM normalized loops files
-awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5/(var/1000000)"\t"$6"\t"$7"\t"$8"\t"$9}' all_loops_filtered.tsv >! all_loops_filtered_cpm.tsv
-awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7/(var/1000000)}' all_loops_filtered.bedpe >! all_loops_filtered_cpm.bedpe
+# Create CPM normalized loops files (bias)
+awk -v var="$intra_reads" '{                                                              \
+	if ( NR == 1 )                                                                    \
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9                  \
+	else                                                                              \
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5/(var/1000000)"\t"$6"\t"$7"\t"$8"\t"$9    \
+}' loops_filtered_bias_raw.tsv >! loops_filtered_bias_cpm.tsv
+
+awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7/(var/1000000)}' loops_filtered_bias_raw.bedpe >! loops_filtered_bias_cpm.bedpe
+
+# Create CPM normalized loops files (no bias)
+awk -v var="$intra_reads" '{                                                              \
+        if ( NR == 1 )                                                                    \
+                print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9                  \
+        else                                                                              \
+                print $1"\t"$2"\t"$3"\t"$4"\t"$5/(var/1000000)"\t"$6"\t"$7"\t"$8"\t"$9    \
+}' loops_filtered_nobias_raw.tsv >! loops_filtered_nobias_cpm.tsv
+
+awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7/(var/1000000)}' loops_filtered_nobias_raw.bedpe >! loops_filtered_nobias_cpm.bedpe
 
 # Clean up
-rm -fr bedpe bins chr* slurm* filtered.reg 
+rm -fr bedpe bins chr* slurm* filtered.reg
