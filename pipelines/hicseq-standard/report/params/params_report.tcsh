@@ -7,7 +7,7 @@ set report = hicseq-standard-report # report name
 
 # set alignment & filtering parameters (you can find this info in the respective step's 'params' files)
 set aligner = bowtie2	# e.g. bowtie2, bwa
-set mapq = 15	
+set mapq = 20	
 set mindist = 25000
 
 # set matrix parameters

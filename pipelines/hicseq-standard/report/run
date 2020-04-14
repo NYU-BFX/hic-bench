@@ -14,6 +14,7 @@ source ./params/params_report.tcsh
 set genome = `cat ../pipeline/align/results/align.by_sample.bowtie2/*/job.vars.tsv | fgrep "genome" | fgrep -v "index" | sort -k1 | uniq | awk '{print $2}'`
 set main_branch = filter.by_sample.mapq_$mapq/align.by_sample.$aligner/
 set bscore_method = activity_500kb
+set user = $USER
 if ($transferGdrive == "TRUE") then
 	set gdrive_remote = "$gdrive_remote_path""$report"
 endif
@@ -124,7 +125,7 @@ endif
 #BY SAMPLE
 if ("$by_sample" == "TRUE") then
 	if ("$comparisons_sample" == "") then
-			echo 'Warning: No sample-comparisons have been selected. All the possible comparisons will be created'
+			echo 'Warning: No sample-comparisons have been set in the 'params' file. All the sample-wise comparisons will be created.'
 			set comparisons_sample = `ls ../../pipeline/domains-diff/results/domains-diff.by_sample."$caller".d_0500.cpm.common/matrix-"$matrix".by_sample.cutoff_0/matrix-filtered.by_sample.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
 	endif
 
@@ -216,12 +217,12 @@ cp $report/compartments-stats-by-group/hexbin_plots/* $report/report-figures/com
 
 
 #########################################################################################
-#                                  MAIN ABOVE BELOW                                      #
+#                                  MAIN ABOVE BELOW                                     #
 #########################################################################################
 
 #### TRANSFER REPORT & DATA TO AN EXTERNAL GDRIVE ACCOUNT ####
 if ($transferGdrive == "TRUE") then
-echo $gdrive_remote
+echo "Transfering report data to: "$gdrive_remote""
 	module unload r
 	module load rclone
 	rclone copy -P -L --exclude-from report-repo/exclude_files.txt $report $gdrive_remote
@@ -230,6 +231,7 @@ endif
 
 #### TRANSFER REPORT MAIN DATA TO AN EXTERNAL HPC DIRECTORY #### (only for ABL employees with special HPC permissions)
 if ($transferExternal == "TRUE") then
+echo "Transfering report data to: /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report""
 	module unload r
         module load rclone
         rclone copy -P -L --exclude-from report-repo/exclude_files.txt $report /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report"
