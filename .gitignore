@@ -1,22 +1,44 @@
-.DS_Store
-#*.pdf
-*.fastq.gz
-*.fastq
-*.bam
+# bindary files
+*.pdf
 *.a
 *.o
 *.so
+
+# sequencing files
+*.fastq.gz
+*.fastq
+*.bam
 code/bin/*
+
+# data repositories
 data-repo/*
 data_external
 data_sources
+
+# input fastq files and sample sheets
 pipelines/hicseq-standard/inputs/fastq*
 pipelines/hicseq-standard/inputs/sample-sheet*.tsv
-results
+
+# custom parameter files
+params.*_custom.tcsh
+
+# results folders
 results*
+
+# analysis folders
 ANALYSES
 run-custom*
-errors
+
+# error folders
+errors*
+
+# job files
+*.out
+*.err
+slurm.*
+_tmp.*
+
+# other files
 .nfs*
 .Rproj.user
 *.Rproj
@@ -24,7 +46,4 @@ misc/misc_files/
 .Rhistory
 misc_files
 fix_install.R
-*.out
-*.err
-slurm.*
-_tmp.*
+.DS_Store

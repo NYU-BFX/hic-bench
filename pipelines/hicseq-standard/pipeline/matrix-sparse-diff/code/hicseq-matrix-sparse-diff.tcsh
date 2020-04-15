@@ -36,7 +36,7 @@ scripts-create-path $outdir/
 # -----  MAIN CODE BELOW --------------
 # -------------------------------------
 
-set OPTIONS = "--maxdist=$maxdist --window=$window --mincount=$mincount --mindiff=$mindiff --gene-file=$viewpoints_file"
+set OPTIONS = "--maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff --gene-file=$viewpoints_file"
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)

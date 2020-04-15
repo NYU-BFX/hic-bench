@@ -14,7 +14,7 @@ option_list <- list(
   make_option(c("--gene-file"),default="protein_coding.bed", help="gene bed file"),
   make_option(c("-s","--scale"),default=1.0, help="scaling factor"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
-  make_option(c("-r","--radius"),default=5000, help="radius around viewpoint (bp)"),
+  make_option(c("-r","--radius"),default=10000, help="radius around viewpoint (bp)"),
   make_option(c("-w","--window"),default=20000, help="size of rolling window (bp)")
 )
 
