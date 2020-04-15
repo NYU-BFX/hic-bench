@@ -51,7 +51,8 @@ X = X+t(X); diag(X) = diag(X)/2
 Xn = nrow(X)
 write(format(object.size(X),units="auto",standard="SI"),file=stderr())
 
-# load gene information
+# load viewpoint information
+write("Loading viewpoint information...",stderr())
 G = read.table(opt$"gene-file")
 colnames(G) = c("chr","start","end","gene","score","strand")
 G = G[G$chr==chrname,,drop=FALSE]
@@ -85,7 +86,7 @@ for (k in 1:length(vp_list))
   x_out = x_out[!is.na(x_out[,3]),]
   x_out = cbind(chrname,x_out)
   filename = paste(outdir,'/',G$gene[k],'-',chrname,'-v4C.bedgraph',sep='') 
-  cat("track type=bedGraph\n",file=filename)
+  cat(paste("track type=bedGraph name=",G$gene[k],"-",chrname,"\n",sep=""),file=filename)
   write.table(file=filename,x_out,append=T,quote=F,col.names=F,row.names=F,sep='\t') 
 }
 
