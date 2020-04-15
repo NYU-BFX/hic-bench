@@ -33,9 +33,9 @@ while ($k <= $n_current)
     set branch = `dirname $obj`
     set obj_name = `basename $obj`
     set obj_newname = `echo $obj_name | sed "s/$a/$b/"`
-    # echo "BRANCH = $branch"
-    # echo "-- $obj_name => $obj_newname"
-    # mv $branch/$obj_name $branch/$obj_newname
+    echo "BRANCH = $branch"
+    echo "-- $obj_name => $obj_newname"
+    mv $branch/$obj_name $branch/$obj_newname
     @ k ++
   end
 end
