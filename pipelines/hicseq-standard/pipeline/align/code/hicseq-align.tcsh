@@ -32,12 +32,19 @@ else
   set threads = $NSLOTS
 endif
 
+# check if fastq files exist: if not, generate symbolic links to the input data files so that they can be used in the next step
+if (`./code/read-sample-sheet.tcsh $sheet $object fastq-r1` == "-") then
+  scripts-send2err "No input fastq files found, creating symbolic links to alternative input data."
+  set object_dir = $fastq_dir/$object
+  foreach f (`cd $object_dir; ls -1`)
+   ln -s ../../../$object_dir/$f $out/$f
+  end
+  goto done
+endif
+
 # determine input fastq filenames
 set fastq1 = `./code/read-sample-sheet.tcsh $sheet $object fastq-r1 | tr ',' '\n' | awk -v d=$fastq_dir '{print d"/"$0}'`
 set fastq2 = `./code/read-sample-sheet.tcsh $sheet $object fastq-r2 | tr ',' '\n' | awk -v d=$fastq_dir '{print d"/"$0}'`
-
-# create path
-scripts-create-path $out
 
 # align
 if ($aligner == 'gtools') then                    ## Aligner = gtools
@@ -84,8 +91,8 @@ else
   exit
 endif
 
-
 # save variables
+done:
 set >! $out/job.vars.tsv
 
 

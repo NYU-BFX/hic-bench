@@ -18,16 +18,17 @@ data_sources
 # input fastq files and sample sheets
 pipelines/hicseq-standard/inputs/fastq*
 pipelines/hicseq-standard/inputs/sample-sheet*.tsv
+create-custom-sample-sheet.tcsh
 
 # custom parameter files
 params.*_custom.tcsh
 
-# results folders
+# results folders and related scripts
 results*
+run-custom*
 
 # analysis folders
 ANALYSES
-run-custom*
 
 # error folders
 errors*

@@ -40,7 +40,7 @@ if (-e $branch/$objects[1]/alignments.bam) then
     samtools merge - $aligned_reads | samtools view - | gtools-hic filter -v -E $genome_dir/$enzyme.fragments.bed --stats $outdir/stats_with_dups.tsv $filter_params | sort -t'	' -k2 >! $outdir/filtered_with_dups.reg
   endif
 
-else
+else if (-e $branch/$objects[1]/R1.sam) then
 #------------------------------------------------------------------------
 # Case 2: separate R1/R2 bam files are available
 #------------------------------------------------------------------------
@@ -67,6 +67,39 @@ else
   cat $outdir/R12.sam | gtools-hic filter -v -E $genome_dir/$enzyme.fragments.bed --stats $outdir/stats_with_dups.tsv $filter_params | sort -t'	' -k2 >! $outdir/filtered_with_dups.reg
   rm -f $outdir/R12.sam
   
+else 
+#------------------------------------------------------------------------
+# Case 3: validPairs files are available
+#------------------------------------------------------------------------
+  set valid_pairs = ()
+  foreach obj ($objects)
+    set valid_pairs = ($valid_pairs `ls -1 $branch/$obj/*gz | grep -i validpairs`)
+  end
+  scripts-send2err "Converting validPairs.txt to filtered.reg format..."
+  cat $valid_pairs | gunzip | tools-cols -t 0 1 3 2 2 4 6 5 5 | tr '\t' ' ' | sed 's/ /\t/' >! $outdir/filtered.reg            # NOTE: can we filter by mapq here????
+  set n_reads = `cat $outdir/filtered.reg | wc -l`
+  set n_intra = `cat $outdir/filtered.reg | awk '$2==$6' | wc -l`
+  set n_inter = $n_reads
+  @ n_inter -= $n_intra
+  set p_intra = `echo $n_intra/$n_reads | bc -l`
+  set p_inter = `echo $n_inter/$n_reads | bc -l`
+  gzip $outdir/filtered.reg
+  ( echo "read-pairs $n_reads 1" ;\
+    echo "unpaired 0 0" ;\
+    echo "unmapped 0 0" ;\
+    echo "multihit 0 0" ;\
+    echo "single-sided 0 0" ;\
+    echo "ds-no-fragment 0 0" ;\
+    echo "ds-same-fragment 0 0" ;\
+    echo "ds-too-close 0 0" ;\
+    echo "ds-accepted-inter $n_inter $p_inter" ;\
+    echo "ds-accepted-intra $n_intra $p_intra" ;\
+    echo "ds-duplicate-inter 0 0" ;\
+    echo "ds-duplicate-intra 0 0" ;\
+    echo "ds-too-far 0 0" ;\
+    echo "unclassified 0 0" ;\
+  ) | tr ' ' '\t' >! $outdir/stats.tsv
+  goto done
 endif
 
 # remove duplicates
@@ -83,6 +116,7 @@ Rscript ./code/update-filtered-stats.r $outdir/stats_with_dups.tsv $n_intra_uniq
 rm -f $outdir/filtered_with_dups.reg $outdir/stats_with_dups.tsv
 
 # save variables
+done:
 set >! $outdir/job.vars.tsv
 
 scripts-send2err "Done."
