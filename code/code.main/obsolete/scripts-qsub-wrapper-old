@@ -1,0 +1,90 @@
+#!/bin/tcsh
+#$ -S /bin/tcsh
+source ./code/code.main/custom-tcshrc     # shell settings
+
+##
+## USAGE: scripts-qsub-wrapper THREADS[,MEMORY] SCRIPT-PATH OUTPUT-DIR ARGS ...
+##
+
+if ($#argv < 3) then
+  grep '^##' $0
+  exit
+endif
+
+set resources = $1
+set prog = `which $2`
+set out = $3
+set jobname = `basename $3`
+
+#scripts-send2err $out
+#scripts-send2err $jobname
+#exit
+
+shift
+shift
+
+if (-e $out) then
+  scripts-send2err "[scripts-qsub-wrapper] Directory \'$out\' exists, skipping..."
+  exit 1
+endif
+
+set nthreads = `echo $resources,, | cut -d',' -f1`
+set mem = `echo $resources,, | cut -d',' -f2`
+set rtime = `echo $resources,, | cut -d',' -f3`   # here, just put the number of hours, e.g. 24
+if ($rtime == '') then
+  set rtime = 24
+endif
+set tmp_resources = `echo 10000/$nthreads | bc`                                     # /tmp space per thread in Mbytes
+
+#set qsub_params = "-l tmp_free=${tmp_resources}M -l tmp_token=${tmp_resources}M"
+
+scripts-send2err "[scripts-qsub-wrapper] Generating results in directory \'$out\'..."
+if (-e $out) rm -rf $out
+scripts-create-path $out/ 
+set pref = $out/job
+scripts-print-cmdline '#\!/bin/tcsh' >! $pref.sh
+#scripts-print-cmdline './code/sbatch_medium.sh' >> $pref.sh
+scripts-print-cmdline '#'SBATCH -J $jobname >> $pref.sh
+scripts-print-cmdline '#'SBATCH --time=0-${rtime}:00:00 >> $pref.sh
+scripts-print-cmdline '#'SBATCH -n 1 >> $pref.sh
+scripts-print-cmdline '#'SBATCH -c $nthreads >> $pref.sh
+scripts-print-cmdline '#'SBATCH -o $pref.out >> $pref.sh
+scripts-print-cmdline '#'SBATCH -e $pref.err >> $pref.sh
+#scripts-print-cmdline `cat code/sbatch_medium.config` >> $pref.sh
+#scripts-print-cmdline '#'SBATCH --nodes=1 >> $pref.sh
+#scripts-print-cmdline '#'SBATCH --cpus-per-task=1 >> $pref.sh
+
+
+if ("$mem" == "") then
+#  qsub -q all.q -N $jobname -cwd $qsub_params -o :$pref.out -e :$pref.err -pe threaded $nthreads ./$pref.sh >! $pref.id
+
+#  scripts-print-cmdline '#'SBATCH --mem=64G >> $pref.sh
+#  scripts-print-cmdline '#'SBATCH --mem-per-cpu=32G >> $pref.sh
+  scripts-print-cmdline $prog $argv:q >> $pref.sh
+
+#  scripts-send2err "sbatch ./$pref.sh >! $pref.id"
+  sbatch ./$pref.sh >! $pref.id
+
+#  scripts-send2err "MANUAL MEM"
+
+#  scripts-send2err "sbatch $prog $argv:q -J $jobname -o :$pref.out -e :$pref.err -n $nthreads >! $pref.id"
+ # sbatch "$prog $argv:q" -J $jobname -o :$pref.out -e :$pref.err -n $nthreads >! $pref.id
+else
+#  qsub -q all.q -N $jobname -cwd $qsub_params -l mem_free=$mem -l h_vmem=$mem -l mem_token=$mem -o :$pref.out -e :$pref.err -pe threaded $nthreads ./$pref.sh >! $pref.id
+
+  scripts-print-cmdline '#'SBATCH --mem=$mem >> $pref.sh
+#  scripts-print-cmdline '#'SBATCH --mem-per-cpu=$mem >> $pref.sh
+  scripts-print-cmdline $prog $argv:q >> $pref.sh
+
+#  scripts-send2err "USE PRESET MEMORY AT $mem"
+
+#  scripts-send2err "sbatch ./$pref.sh >! $pref.id"
+  sbatch ./$pref.sh >! $pref.id
+
+#  scripts-send2err "sbatch $prog $argv:q -J $jobname --mem=$mem --mem-per-cpu=$mem -o :$pref.out -e :$pref.err -n $nthreads >! $pref.id"
+ # sbatch "$prog $argv:q" -J $jobname --mem=$mem --mem-per-cpu=$mem -o :$pref.out -e :$pref.err -n $nthreads >! $pref.id
+endif  
+
+cat $pref.id | cut -d' ' -f4                                                                 # TODO: is there a better method to obtain job id?
+
+
