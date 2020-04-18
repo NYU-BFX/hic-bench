@@ -12,6 +12,7 @@ usage = "\
 
 option_list <- list(
   make_option(c("--gene-file"),default="protein_coding.bed", help="gene bed file"),
+  make_option(c("-u","--unit"),default=0, help="maximum resolution (bp)"),
   make_option(c("-s","--scale"),default=1.0, help="scaling factor"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
   make_option(c("-r","--radius"),default=10000, help="radius around viewpoint (bp)"),
@@ -27,6 +28,7 @@ if (length(inputs) != 3) { write("Error: wrong number of inputs! Use --help to s
 # input parameters
 outdir = inputs[1]
 chrname = inputs[2]
+U = as.integer(opt$"unit")              # maximum resolution (bp)
 scaling = as.numeric(opt$"scale")       # scaling factor (for sequencing depth adjustment)
 d = as.integer(opt$"maxdist")           # maximum distance from viewpoint
 r = as.integer(opt$"radius")            # radius around viewpoint
@@ -39,7 +41,6 @@ suppressPackageStartupMessages(library(Matrix))
 suppressPackageStartupMessages(library(zoo))
 
 # adjust by unit 
-U = 100            # 100bp is the finest resolution possible: this is hard-coded in the matrix-sparse step
 R = r %/% U
 D = d %/% U
 W = w %/% U

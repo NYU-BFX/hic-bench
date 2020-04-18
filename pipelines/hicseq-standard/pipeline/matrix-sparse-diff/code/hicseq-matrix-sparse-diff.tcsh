@@ -24,7 +24,7 @@ endif
 set objects = ($object1 $object2)
 
 # read variables from input branch
-source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir"
+source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir unit"
 
 # run parameter script
 source $params
@@ -36,7 +36,7 @@ scripts-create-path $outdir/
 # -----  MAIN CODE BELOW --------------
 # -------------------------------------
 
-set OPTIONS = "--maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff --gene-file=$viewpoints_file"
+set OPTIONS = "--unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff --vp-file=$viewpoints_file"
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)
@@ -47,7 +47,8 @@ foreach chr ($CHR)
     set jpref = $outdir/__jdata/job.$chr
     set mem = 40G
     scripts-create-path $jpref
-    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/sparse-matrix-diff.r $OPTIONS $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2`)
+    Rscript ./code/sparse-matrix-diff.r $OPTIONS $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2
+#    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/sparse-matrix-diff.r $OPTIONS $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2`)
   endif
 end
 
@@ -62,6 +63,11 @@ set diff_files = $outdir/*/diff-regions.csv
 head -1 $diff_files[1] >! $outdir/diff-regions.csv
 foreach diff_file ($diff_files)
   cat $diff_file | scripts-skipn 1 >> $outdir/diff-regions.csv
+end
+set diff_files = $outdir/*/diff-anchors.csv
+head -1 $diff_files[1] >! $outdir/diff-anchors.csv
+foreach diff_file ($diff_files)
+  cat $diff_file | scripts-skipn 1 >> $outdir/diff-anchors.csv
 end
 
 # organize virtual 4Cs into a single directory

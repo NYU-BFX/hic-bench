@@ -43,13 +43,13 @@ echo "Splitting by chromosome..." | scripts-send2err
 set CHR = `cat $genome_dir/genome.bed | cut -f1`
 foreach chr ($CHR)
   set outmat = $outdir/matrix.$chr.mtx
-  echo "Storing chromosome $chr at 100bp resolution..." | scripts-send2err
+  echo "Storing chromosome $chr at ${unit}bp resolution..." | scripts-send2err
 
-  # Obtain matrix size (in 100bp resolution; 100bp is hardcoded)
-  set n = `cat $genome_dir/genome.bed | awk -v c=$chr '{if ($1==c) print $3+100}' | sed 's/..$//'`
+  # Obtain matrix size (at specified resolution)
+  set n = `cat $genome_dir/genome.bed | awk -v c=$chr -v u=$unit '{if ($1==c) printf "%ld\n", $3/u}'`
   
   # Obtain matrix data
-  cat $outdir/$chr | cut -d' ' -f2,4 | awk '($1>100)&&($2>100)' | sed 's/.. / /' | sed 's/..$//' | awk -v n=$n '($1<=n)&&($2<=n)' | sort | uniq -c | sed 's/^ *//' >! $outmat.out
+  cat $outdir/$chr | cut -d' ' -f2,4 | awk -v u=$unit '{printf "%ld %ld\n", $1/u, $2/u}' | awk '($1>=1)&&($2>=1)' | awk -v n=$n '($1<=n)&&($2<=n)' | sort | uniq -c | sed 's/^ *//' >! $outmat.out
   set N = `cat $outmat.out | wc -l`
 
   # Generate sparse matrices
