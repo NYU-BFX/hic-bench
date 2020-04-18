@@ -21,7 +21,7 @@ pipelines/hicseq-standard/inputs/sample-sheet*.tsv
 create-custom-sample-sheet.tcsh
 
 # custom parameter files
-params.*_custom.tcsh
+params-custom*
 
 # results folders and related scripts
 results*

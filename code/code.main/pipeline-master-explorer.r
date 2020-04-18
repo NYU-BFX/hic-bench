@@ -34,7 +34,7 @@ check_status = function(v)
 ##
 create_out_branch = function(v,ignore_group)
 {
-  params_name = sub('.[^.]+$','',sub('^params/params.','',v[,"params"]))                          # remove: (a) "params/params." prefix (b) any suffix
+  params_name = sub('.[^.]+$','',sub('^params.*/params.','',v[,"params"]))                        # remove: (a) "params/params." prefix (b) any suffix
   branch_name = sub('^.*/results[/]*','',v[,"inp-branch"])                                        # remove from beginning to "results/"            
   prefix = v[,"out-prefix"]                                                                       # simple prefix
   if (ignore_group==FALSE) prefix = paste(prefix,paste("by_",v[,"out-obj-var"],sep=''),sep='.')   # full prefix (output object variable is added)
