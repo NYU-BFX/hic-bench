@@ -51,7 +51,8 @@ foreach chr ($CHR)
     set jpref = $outdir/__jdata/job.$chr
     set mem = 40G
     scripts-create-path $jpref
-    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/virtual4C.r --unit=$unit --gene-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius --scale=$scale $outdir/$chr $chr $branch/$object/matrix.$chr.mtx`)
+    Rscript ./code/virtual4C.r --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius --scale=$scale $outdir/$chr $chr $branch/$object/matrix.$chr.mtx
+#    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/virtual4C.r --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius --scale=$scale $outdir/$chr $chr $branch/$object/matrix.$chr.mtx`)
   endif
 end
 

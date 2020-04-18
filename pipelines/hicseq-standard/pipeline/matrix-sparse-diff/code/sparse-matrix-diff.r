@@ -202,6 +202,7 @@ colnames(vp_stats) = col_labels
 write(paste("Testing",length(vp_list),"viewpoints..."),stderr())
 file_diff_regions = paste(outdir,'/diff-regions.csv',sep='')
 cat("vp-name,vp-chr,vp-start,vp-end,target-distance,target-start,target-end,target-length,sample1-value,sample2-value,diff\n",file=file_diff_regions)
+#save.image('test.RData')
 for (k in 1:n_vp) 
 {
   write(paste0(round(100*k/n_vp,2),"%"),stderr())
@@ -213,8 +214,8 @@ for (k in 1:n_vp)
   y = v4C(Y,VP,R,D,W)
   
   # generate coordinates
-  coord_end = U*(max(VP-D,1):min(VP+D,Xn))
-  coord_start = coord_end - U
+  coord_start = U*(max(VP-D,0):min(VP+D,Xn-1))
+  coord_end = coord_start + U
   
   # generate max & sum stats
   x_max = max(x)                                                    # max value in sample X
@@ -252,32 +253,31 @@ for (k in 1:n_vp)
   abs_delta_area_scaled2 = sum(abs(dxy2))/max(sum(ys2),sum(xs2))    # normalized total absolute maxmax-scaled difference (Y vs X)
 
   # identify differential target anchors
-  vp_offset = VP - max(VP-D,1) + 1
-  delta = VP - anchor_list
-  J = abs(delta)<=D
-  anchor_labels = as.character(anchor_table$label[J])
-  anchor_offset = vp_offset + delta[J]
-  N = anchor_offset<=length(x)
-  anchor_offset = anchor_offset[N]
-  anchor_labels = anchor_labels[N]
-  K = (x[anchor_offset]>=fc_mincount)|(y[anchor_offset]>=fc_mincount)
+#  write("-- differential target anchors",stderr())
+  vp_offset = VP - max(VP-D,0) + 1                                  # position of viepoint (VP) in v4C vector
+  delta = anchor_list - VP                                          # distances of all anchors from viewpoint
+  J = abs(delta)<=D                                                 # indexes of anchors that are within distance D from VP
+  anchor_labels = as.character(anchor_table$label[J])               # labels of these anchors
+  anchor_offsets = vp_offset + delta[J]                             # positions of these anchors in v4C vector
+  K = (x[anchor_offsets]>=fc_mincount)|(y[anchor_offsets]>=fc_mincount)    # find anchors with enough adjusted counts in at least one of the samples
   if (sum(K)>0) {
     anchor_data =
       cbind(as.character(vp_table$label[k]),
 		    anchor_labels,
 	        chrname,
 		    coord_start[vp_offset],
-		    coord_start[anchor_offset],
-		    coord_start[anchor_offset]-coord_start[vp_offset],
-		    x[anchor_offset],
-		    round(y[anchor_offset],0),
-		    round(log2(sapply(y[anchor_offset],max,fc_mincount)/sapply(x[anchor_offset],max,fc_mincount)),3)
+		    coord_start[anchor_offsets],
+		    coord_start[anchor_offsets]-coord_start[vp_offset],
+		    x[anchor_offsets],
+		    round(y[anchor_offsets],0),
+		    round(log2(sapply(y[anchor_offsets],max,fc_mincount)/sapply(x[anchor_offsets],max,fc_mincount)),3)
 		)
     anchor_data = anchor_data[K,,drop=FALSE]
     write.table(file=file_diff_loci, append=TRUE, sep=',', quote=F, row.names=F, col.names=F, anchor_data)
   }
 
   # generate differential regions
+#  write("-- differential regions",stderr())
   seg = findSegments(xs2,ys2,min_diff=mindiff)                      # use max-max scaling for differential regions
   if (is.null(seg)==FALSE) {
     vp_chr = chrname
@@ -292,6 +292,7 @@ for (k in 1:n_vp)
   }
  
   # generate v4C files
+#  write("-- virtual 4Cs",stderr())
   if (max_xy>=mincount) {
     filename = paste(outdir,'/',vp_label,'-',chrname,'-v4C.csv',sep='') 
     dataset = round(cbind(x,y,xs1,ys1,dxy1),3)
@@ -300,6 +301,7 @@ for (k in 1:n_vp)
   }
   
   # store stats 
+#  write("-- stats",stderr())
   vp_stats[k,] = c( 
 		x_max, 
 		round(y_max,0), 
