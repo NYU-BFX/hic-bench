@@ -12,8 +12,8 @@ usage = "\
 
 option_list <- list(
   make_option(c("--vp-file"),default="protein_coding.bed", help="viewpoint bed file"),
+  make_option(c("--nreads"),default=0, help="number of sequenced read pairs in input sample"),
   make_option(c("-u","--unit"),default=0, help="maximum resolution (bp)"),
-  make_option(c("-s","--scale"),default=1.0, help="scaling factor"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
   make_option(c("-r","--radius"),default=10000, help="radius around viewpoint (bp)"),
   make_option(c("-w","--window"),default=20000, help="size of rolling window (bp)")
@@ -28,8 +28,8 @@ if (length(inputs) != 3) { write("Error: wrong number of inputs! Use --help to s
 # input parameters
 outdir = inputs[1]
 chrname = inputs[2]
+n_reads = as.integer(opt$"nreads")      # number of sequenced read pairs in sample 1
 U = as.integer(opt$"unit")              # maximum resolution (bp)
-scaling = as.numeric(opt$"scale")       # scaling factor (for sequencing depth adjustment)
 d = as.integer(opt$"maxdist")           # maximum distance from viewpoint
 r = as.integer(opt$"radius")            # radius around viewpoint
 w = as.integer(opt$"window")            # rolling window size
@@ -37,8 +37,12 @@ w = as.integer(opt$"window")            # rolling window size
 # input matrices
 mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
 
+# load libraries
 suppressPackageStartupMessages(library(Matrix))
 suppressPackageStartupMessages(library(zoo))
+
+# divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
+CPK2B = (2*r/1000)*(w/1000)*(n_reads/1000000000)
 
 # adjust by unit 
 R = r %/% U
@@ -79,7 +83,7 @@ for (k in 1:n_vp)
 
   # generate raw virtual 4Cs
   VP = vp_list[k]
-  x = round(scaling * v4C(X,VP,R,D,W),4)
+  x = round(v4C(X,VP,R,D,W) / CPK2B,4)
   
   # generate coordinates
   coord_start = U*(max(VP-D,0):min(VP+D,Xn-1))
