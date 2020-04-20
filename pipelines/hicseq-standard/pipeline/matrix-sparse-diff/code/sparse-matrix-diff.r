@@ -79,6 +79,8 @@ regdiff = function(z,min_diff,min_region_size=1000%/%U)
 ## 
 ######################################################################
 option_list <- list(
+  make_option(c("--nreads1"),default=0, help="number of sequenced read pairs in sample 1"),
+  make_option(c("--nreads2"),default=0, help="number of sequenced read pairs in sample 2"),
   make_option(c("--vp-file"),default="protein_coding.bed", help="viewpoint bed file (source anchors)"),
   make_option(c("--target-file"),default="", help="target anchors bed file (optional)"),
   make_option(c("-u","--unit"),default=0, help="maximum resolution (bp)"),
@@ -99,9 +101,11 @@ if (length(inputs) != 6) { write("Error: wrong number of inputs! Use --help to s
 # input parameters
 outdir = inputs[1]
 chrname = inputs[2]
-U = as.integer(opt$unit)                        # maximum resolution (bp)
-d = as.integer(opt$maxdist)                     # maximum distance from viewpoint (bp)
-w = as.integer(opt$window)                      # rolling window size (bp)
+n_reads_X = as.integer(opt$"nreads1")           # number of sequenced read pairs in sample 1
+n_reads_Y = as.integer(opt$"nreads2")           # number of sequenced read pairs in sample 2
+U = as.integer(opt$"unit")                      # maximum resolution (bp)
+d = as.integer(opt$"maxdist")                   # maximum distance from viewpoint (bp)
+w = as.integer(opt$"window")                    # rolling window size (bp)
 r = as.integer(opt$"radius")                    # radius around viewpoint (bp)
 mincount = as.integer(opt$mincount)             # minimum viewpoint count for virtual 4Cs
 mindiff = as.numeric(opt$mindiff)               # minimum difference
@@ -117,6 +121,8 @@ suppressPackageStartupMessages(library(Matrix))
 suppressPackageStartupMessages(library(zoo))
 options(scipen=999)                                                       # disable scientific notation
 
+# divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
+CPK2B = (2*r/1000)*(w/1000)*(n_reads_X/1000000000)
 
 # adjust by unit 
 R = r %/% U
@@ -126,7 +132,7 @@ W = w %/% U
 # load matrix 1
 write("Loading matrix 1...",stderr())
 X <- readMM(mat1)
-n_reads_X = sum(X)
+if (n_reads_X==0) n_reads_X = sum(X)
 X = X+t(X); diag(X) = diag(X)/2
 Xn = nrow(X)
 write(format(object.size(X),units="auto",standard="SI"),file=stderr())
@@ -134,7 +140,7 @@ write(format(object.size(X),units="auto",standard="SI"),file=stderr())
 # load matrix 2
 write("Loading matrix 2...",stderr())
 Y <- readMM(mat2)
-n_reads_Y = sum(Y)
+if (n_reads_Y==0) n_reads_Y = sum(Y)
 Y = Y+t(Y); diag(Y) = diag(Y)/2
 Yn = nrow(Y)
 write(format(object.size(Y),units="auto",standard="SI"),file=stderr())
@@ -171,7 +177,21 @@ if (opt$"target-file"!="") {
 vp_list = as.numeric(apply(vp_table,1,function(v) { if (v["strand"]=='+') { v["start"] } else { v["end"] } })) %/% U
 anchor_list = as.numeric(apply(anchor_table,1,function(v) { if (v["strand"]=='+') { v["start"] } else { v["end"] } })) %/% U
 file_diff_loci = paste0(outdir,'/diff-anchors.csv')
-write(file=file_diff_loci, paste("Source anchor label", "Target anchor label", "Chromosome", "Source anchor position", "Target anchor position", "Anchor distance", "Value sample 1", "Value sample 2", "Log2FC", sep=',' ))
+write(file=file_diff_loci, 
+      paste(
+	     "Source anchor label", 
+		 "Target anchor label", 
+		 "Chromosome", 
+		 "Source anchor position", 
+		 "Target anchor position", 
+		 "Anchor distance", 
+		 "Count sample 1", 
+		 "Count sample 2 (adjusted)", 
+		 "CPK2B sample 1", 
+		 "CPK2B sample 2", 
+		 "Log2FC", 
+		 sep=',' 
+		))
 n_vp = length(vp_list)
 n_anchor = length(anchor_list)
 
@@ -260,6 +280,7 @@ for (k in 1:n_vp)
   anchor_labels = as.character(anchor_table$label[J])               # labels of these anchors
   anchor_offsets = vp_offset + delta[J]                             # positions of these anchors in v4C vector
   K = (x[anchor_offsets]>=fc_mincount)|(y[anchor_offsets]>=fc_mincount)    # find anchors with enough adjusted counts in at least one of the samples
+  K[is.na(K)] = FALSE
   if (sum(K)>0) {
     anchor_data =
       cbind(as.character(vp_table$label[k]),
@@ -270,6 +291,8 @@ for (k in 1:n_vp)
 		    coord_start[anchor_offsets]-coord_start[vp_offset],
 		    x[anchor_offsets],
 		    round(y[anchor_offsets],0),
+		    round(x[anchor_offsets]/CPK2B,3),
+		    round(y[anchor_offsets]/CPK2B,3),
 		    round(log2(sapply(y[anchor_offsets],max,fc_mincount)/sapply(x[anchor_offsets],max,fc_mincount)),3)
 		)
     anchor_data = anchor_data[K,,drop=FALSE]

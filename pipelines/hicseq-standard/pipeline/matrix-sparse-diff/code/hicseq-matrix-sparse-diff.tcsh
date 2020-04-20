@@ -27,6 +27,7 @@ set objects = ($object1 $object2)
 source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir unit"
 
 # run parameter script
+set anchors_file = 
 source $params
 
 # create path
@@ -36,7 +37,16 @@ scripts-create-path $outdir/
 # -----  MAIN CODE BELOW --------------
 # -------------------------------------
 
-set OPTIONS = "--unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff --vp-file=$viewpoints_file"
+# determine number of reads in each sample
+set n_reads1 = `cat $branch/$object1/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
+set n_reads2 = `cat $branch/$object2/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
+scripts-send2err "- reads in sample 1 = $n_reads1"
+scripts-send2err "- reads in sample 2 = $n_reads2"
+
+# set options
+set OPTIONS = "--nreads1=$n_reads1 --nreads2=$n_reads2 --unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff --vp-file=$viewpoints_file --target-file=$anchors_file"
+
+# run analysis per chromosome
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)
