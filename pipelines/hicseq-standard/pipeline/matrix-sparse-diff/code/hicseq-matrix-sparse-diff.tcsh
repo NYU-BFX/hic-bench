@@ -27,7 +27,6 @@ set objects = ($object1 $object2)
 source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir unit"
 
 # run parameter script
-set anchors_file = 
 source $params
 
 # create path
@@ -44,21 +43,22 @@ scripts-send2err "- reads in sample 1 = $n_reads1"
 scripts-send2err "- reads in sample 2 = $n_reads2"
 
 # set options
-set OPTIONS = "--nreads1=$n_reads1 --nreads2=$n_reads2 --unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff --vp-file=$viewpoints_file --target-file=$anchors_file"
+set OPTIONS = "--nreads1=$n_reads1 --nreads2=$n_reads2 --unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff"
 
 # run analysis per chromosome
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)
   mkdir -p $outdir/$chr
-  cat $viewpoints_file | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
+  cat $viewpoints_file | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
+  cat $anchors_file | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/anchors.bed       # generate chromosome-specific target anchors file 
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     echo "Chromosome $chr..." | scripts-send2err
     set jpref = $outdir/__jdata/job.$chr
     set mem = 40G
     scripts-create-path $jpref
-    Rscript ./code/sparse-matrix-diff.r $OPTIONS $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2
-#    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/sparse-matrix-diff.r $OPTIONS $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2`)
+    Rscript ./code/sparse-matrix-diff.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2
+#    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif
 end
 
