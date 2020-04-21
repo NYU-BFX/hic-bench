@@ -88,7 +88,7 @@ if ($n_jobs > 0) then
   scripts-qsub-wait "$jid"
 
   # cleanup
-#  rm -rf $run_dir
+  rm -rf $run_dir
 endif
 
 scripts-send2err "Done."
