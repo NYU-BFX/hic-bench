@@ -46,7 +46,7 @@ paste x.bed y.bed | \
     sed 's/ +\|_/\t/g' | \
     awk -v OFS='\t' '{print $2,$3,$4,$5,$1}' > i1.bed
 
-rm -v !("i1.bed"|"f1.bed")
+#rm -v !("i1.bed"|"f1.bed")
 
 # Generate gzip files for fithic
 gzip i1.bed f1.bed
@@ -61,10 +61,10 @@ source activate fithic
 
 # Run fithic with bias file
 fithic -i i1.bed.gz -f f1.bed.gz -t bias.bed.gz -o fit_bias -r "$winsize"
-zcat fit_bias/*gz > loops_unfiltered_bias_raw.tsv
-zcat fit_bias/*gz | awk -v qval="$qval" '{if ((NR == 1) || ($5 >= 1) && ($7 <= qval)) {print}}' > loops_filtered_bias_raw.tsv
+zcat fit_bias/*gz | awk '(NR == 1 || $5 >= 3)' > loops_unfiltered_bias_raw.tsv
+zcat fit_bias/*gz | awk -v qval="$qval" '{if ((NR == 1) || ($5 >= 3) && ($7 <= qval)) {print}}' > loops_filtered_bias_raw.tsv
 
 # Run fithic without bias file
 fithic -i i1.bed.gz -f f1.bed.gz -o fit_nobias -r "$winsize"
-zcat fit_nobias/*gz > loops_unfiltered_nobias_raw.tsv
-zcat fit_nobias/*gz | awk -v qval="$qval" '{if ((NR == 1) || ($5 >= 1) && ($7 <= qval)) {print}}' > loops_filtered_nobias_raw.tsv
+zcat fit_nobias/*gz | awk '(NR == 1 || $5 >= 3)' > loops_unfiltered_nobias_raw.tsv
+zcat fit_nobias/*gz | awk -v qval="$qval" '{if ((NR == 1) || ($5 >= 3) && ($7 <= qval)) {print}}' > loops_filtered_nobias_raw.tsv
