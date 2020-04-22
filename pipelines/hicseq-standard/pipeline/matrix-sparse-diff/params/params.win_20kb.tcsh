@@ -4,7 +4,7 @@ source ./inputs/params/params.tcsh
 
 set chrom_excluded = 'chr[MY]'                           # excluded chromosomes
 set viewpoints_file = $genome_dir/protein_coding.bed     # list of coordinates to be used as viewpoints
-set anchors_file =                                       # bed file: list of target anchors (e.g. enhancers)
+set anchors_file = $viewpoints_file                      # bed file: list of target anchors (e.g. enhancers)
 
 set maxdist = 2500000                                    # maximum distance from viewpoint (bp)
 set window = 20000                                       # size of rolling window (bp)
