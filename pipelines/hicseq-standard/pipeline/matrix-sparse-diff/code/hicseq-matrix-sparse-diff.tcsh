@@ -37,10 +37,22 @@ scripts-create-path $outdir/
 # -------------------------------------
 
 # determine number of reads in each sample
-set n_reads1 = `cat $branch/$object1/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
-set n_reads2 = `cat $branch/$object2/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
-scripts-send2err "- reads in sample 1 = $n_reads1"
-scripts-send2err "- reads in sample 2 = $n_reads2"
+set normalization = genome-intra
+scripts-send2err "normalization = $normalization"
+if ($normalization == "genome-all") then
+  set n_reads1 = `cat $branch/$object1/stats.tsv | grep '^read-pairs	' | cut -f2`
+  set n_reads2 = `cat $branch/$object2/stats.tsv | grep '^read-pairs	' | cut -f2`
+  scripts-send2err "- reads in sample 1 = $n_reads1"
+  scripts-send2err "- reads in sample 2 = $n_reads2"
+else if ($normalization == "genome-intra") then
+  set n_reads1 = `cat $branch/$object1/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
+  set n_reads2 = `cat $branch/$object2/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
+  scripts-send2err "- reads in sample 1 = $n_reads1"
+  scripts-send2err "- reads in sample 2 = $n_reads2"
+else
+  set n_reads1 = 0
+  set n_reads2 = 0
+endif
 
 # set options
 set OPTIONS = "--nreads1=$n_reads1 --nreads2=$n_reads2 --unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff"

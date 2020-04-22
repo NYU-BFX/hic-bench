@@ -117,12 +117,10 @@ mat2 = inputs[4]         # e.g. TALL/matrix.chr8.mtx
 L1 = inputs[5]           # e.g. DP
 L2 = inputs[6]           # e.g. TALL
 
+# load libraries
 suppressPackageStartupMessages(library(Matrix))
 suppressPackageStartupMessages(library(zoo))
 options(scipen=999)                                                       # disable scientific notation
-
-# divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
-CPK2B = (2*r/1000)*(w/1000)*(n_reads_X/1000000000)
 
 # adjust by unit 
 R = r %/% U
@@ -151,6 +149,9 @@ if (Xn!=Yn) { write("Error: input matrices have different sizes!\n",file=stderr(
 # adjust counts in second sample
 a = n_reads_X/n_reads_Y
 Y = a*Y
+
+# divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
+CPK2B = (2*r/1000)*(w/1000)*(n_reads_X/1000000000)
 
 # Load viewpoint information (source anchors)
 vp_table = read.table(opt$"vp-file")
