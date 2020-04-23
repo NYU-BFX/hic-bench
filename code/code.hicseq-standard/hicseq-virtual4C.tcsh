@@ -51,7 +51,7 @@ foreach chr ($CHR)
     set mem = 20G   #`du $branch/$object/matrix.$chr.mtx | awk '{printf "%ld\n", 5+2*$1/100000}' | tools-vectors cutoff -n 0 -u -c 40`G
     scripts-create-path $jpref
     set Rcmd = "Rscript ./code/virtual4C.r --nreads=$n_reads --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius $outdir/$chr $chr $branch/$object/matrix.$chr.mtx"
-	echo $Rcmd | scripts-send2err
+    echo $Rcmd | scripts-send2err
     set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif
 end

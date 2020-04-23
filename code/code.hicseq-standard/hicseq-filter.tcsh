@@ -115,8 +115,11 @@ Rscript ./code/update-filtered-stats.r $outdir/stats_with_dups.tsv $n_intra_uniq
 # cleanup
 rm -f $outdir/filtered_with_dups.reg $outdir/stats_with_dups.tsv
 
-# save variables
 done:
+# calculate distance statistics
+./code/calc-distance-stats.tcsh $outdir/filtered.reg.gz >! $outdir/distance-stats.csv
+
+# save variables
 set >! $outdir/job.vars.tsv
 
 scripts-send2err "Done."
