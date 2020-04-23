@@ -34,15 +34,13 @@ endif
  
 #qsub -q all.q -cwd $qsub_params -l mem_free=$mem -l h_vmem=$mem -l mem_token=$mem -o :$jpref.out -e :$jpref.err -pe threaded $nthreads $jpref.sh >! $jpref.jid
 
-scripts-print-cmdline '#\!/bin/tcsh' >! $jpref.sh
-#scripts-print-cmdline '#'SBATCH -J $jobname >> $jpref.sh
-scripts-print-cmdline '#'SBATCH --time=24:00:00 >> $jpref.sh
-scripts-print-cmdline '#'SBATCH -n 1 >> $jpref.sh
-scripts-print-cmdline '#'SBATCH -c $nthreads >> $jpref.sh
-scripts-print-cmdline '#'SBATCH -o $jpref.out >> $jpref.sh
-scripts-print-cmdline '#'SBATCH -e $jpref.err >> $jpref.sh
-scripts-print-cmdline '#'SBATCH --mem=$mem >> $jpref.sh
-#scripts-print-cmdline '#'SBATCH --mem-per-cpu=32G >> $jpref.sh
+echo '#\!/bin/tcsh' >! $jpref.sh
+echo '#'SBATCH --time=24:00:00 >> $jpref.sh
+echo '#'SBATCH -n 1 >> $jpref.sh
+echo '#'SBATCH -c $nthreads >> $jpref.sh
+echo '#'SBATCH -o $jpref.out >> $jpref.sh
+echo '#'SBATCH -e $jpref.err >> $jpref.sh
+echo '#'SBATCH --mem=$mem >> $jpref.sh
 
 scripts-print-cmdline $prog $argv:q >> $jpref.sh
 

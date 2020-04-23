@@ -48,10 +48,11 @@ foreach chr ($CHR)
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     echo "Chromosome $chr..." | scripts-send2err
     set jpref = $outdir/__jdata/job.$chr
-    set mem = 40G
+    set mem = 20G   #`du $branch/$object/matrix.$chr.mtx | awk '{printf "%ld\n", 5+2*$1/100000}' | tools-vectors cutoff -n 0 -u -c 40`G
     scripts-create-path $jpref
-    Rscript ./code/virtual4C.r --nreads=$n_reads --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius $outdir/$chr $chr $branch/$object/matrix.$chr.mtx
-#    set jid = ($jid `scripts-qsub-run $jpref 1 $mem Rscript ./code/virtual4C.r --nreads=$n_reads --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius $outdir/$chr $chr $branch/$object/matrix.$chr.mtx`)
+    set Rcmd = "Rscript ./code/virtual4C.r --nreads=$n_reads --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius $outdir/$chr $chr $branch/$object/matrix.$chr.mtx"
+	echo $Rcmd | scripts-send2err
+    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif
 end
 
@@ -60,6 +61,7 @@ scripts-send2err "Waiting until all jobs are completed..."
 scripts-qsub-wait "$jid"
 
 # organize virtual 4Cs into a single directory
+scripts-send2err "Organizing virtual 4Cs into a single directory..."
 foreach chr ($CHR)
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     mv $outdir/$chr/*.bedgraph $outdir
