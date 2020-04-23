@@ -7,6 +7,10 @@ outdir = argv[5L]
 binsize = as.numeric(argv[6L])
 tss.path = argv[7L]
 common.lfc = as.numeric(argv[8L])
+qcut1 = as.numeric(argv[9L])
+qcut2 = as.numeric(argv[10L])
+min.dist = as.numeric(argv[11L])
+max.dist = as.numeric(argv[12L])
 annot_promoters = F # to do
 
 library(ggplot2)
@@ -15,9 +19,9 @@ library(ggsignif)
 library(gridExtra)
 library(GenomicRanges)
 
-pdf(NULL)
-
 ### Functions ##############################################################
+pdf(NULL)
+options(scipen=10000)
 # plot loop contactCounts by distance
 contactsByDist=function(df.gg,group,is.common){
   x=group
@@ -232,8 +236,7 @@ fractionBarStackedLoopClass = function(df.count){
           xlab("")+
           labs(fill="loop class")+
           ylab("loop fraction")+
-          coord_flip())+
-    scale_fill_manual(values = df.count$color)
+          coord_flip())
 }
 
 # annotate loops-promoter 
@@ -335,6 +338,7 @@ C1.loops$loops.ID=paste0(C1.loops$chr1,":",C1.loops$fragmentMid1,":",C1.loops$fr
 C2.loops$loops.ID=paste0(C2.loops$chr1,":",C2.loops$fragmentMid1,":",C2.loops$fragmentMid2)
 
 df.gg=rbind(C1.loops,C2.loops)
+df.gg=df.gg[df.gg$distance >= min.dist & df.gg$distance <= max.dist,] #filter by distance cutoffs
 df.gg$chr=df.gg$chr1
 df.gg$contactCount=as.numeric(df.gg$contactCount)
 df.gg$distance=as.numeric(df.gg$distance)
@@ -374,16 +378,39 @@ if (annot_promoters){ ## This takes too long: Look for a different approach.
 }
 
 # classify loops in common & group-specific
-common.loops=C1.loops$loops.ID[C1.loops$loops.ID %in% C2.loops$loops.ID]
-C1.specific=df.gg[!(df.gg$loops.ID %in% common.loops) & df.gg$loops.ID %in% C1.loops$loops.ID,]
-C2.specific=df.gg[!(df.gg$loops.ID %in% common.loops) & df.gg$loops.ID %in% C2.loops$loops.ID,]
+df.gg$qcut1=F
+df.gg$qcut1[df.gg$q.value <= qcut1]=T 
+C1.loops$qcut1=F
+C1.loops$qcut1[C1.loops$q.value <= qcut1]=T 
+C2.loops$qcut1=F
+C2.loops$qcut1[C2.loops$q.value <= qcut1]=T 
+
+x=C1.loops$loops.ID[C1.loops$loops.ID %in% C2.loops$loops.ID]
+c1=C1.loops[C1.loops$loops.ID %in% x,]
+c2=C2.loops[C2.loops$loops.ID %in% x,]
+c1=c1[order(c1$loops.ID),]
+c2=c2[order(c2$loops.ID),]
+c1$c2.qcut1=c2$qcut1
+common.loops=c1$loops.ID[c1$qcut1==T | c1$c2.qcut1==T]
+
+# Criteria: e.g. group1-specific -> L1 loops conditions: not in common.loops, in L1 set with qval < qcut1, not in L2 with qval < qcut1
+y=df.gg[!(df.gg$loops.ID %in% common.loops),]
+C1.specific=y[y$loops.ID %in% C1.loops$loops.ID[C1.loops$qcut1==T] & !(y$loops.ID %in% C2.loops$loops.ID[C2.loops$qcut1==T]),]
+C1.specific=C1.specific[C1.specific$qcut1==T,]
+C2.specific=y[y$loops.ID %in% C2.loops$loops.ID[C2.loops$qcut1==T] & !(y$loops.ID %in% C1.loops$loops.ID[C1.loops$qcut1==T]),]
+C2.specific=C2.specific[C2.specific$qcut1==T,]
 df.gg$group2=as.character(df.gg$group)
 df.gg$group2[df.gg$loops.ID %in% common.loops]="common"
-df.gg$group2=as.factor(df.gg$group2)
+
+master.tab=df.gg[df.gg$group2 == "common" | df.gg$qcut1 == T,]
+master.tab=master.tab[!(master.tab$group2 == "common" & duplicated(master.tab$loops.ID)),]
+master.tab$group2=as.factor(master.tab$group2)
+master.tab=master.tab[,-c(23)]
+df.gg=df.gg[,-c(23)]
 
 write.table(C1.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C1.lab,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 write.table(C2.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C2.lab,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(df.gg[,c(1:5,7,10,11,19:20,23)],paste0(outdir,"/master_table.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(master.tab[,c(1:5,7,10,11,19:20,23)],paste0(outdir,"/master_table.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 # common loops
 df.gg.common=df.gg[df.gg$loops.ID %in% common.loops,]
@@ -391,9 +418,9 @@ common.C1=df.gg.common[df.gg.common$group==C1.lab,]
 common.C2=df.gg.common[df.gg.common$group==C2.lab,]
 common.C1$C1=common.C1$contactCount
 common.C2$C2=common.C2$contactCount
+
 df.common = cbind(common.C1,common.C2)
 df.common=df.common[,c(1:4,11,24,34,48:47,43:44)]
-
 df.common$loop.strength=NA
 df.common$lfc.contacts=log2(df.common$C2/df.common$C1)
 df.common$loop.strength[df.common$lfc.contacts >= common.lfc]="increased"
@@ -409,7 +436,6 @@ write.table(common.down,paste0(outdir,"/common.loops_decreased.tsv"),row.names =
 write.table(df.common,paste0(outdir,"/common.loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 #distance
-max.dist=10000000
 df.distance.count=data.frame(distance=unique(df.gg$distance),count.C1=NA,count.C2=NA,count.common=NA,stringsAsFactors = F)
 df.distance.count=df.distance.count[order(df.distance.count$distance,decreasing = F),]
 df.distance.count=df.distance.count[df.distance.count$distance < max.dist,]
@@ -434,6 +460,8 @@ common.count=sum(df.gg.bar$group2=="common",na.rm = T)
 
 # get counts
 df.count=data.frame(group2=c("common",C1.lab,C2.lab),count=c(common.count,c1.unique.count,c2.unique.count))
+df.count$group2=as.factor(df.count$group2)
+df.count$group2=factor(df.count$group2,levels=c("common",C1.lab,C2.lab))
 df.count$color=c("darkgrey","blue","red")
 df.count=df.count[df.count$group2 %in% df.gg.bar$group2,]
 tot.count=sum(df.count$count,na.rm = T)
@@ -454,7 +482,6 @@ for (i in x){
 df.perc=data.frame(group=rep(df.perc$group2,2),perc=c(df.perc$unique,df.perc$common))
 df.perc$group2=rep(c("common","unique"),each=2)
 df.perc$perc=df.perc$perc*100
-options(scipen=10000)
 df.perc$comparison=paste0(C2.lab,"_vs_",C1.lab)
 #write.table(df.perc,paste0(outdir,"/metrics_fraction.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
@@ -473,7 +500,6 @@ df.promoter.perc.common=data.frame(group=rep(c("promoter","no-promoter"),3),frac
 for (i in 1:nrow(df.promoter.perc.common)){
   df.promoter.perc.common$frac[i]=round(sum(df.common$any.promoter==df.promoter.perc.common$group[i] & df.common$loop.strength==df.promoter.perc.common$group2[i])/sum(df.common$loop.strength==df.promoter.perc.common$group2[i]),digits = 2)
 }
-
 
 # customize colors
 df.gg$group2=as.factor(df.gg$group2)
