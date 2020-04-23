@@ -80,7 +80,7 @@ scripts-qsub-wait "$jid"
 scripts-send2err "Combining chromosome loops into one file..."
 cd $outdir 
 
-# unfiltered loops (bias)
+# unfiltered loops raw (bias)
 cat chr*/loops_unfiltered_bias_raw.tsv >! temp.tsv
 awk 'NR <= 1 || \!/fragment/' temp.tsv >! loops_unfiltered_bias_raw.tsv
 rm -f temp.tsv
@@ -89,6 +89,23 @@ rm -f temp.tsv
 cat chr*/loops_unfiltered_nobias_raw.tsv >! temp.tsv
 awk 'NR <= 1 || \!/fragment/' temp.tsv >! loops_unfiltered_nobias_raw.tsv
 rm -f temp.tsv
+
+# Create CPM normalized unfiltered loops files (bias)
+awk -v var="$intra_reads" '{                                                              \
+	if ( NR == 1 )                                                                    \
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9                  \
+	else                                                                              \
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5/(var/1000000)"\t"$6"\t"$7"\t"$8"\t"$9    \
+}' loops_unfiltered_bias_raw.tsv >! loops_unfiltered_bias_cpm.tsv
+
+# Create CPM normalized unfiltered loops files (no bias)
+awk -v var="$intra_reads" '{                                                              \
+        if ( NR == 1 )                                                                    \
+                print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9                  \
+        else                                                                              \
+                print $1"\t"$2"\t"$3"\t"$4"\t"$5/(var/1000000)"\t"$6"\t"$7"\t"$8"\t"$9    \
+}' loops_unfiltered_nobias_raw.tsv >! loops_unfiltered_nobias_cpm.tsv
+
 
 # filtered loops (bias)
 cat chr*/loops_filtered_bias_raw.tsv >! temp.tsv
@@ -106,7 +123,7 @@ rm -f temp.tsv
 awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_bias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_bias.igv.bed
 awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_nobias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_nobias.igv.bed
 
-# Create CPM normalized loops files (bias)
+# Create CPM normalized filtered loops files (bias)
 awk -v var="$intra_reads" '{                                                              \
 	if ( NR == 1 )                                                                    \
 		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9                  \
@@ -116,7 +133,7 @@ awk -v var="$intra_reads" '{                                                    
 
 awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7/(var/1000000)}' loops_filtered_bias_raw.bedpe >! loops_filtered_bias_cpm.bedpe
 
-# Create CPM normalized loops files (no bias)
+# Create CPM normalized filtered loops files (no bias)
 awk -v var="$intra_reads" '{                                                              \
         if ( NR == 1 )                                                                    \
                 print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9                  \
@@ -131,9 +148,10 @@ awk -v var="$intra_reads" '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7/(var/10
 # Get random unfiltered 500k loops
 head -n 1 loops_unfiltered_bias_raw.tsv > loops_unfiltered_bias_raw_shuf500k.tsv
 tail -n +2 loops_unfiltered_bias_raw.tsv | shuf -n 500000 >> loops_unfiltered_bias_raw_shuf500k.tsv
-gzip -f loops_unfiltered_bias_raw.tsv
-gzip -f loops_unfiltered_nobias_raw.tsv
-rm -f loops_unfiltered_bias_raw.tsv loops_unfiltered_nobias_raw.tsv
+gzip -f loops_unfiltered_bias_cpm.tsv
+gzip -f loops_unfiltered_nobias_cpm.tsv
+rm -f loops_unfiltered_bias_raw.tsv loops_unfiltered_nobias_raw.tsv loops_unfiltered_bias_cpm.tsv loops_unfiltered_nobias_cpm.tsv
+
 mkdir -p QC_plots
 cd $main_dir
 @ n = $n_chromosomes - 1
