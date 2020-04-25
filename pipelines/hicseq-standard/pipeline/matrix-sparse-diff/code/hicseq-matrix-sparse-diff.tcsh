@@ -69,8 +69,9 @@ foreach chr ($CHR)
     set jpref = $outdir/__jdata/job.$chr
     set mem = 40G
     scripts-create-path $jpref
-    Rscript ./code/sparse-matrix-diff.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2
-#    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
+    set Rcmd = "Rscript ./code/sparse-matrix-diff.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2"
+    echo $Rcmd | scripts-send2err
+    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif
 end
 
@@ -91,6 +92,9 @@ head -1 $diff_files[1] >! $outdir/diff-anchors.csv
 foreach diff_file ($diff_files)
   cat $diff_file | scripts-skipn 1 >> $outdir/diff-anchors.csv
 end
+
+# remove bias and filter anchor pairs
+Rscript ./code/filter-diff-anchors.r --min-dist=$min_dist --min-val=$min_val $outdir/diff-anchors.csv >! $outdir/filtered-diff-anchors.csv
 
 # organize virtual 4Cs into a single directory
 mkdir $outdir/v4C
