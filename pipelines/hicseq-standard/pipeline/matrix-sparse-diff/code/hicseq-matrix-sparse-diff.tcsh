@@ -94,7 +94,7 @@ foreach diff_file ($diff_files)
 end
 
 # remove bias and filter anchor pairs
-Rscript ./code/filter-diff-anchors.r --min-dist=$min_dist --min-val=$min_val $outdir/diff-anchors.csv >! $outdir/filtered-diff-anchors.csv
+Rscript ./code/filter-diff-anchors.r --min-dist=$mindist --min-val=$minval $outdir/diff-anchors.csv >! $outdir/filtered-diff-anchors.csv
 
 # organize virtual 4Cs into a single directory
 mkdir $outdir/v4C
