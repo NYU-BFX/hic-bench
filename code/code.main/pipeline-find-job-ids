@@ -1,0 +1,15 @@
+#!/bin/tcsh
+source ./code/code.main/custom-tcshrc      # customize shell environment
+
+##
+## USAGE: pipeline-find-job-ids RESULTS-DIRS
+##
+
+set results = "$1"
+
+set F = `find $results -name 'job*id'`
+
+set jid = `cat $F | sed 's/.* //'`
+
+echo $jid
+

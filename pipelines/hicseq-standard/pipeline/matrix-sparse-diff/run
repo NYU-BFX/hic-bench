@@ -22,7 +22,7 @@ set inpdirs = "inpdirs/*"
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
-set resources = 1,1G,8
+set resources = 1,1G,24
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
