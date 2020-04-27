@@ -29,6 +29,7 @@ if (length(inputs) != 1) { write("Error: wrong number of inputs! Use --help to s
 # input parameters
 min_dist = as.numeric(opt$"min-dist")               # minimum anchor-pair distance
 min_val = as.integer(opt$"min-val")                 # minimum anchor-pair CPK2B value
+correct_bias = FALSE
 
 # input data
 write("Reading input anchor file...",stderr())
@@ -47,16 +48,21 @@ flt_val = (abs(inp_data[,"CPK2B sample 1"])>=min_val) | (abs(inp_data[,"CPK2B sa
 m = mean(inp_data[flt_dist&flt_val,"Log2FC"])
 write(paste0("Average log2 FC (uncorrected) = ",m),stderr())
 
-# correct the bias and filter
-inp_data[,"CPK2B sample 1"] = inp_data[,"CPK2B sample 1"]*bias
-flt_val = (abs(inp_data[,"CPK2B sample 1"])>=min_val) | (abs(inp_data[,"CPK2B sample 2"])>=min_val)
-filtered_data = inp_data[flt_dist&flt_val,]
+if (correct_bias == FALSE) {
+  filtered_data = inp_data[flt_dist&flt_val,]
 
-# correct the log2 fold-changes
-pseudo = 0.5
-filtered_data[,"Log2FC"] = log2( sapply(filtered_data[,"CPK2B sample 2"],max,pseudo)/sapply(filtered_data[,"CPK2B sample 1"],max,pseudo))
-m = mean(filtered_data[,"Log2FC"])
-write(paste0("Average log2 FC (corrected) = ",m),stderr())
+} else {
+  # correct the bias and filter
+  inp_data[,"CPK2B sample 1"] = inp_data[,"CPK2B sample 1"]*bias
+  flt_val = (abs(inp_data[,"CPK2B sample 1"])>=min_val) | (abs(inp_data[,"CPK2B sample 2"])>=min_val)
+  filtered_data = inp_data[flt_dist&flt_val,]
+
+  # correct the log2 fold-changes
+  pseudo = 0.5
+  filtered_data[,"Log2FC"] = log2( sapply(filtered_data[,"CPK2B sample 2"],max,pseudo)/sapply(filtered_data[,"CPK2B sample 1"],max,pseudo))
+  m = mean(filtered_data[,"Log2FC"])
+  write(paste0("Average log2 FC (corrected) = ",m),stderr())
+}
 
 # format table
 filtered_data[,"CPK2B sample 1"] = round(filtered_data[,"CPK2B sample 1"],3)

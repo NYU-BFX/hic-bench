@@ -1,17 +1,19 @@
 #!/bin/tcsh
 
 ##
-## USAGE: run-fix
+## USAGE: run-filter-diff-anchors.tcsh RESULTS-DIR
 ##
 
-if ( ("$1" == "--help") || ($#argv != 0) ) then
+if ( ("$1" == "--help") || ($#argv != 1) ) then
   grep '^##' $0
   exit
 endif
 
+set results = $1
+
 module load r
 
-set X = results-BALL-new/matrix-sparse-diff.by_sample.win_10kb/matrix-sparse.by_sample.unit_100bp.maxd_5Mb/filter.by_sample.mapq_20/align.by_sample.bowtie2/BALL-*/*
+set X = `find $results -name diff-anchors.csv | sed 's/.[^/]\+$//'`
 
 foreach out ($X)
   echo $out | sed 's/.*\///'
