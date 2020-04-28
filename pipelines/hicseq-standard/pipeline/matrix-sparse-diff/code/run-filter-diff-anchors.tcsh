@@ -17,8 +17,9 @@ set X = `find $results -name diff-anchors.csv | sed 's/.[^/]\+$//' | sort`
 
 foreach out ($X)
   echo $out | sed 's/.*\///'
-  Rscript ./code/filter-diff-anchors.r --min-dist=10000 --min-val=4.0 $out/diff-anchors.csv > ! $out/filtered-diff-anchors.csv
-  #wc -l $out/*diff-anchors.csv
+  Rscript ./code/filter-diff-anchors.r --output-dir=$out --min-dist=10000 --min-val=2.0 $out/diff-anchors.csv 
+  wc -l $out/*diff-anchors.csv | grep -v total | awk '{print $1}'
+  #exit
 end
 
 
