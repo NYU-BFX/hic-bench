@@ -3,6 +3,8 @@
 *.a
 *.o
 *.so
+# binary compiled python files
+__pycache__*
 
 # sequencing files
 *.fastq.gz
@@ -48,3 +50,4 @@ misc/misc_files/
 misc_files
 fix_install.R
 .DS_Store
+._.DS_Store
