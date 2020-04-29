@@ -57,7 +57,7 @@ if ($format == cool || $format == h5 || $format == homer) then
 	echo 'Running hicConvertFormat...' | scripts-send2err
 	set job_dir = $outdir/__jdata
 	mkdir -p $job_dir
-	set jid = `sbatch --output="$job_dir/job_hicConvertFormat.out" --error="$job_dir/job_hicConvertFormat.err" ./code/scripts-tracks-hicConvertFormat.sh $outdir $format $resolution $keep_all`
+	set jid = `sbatch --output="$job_dir/job_hicConvertFormat.out" --error="$job_dir/job_hicConvertFormat.err" ./code/scripts-tracks-hicConvertFormat.sh $cwd $outdir $format $resolution $keep_all`
 	set jid = `echo $jid | sed 's/.* //'`
 endif
 

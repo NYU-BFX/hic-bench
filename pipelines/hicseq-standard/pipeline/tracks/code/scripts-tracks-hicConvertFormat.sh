@@ -5,17 +5,18 @@
 #SBATCH -N 1
 #SBATCH -c 1
 
-outdir=$1
-format=$2
-resolution=$3
-keep_all=$4
+cwd=$1
+outdir=$2
+format=$3
+resolution=$4
+keep_all=$5
 
 module unload python
 module load anaconda3/cpu/5.2.0
 
 # Check if its a single or multiple resolution run
 if [[ "$resolution" =~ "," ]]; then    multi=TRUE; fi
-cd $outdir
+cd $cwd/$outdir
 
 ### COOL / MCOOL ###
 if [[ $format = cool || $format = h5 || $format = homer ]]

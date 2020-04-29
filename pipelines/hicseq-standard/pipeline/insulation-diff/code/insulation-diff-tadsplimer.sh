@@ -22,12 +22,14 @@ echo "object1 is: $object1"
 echo "object2 is: $object2"
 echo "mat is: $mat"
 
->&2 echo "Bash variable R_LIBS_SITE is $R_LIBS_SITE"
+>&2 "Before loading TADsplimer's R, it is observed in the \$PATH of curren
+t working shell that:"
+>&2 echo "the bash variable R_LIBS_SITE is $R_LIBS_SITE"
 if [ -s $R_LIBS_SITE ]
 then
   >&2 echo "TADsplimer in conda environment has a peculiar R version."
   >&2 echo "It's best to use conda environment R's internal packages."
-  break
+  R_LIBS_SITE=""
 fi
 
 
