@@ -3,11 +3,11 @@
 module load latex/2019
 
 ### REQUIRED PARAMETERS ###
-set report = hicseq-standard-report # report name
+set report = leukemia-DR # report name
 
 # set alignment & filtering parameters (you can find this info in the respective step's 'params' files)
 set aligner = bowtie2	# e.g. bowtie2, bwa
-set mapq = 20	
+set mapq = 15	
 set mindist = 25000
 
 # set matrix parameters
@@ -18,13 +18,18 @@ set compBinSize = 100  	# compartments resolution (kb)
 
 # set domains-diff parameters (intraTAD activity section)
 set by_group = "TRUE"	# creates intraTAD activity slides showing group pair-wise comparisons
-set comparisons_group = "" # select which group-comparisons will be included" e.g. "CUTLL1_DMSO_A.CUTLL1_THZ1 CUTLL1_DMSO_H.CUTLL1_gSI"
+set comparisons_group = "CUTLL1_DMSO_A.CUTLL1_THZ1 CUTLL1_DMSO_H.CUTLL1_gSI" # select which group-comparisons will be included" e.g. "CUTLL1_DMSO_A.CUTLL1_THZ1 CUTLL1_DMSO_H.CUTLL1_gSI"
 set by_sample = "FALSE" # creates intraTAD activity slides showing sample pair-wise comparisons
 set comparisons_sample = "" # select which sample-comparisons will be included
+
+# set loops parameters
+set winsize = 20
+set include_loops = "TRUE"
+set include_loops_diff = "TRUE"
 
 ### OPTIONAL PARAMETERS ### 
 
 # set external data transfer parameters
-set transferGdrive = "FALSE"	# transfers all the report data to a gdrive account (requires rclone-gdrive remote setup: https://rclone.org/drive/)
-set gdrive_remote_path = ""	# e.g. Javi_remote:cluster2gdrive/Work/ABL-delivery/reports/
-set transferExternal = "FALSE"    # only useful for ABL core member (requires special HPC permissons)
+set transferGdrive = "TRUE"	# transfers all the report data to a gdrive account (requires rclone-gdrive remote setup: https://rclone.org/drive/)
+set gdrive_remote_path = "Javi_remote:cluster2gdrive/Work/ABL-delivery/reports/"	# e.g. Javi_remote:cluster2gdrive/Work/ABL-delivery/reports/
+set transferExternal = "TRUE"    # only useful for ABL core member (requires special HPC permissons)
