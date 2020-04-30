@@ -22,7 +22,7 @@ echo "object1 is: $object1"
 echo "object2 is: $object2"
 echo "mat is: $mat"
 
->&2 "Before loading TADsplimer's R, it is observed in the \$PATH of curren
+>&2 echo "Before loading TADsplimer's R, it is observed in the \$PATH of curren
 t working shell that:"
 >&2 echo "the bash variable R_LIBS_SITE is $R_LIBS_SITE"
 if [ -s $R_LIBS_SITE ]
