@@ -27,7 +27,7 @@ endif
 # file names should exist in fastq directory
 set files = `cat $sheet | scripts-skipn 1 | cut -f3,4 | tr ',\t' '\n' | sort -u`
 foreach f ($files)
-  if (! -e inputs/fastq/$f) then
+  if (! -e inputs/fastq/$f && $f != -) then
     scripts-send2err "Error: file \'$f\' not found in inputs/fastq directory."
     exit 1
   endif
