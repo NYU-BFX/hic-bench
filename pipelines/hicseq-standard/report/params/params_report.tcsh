@@ -22,6 +22,11 @@ set comparisons_group = "" # select which group-comparisons will be included" e.
 set by_sample = "FALSE" # creates intraTAD activity slides showing sample pair-wise comparisons
 set comparisons_sample = "" # select which sample-comparisons will be included
 
+# set loops parameters
+set winsize = 20
+set include_loops = "TRUE"
+set include_loops_diff = "TRUE"
+
 ### OPTIONAL PARAMETERS ### 
 
 # set external data transfer parameters

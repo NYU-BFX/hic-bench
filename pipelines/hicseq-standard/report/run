@@ -78,6 +78,19 @@ ln -sf ../../pipeline/domains/results/domains.by_group.hicratio.d_0500/matrix-ic
 #ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_group.hicratio-selected-regions/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} hicplotter-diff
 #rm -f hicplotter-diff/*/job* hicplotter-diff/*/*.png
 
+#loops
+if ("$include_loops" == "TRUE") then
+	ln -sf ../../pipeline/loops/results/loops.by_sample.fithic.res_${winsize}kb/${main_branch}/ loops-by-sample
+	ln -sf ../../pipeline/loops/results/loops.by_group.fithic.res_${winsize}kb/${main_branch}/ loops-by-group
+endif
+
+#loops-diff
+if ("$include_loops_diff" == "TRUE") then
+	ln -sf ../../pipeline/loops-diff/results/loops-diff.by_sample.standard/loops.by_sample.fithic.res_${winsize}kb/${main_branch}/ loops-diff-by-sample
+	ln -sf ../../pipeline/loops-diff/results/loops-diff.by_group.standard/loops.by_group.fithic.res_${winsize}kb/${main_branch}/ loops-diff-by-group	
+endif
+
+
 
 #### CREATE DOMAINS-DIFF tex-templates FOR ALL THE COMPARISONS SELECTED ####
 mkdir domains-diff
@@ -237,3 +250,4 @@ echo "Transfering report data to: /gpfs/data/sequence/results/external/NYU/ABL-H
         rclone copy -P -L --exclude-from report-repo/exclude_files.txt $report /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report"
         module unload rclone
 endif
+

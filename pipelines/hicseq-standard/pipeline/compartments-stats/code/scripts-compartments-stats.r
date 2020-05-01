@@ -183,8 +183,7 @@ getEigenHmap=function(mat,bins.fraction=0.3){ #tot.bins = number of top most var
 }
 
 # classify switched pc1 bins (pairwise-comparison)
-classifyPc1Bins=function(mat){
-  delta.cut=1.5
+classifyPc1Bins=function(mat,delta.cut){
   df.switch=data.frame(sampleName1=character(choose(ncol(mat),2)),sampleName2=NA,AA.number=NA,AB.number=NA,BB.number=NA,BA.number=NA,stringsAsFactors = F)
   seq=1:ncol(mat)
   nr=1
@@ -193,7 +192,7 @@ classifyPc1Bins=function(mat){
       if(y>x){
         df.mat=mat[,c(names(mat)[x],names(mat)[y])]
         df.mat$pc1.diff=df.mat[,1]-df.mat[,2]
-        df.mat$delta=df.mat[,1]-df.mat[,2,]/df.mat[,1]
+        df.mat$delta=(df.mat[,1]-df.mat[,2])/abs(df.mat[,2])
         df.mat$switch=NA
         df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] > 0]="AA"
         df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] < 0]="BB"
@@ -239,8 +238,10 @@ getBarSwitch=function(df.switch){
           geom_bar(stat = "identity",colour="black",position = "stack",width = 0.6,size=0.5)+
           xlab("")+
           ylab("number of eigenvector-1 bins")+
+          ggtitle(paste0("Compartments switch criteria: PC1 sign flips & abs(relative delta cutoff) is > ",delta.cut))+
           scale_fill_manual(values=c("blue","darkred","darkblue","red"))+
           coord_flip()+
+          theme(plot.title = element_text(hjust = 0.5,size=9))+
           guides(fill=guide_legend("")))
 }
 
@@ -310,6 +311,7 @@ option_list <- list(
   make_option(c("-c","--centrotelo-file"), default="", help="A bed file containing centromere and telomere coordinates [default \"%default\"]."),
   make_option(c("-m","--pca1-matrix"), default="", help="A matrix containing the samples PC1 values for each sample [default \"%default\"]."),
   make_option(c("-r","--metrics-file"), default="", help="A text file containing the AB logratio metrics for each sample [default \"%default\"]."),
+  make_option(c("-d","--delta-cutoff"), default="1.2", help="A delta value cutoff for compartment switch call [default \"%default\"]."),
   make_option(c("--show-text"), action="store_true",default=TRUE, help="Display sample label text on PCA plot."),
   make_option(c("--use-short-names"), action="store_true",default=FALSE, help="Use only second part of the name (after the colon)."),
   make_option(c("--plain"), action="store_true",default=FALSE, help="Create only PCA and heatmap plots.")
@@ -323,6 +325,7 @@ files = opt$'pca1-matrix'
 if (length(files)!=1) { write('Error: this operation requires an input matrix!',stderr()); quit(save='no'); }
 metrics_file = opt$'metrics-file'
 out_dir = opt$'output-dir'
+delta.cut = as.numeric(opt$'delta-cutoff')
 sample_labels = opt$'sample-labels'
 show_text = opt$'show-text'
 use_short_names = opt$'use-short-names'
@@ -415,7 +418,7 @@ if (plain==FALSE){
   dev.off()
   
   # classify pc1 bin in AA, AB, BB, BA
-  df.switch=classifyPc1Bins(mat)
+  df.switch=classifyPc1Bins(mat,delta.cut)
   write.table(df.switch,paste0(out_dir,'/pc1.switch_summary.tsv'),sep='\t',row.names = F,col.names=T,quote=F)
   
   #plot bars for pc1 classified bins

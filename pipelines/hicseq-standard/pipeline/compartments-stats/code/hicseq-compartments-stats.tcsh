@@ -55,8 +55,7 @@ foreach object ($objects)
 end
 
 cat $outdir/data.tsv | tools-table -c -n 6 | sed 's/ *$//' | tr -s ' ' '\t' >! $outdir/pca1.matrix.tsv
-
-Rscript ./code/scripts-compartments-stats.r -v -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -r $outdir/metrics.tsv -c $centrotelo_file $pca_params
+Rscript ./code/scripts-compartments-stats.r -v -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -r $outdir/metrics.tsv -c $centrotelo_file -d $delta_cut $pca_params
 
 rm -f $outdir/data.tsv
 
