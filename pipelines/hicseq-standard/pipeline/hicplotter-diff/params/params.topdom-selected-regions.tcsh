@@ -1,6 +1,8 @@
 #!/bin/tcsh
 
 source ./inputs/params/params.tcsh
+module unload python
+module load python/gcc/2.7.15
 
 # TAD caller and intra-TAD method
 set domains_method = topdom.win_5
