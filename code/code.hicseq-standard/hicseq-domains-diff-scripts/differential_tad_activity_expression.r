@@ -14,6 +14,9 @@ bin.size <-  as.numeric(args[9])
 min.TAD.size <- as.numeric(args[10])
 out_prefix <- args[11]
 
+# In communicating the tad_activity data.frame to text output, the scientific notation does not help.
+options(scipen=999)
+
 # cutoffs
 logFC_threshold = 0.2
 fdr_threshold = 0.1
@@ -82,6 +85,9 @@ for (tad.num in 1:nrow(tad_activity)) {
   tad_activity$geneIDs[tad.num]=paste(gene_hits$geneID,collapse = ",")
 }
 write.table(file=paste(out_prefix,"_annotated.tsv",sep=""),tad_activity,sep="\t",quote=FALSE,row.names=FALSE)
+
+# Same output in .bed format, with the fold change as 5th column
+write.table(data.frame(tad_activity$chr, tad_activity$TAD_start, tad_activity$TAD_end, "Domains_diff_FC", ifelse(!is.na(tad_activity$logFC), tad_activity$logFC, 0.0), "*"), file=paste0(out_prefix, "_annotated.bed"), sep="\t", row.names=F, col.names=F, quote=F)
 
 # get max absolute lfc & fdr values (helps to set axes limits)
 tad_activity.clean=tad_activity[abs(tad_activity$mean_diff) >= meanDiff_threshold &
