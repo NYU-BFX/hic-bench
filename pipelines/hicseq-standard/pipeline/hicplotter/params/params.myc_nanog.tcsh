@@ -1,6 +1,8 @@
 #!/bin/tcsh
 
 source ./inputs/params/params.tcsh
+module unload python
+module load python/gcc/2.7.15
 
 # HiCplotter path
 set hicplotter_path = ./code/HiCPlotter2.py

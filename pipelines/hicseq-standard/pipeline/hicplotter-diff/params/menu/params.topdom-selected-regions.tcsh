@@ -1,11 +1,11 @@
 #!/bin/tcsh
 
 source ./inputs/params/params.tcsh
-module unload python
+module unload python				## this is required to avoid conflicts with python 3.6 version
 module load python/gcc/2.7.15
 
-# TAD caller
-set domains_method = hicratio.d_0500
+# TAD caller and intra-TAD method
+set domains_method = topdom.win_5
 
 # Domains-diff method and cutoffs
 set domains_diff_method = ${domains_method}.dist_norm.ref1
