@@ -39,6 +39,9 @@ scripts-create-path $outdir/
 set n_reads = `cat $branch/$object/stats.tsv | grep '^ds-accepted-intra	' | cut -f2`
 scripts-send2err "- number of reads = $n_reads"
 
+# determine radius around anchors
+set radius = `echo $resolution/2 | bc`
+
 # Process each chromosome separately
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
@@ -50,7 +53,7 @@ foreach chr ($CHR)
     set jpref = $outdir/__jdata/job.$chr
     set mem = 20G   #`du $branch/$object/matrix.$chr.mtx | awk '{printf "%ld\n", 5+2*$1/100000}' | tools-vectors cutoff -n 0 -u -c 40`G
     scripts-create-path $jpref
-    set Rcmd = "Rscript ./code/virtual4C.r --nreads=$n_reads --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --window=$win --radius=$radius $outdir/$chr $chr $branch/$object/matrix.$chr.mtx"
+    set Rcmd = "Rscript ./code/virtual4C.r --nreads=$n_reads --unit=$unit --vp-file=$outdir/$chr/vp.bed --maxdist=$maxdist --radius=$radius $outdir/$chr $chr $branch/$object/matrix.$chr.mtx"
     echo $Rcmd | scripts-send2err
     set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif

@@ -15,8 +15,7 @@ option_list <- list(
   make_option(c("--nreads"),default=0, help="number of sequenced read pairs in input sample"),
   make_option(c("-u","--unit"),default=0, help="maximum resolution (bp)"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
-  make_option(c("-r","--radius"),default=10000, help="radius around viewpoint (bp)"),
-  make_option(c("-w","--window"),default=20000, help="size of rolling window (bp)")
+  make_option(c("-r","--radius"),default=10000, help="radius around viewpoints and target anchors (bp)")
 )
 
 # process command line arguments
@@ -32,7 +31,6 @@ n_reads = as.integer(opt$"nreads")      # number of sequenced read pairs in samp
 U = as.integer(opt$"unit")              # maximum resolution (bp)
 d = as.integer(opt$"maxdist")           # maximum distance from viewpoint
 r = as.integer(opt$"radius")            # radius around viewpoint
-w = as.integer(opt$"window")            # rolling window size
 
 # input matrices
 mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
@@ -41,20 +39,25 @@ mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
 suppressPackageStartupMessages(library(Matrix))
 suppressPackageStartupMessages(library(zoo))
 
-# divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
-CPK2B = (2*r/1000)*(w/1000)*(n_reads/1000000000)
-
 # adjust by unit 
 R = r %/% U
 D = d %/% U
-W = w %/% U
+W = 2*R + 1
 
-# load matrix 1
+# divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
+CPK2B = (W*U/1000)^2*(n_reads/1000000000)
+
+# load matrix
 write("Loading matrix...",stderr())
 X <- readMM(mat1)
+write(format(object.size(X),units="auto",standard="SI"),file=stderr())
+
+# make symmetric
 X = X+t(X); diag(X) = diag(X)/2
 Xn = nrow(X)
-write(format(object.size(X),units="auto",standard="SI"),file=stderr())
+
+# set column labels by coordinate start)
+colnames(X) = seq(0,ncol(X)-1)*U
 
 # load viewpoint information
 write("Loading viewpoint information...",stderr())
@@ -74,6 +77,7 @@ v4C = function(X,VP,R,D,W)
 # determine viewpoints
 vp_list = as.numeric(apply(G,1,function(v) { if (v["strand"]=='+') { v["start"] } else { v["end"] } })) %/% U
 
+# process each viewpoint separately
 write(paste("Testing",length(vp_list),"viewpoints..."),stderr())
 options(scipen=999)                                                       # disable scientific notation
 n_vp = length(vp_list)
@@ -86,7 +90,7 @@ for (k in 1:n_vp)
   x = round(v4C(X,VP,R,D,W) / CPK2B,4)
   
   # generate coordinates
-  coord_start = U*(max(VP-D,0):min(VP+D,Xn-1))
+  coord_start = as.numeric(names(x))
   coord_end = coord_start + U
   
   # generate v4C files

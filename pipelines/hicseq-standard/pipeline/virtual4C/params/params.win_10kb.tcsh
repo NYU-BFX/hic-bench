@@ -2,10 +2,9 @@
 
 source ./inputs/params/params.tcsh
 
-set chrom_excluded = 'chr[MY]'                           # excluded chromosomes
-set viewpoints_file = $genome_dir/protein_coding.bed     # list of coordinates to be used as viewpoints
-set win = 10000                                          # size of rolling window for Hi-C count aggregation (bp)
-set radius = `echo $win/2 | bc`                          # radius around viewpoint (bp)
-set maxdist = 2500000                                    # maximum distance from viewpoint (bp)
+set chrom_excluded = 'chr[MY]'                                         # excluded chromosomes
+set resolution = 10000                                                 # resolution (bp)
+set viewpoints_file = $genome_dir/protein_coding.bed                   # bed file: list of coordinates to be used as viewpoints
+set maxdist = 2500000                                                  # maximum distance from viewpoint (bp)
 
 
