@@ -54,8 +54,11 @@ else
   set n_reads2 = 0
 endif
 
+# determine radius around anchors
+set radius = `echo $resolution/2 | bc`
+
 # set options
-set OPTIONS = "--nreads1=$n_reads1 --nreads2=$n_reads2 --unit=$unit --maxdist=$maxdist --radius=$radius --window=$window --mincount=$mincount --mindiff=$mindiff"
+set OPTIONS = "--nreads1=$n_reads1 --nreads2=$n_reads2 --unit=$unit --maxdist=$maxdist --radius=$radius --mincount=$mincount --mindiff=$mindiff"
 
 # run analysis per chromosome
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`

@@ -85,8 +85,7 @@ option_list <- list(
   make_option(c("--target-file"),default="", help="target anchors bed file (optional)"),
   make_option(c("-u","--unit"),default=0, help="maximum resolution (bp)"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
-  make_option(c("-r","--radius"),default=10000, help="radius around viewpoint (bp)"),
-  make_option(c("-w","--window"),default=20000, help="size of rolling window (bp)"),
+  make_option(c("-r","--radius"),default=10000, help="radius around viewpoint and target anchors (bp)"),
   make_option(c("--mincount"),default=50, help="minimum viewpoint count for virtual 4Cs"),
   make_option(c("--mindiff"),default=0.1, help="minimum difference (fraction)"),
   make_option(c("--fc-mincount"),default=10, help="minimum count for pairwise anchor fold-change calculation")
@@ -105,7 +104,6 @@ n_reads_X = as.integer(opt$"nreads1")           # number of sequenced read pairs
 n_reads_Y = as.integer(opt$"nreads2")           # number of sequenced read pairs in sample 2
 U = as.integer(opt$"unit")                      # maximum resolution (bp)
 d = as.integer(opt$"maxdist")                   # maximum distance from viewpoint (bp)
-w = as.integer(opt$"window")                    # rolling window size (bp)
 r = as.integer(opt$"radius")                    # radius around viewpoint (bp)
 mincount = as.integer(opt$mincount)             # minimum viewpoint count for virtual 4Cs
 mindiff = as.numeric(opt$mindiff)               # minimum difference
@@ -125,9 +123,9 @@ options(scipen=999)                                                       # disa
 # adjust by unit 
 R = r %/% U
 D = d %/% U
-W = w %/% U
+W = 2*R + 1
 
-# load matrix 1
+# load matrix 1 and make symmetric
 write("Loading matrix 1...",stderr())
 X <- readMM(mat1)
 if (n_reads_X==0) n_reads_X = sum(X)
@@ -135,7 +133,7 @@ X = X+t(X); diag(X) = diag(X)/2
 Xn = nrow(X)
 write(format(object.size(X),units="auto",standard="SI"),file=stderr())
 
-# load matrix 2
+# load matrix 2 and make symmetric
 write("Loading matrix 2...",stderr())
 Y <- readMM(mat2)
 if (n_reads_Y==0) n_reads_Y = sum(Y)
@@ -146,12 +144,16 @@ write(format(object.size(Y),units="auto",standard="SI"),file=stderr())
 # check matrix sizes
 if (Xn!=Yn) { write("Error: input matrices have different sizes!\n",file=stderr()); quit(save='no') }
 
+# name columns by coordinate start
+colnames(X) = seq(0,ncol(X)-1)*U
+colnames(Y) = seq(0,ncol(Y)-1)*U
+
 # adjust counts in second sample
 a = n_reads_X/n_reads_Y
 Y = a*Y
 
 # divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
-CPK2B = (2*r/1000)*(w/1000)*(n_reads_X/1000000000)
+CPK2B = (W*U/1000)^2*(n_reads_X/1000000000)
 
 # Load viewpoint information (source anchors)
 vp_table = read.table(opt$"vp-file")
@@ -220,6 +222,7 @@ vp_stats = matrix(0,length(vp_list),length(col_labels))
 rownames(vp_stats) = vp_table$label
 colnames(vp_stats) = col_labels
 
+# Test each viewpoint separately
 write(paste("Testing",length(vp_list),"viewpoints..."),stderr())
 file_diff_regions = paste(outdir,'/diff-regions.csv',sep='')
 cat("vp-name,vp-chr,vp-start,vp-end,target-distance,target-start,target-end,target-length,sample1-value,sample2-value,diff\n",file=file_diff_regions)
@@ -235,7 +238,8 @@ for (k in 1:n_vp)
   y = v4C(Y,VP,R,D,W)
   
   # generate coordinates
-  coord_start = U*(max(VP-D,0):min(VP+D,Xn-1))
+  coord_start = as.numeric(names(x))
+#  coord_start = U*(max(VP-D,0):min(VP+D,Xn-1))
   coord_end = coord_start + U
   
   # generate max & sum stats
@@ -275,11 +279,11 @@ for (k in 1:n_vp)
 
   # identify differential target anchors
 #  write("-- differential target anchors",stderr())
-  vp_offset = VP - max(VP-D,0) + 1                                  # position of viepoint (VP) in v4C vector
-  delta = anchor_list - VP                                          # distances of all anchors from viewpoint
-  J = abs(delta)<=D                                                 # indexes of anchors that are within distance D from VP
-  anchor_labels = as.character(anchor_table$label[J])               # labels of these anchors
-  anchor_offsets = vp_offset + delta[J]                             # positions of these anchors in v4C vector
+  vp_offset = VP - max(VP-D,1) + 1                                         # position of viewpoint (VP) in v4C vector
+  delta = anchor_list - VP                                                 # distances of all anchors from viewpoint
+  J = abs(delta)<=D                                                        # indexes of anchors that are within distance D from VP
+  anchor_labels = as.character(anchor_table$label[J])                      # labels of these anchors
+  anchor_offsets = vp_offset + delta[J]                                    # positions of these anchors in v4C vector
   K = (x[anchor_offsets]>=fc_mincount)|(y[anchor_offsets]>=fc_mincount)    # find anchors with enough adjusted counts in at least one of the samples
   K[is.na(K)] = FALSE
   if (sum(K)>0) {
