@@ -50,7 +50,7 @@ cat $l2 | gunzip >! $outdir/l2.tsv
 # Soft-filter loops (qcut2 & min_cpm)
 echo "Soft-filtering loops (qval <= "$qcut2")..." | scripts-send2err
 awk -v q="$qcut2" -v c="$min_cpm" '{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $outdir/l1.tsv >! $outdir/l1_q2.tsv
-awk -v q="$qcut2" -v c="$min_cpm"'{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $outdir/l2.tsv >! $outdir/l2_q2.tsv
+awk -v q="$qcut2" -v c="$min_cpm" '{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $outdir/l2.tsv >! $outdir/l2_q2.tsv
 rm -f $outdir/l1.tsv $outdir/l2.tsv
 
 # Generate loops-analysis report
