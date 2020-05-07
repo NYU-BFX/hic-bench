@@ -40,7 +40,7 @@ contactsByDist=function(df.gg,group,is.common){
   print(ggplot(df.gg, aes(x=distance, y=contactCount,group=!!ensym(x),color=!!ensym(x)))+
           scale_x_continuous(trans='log10')+
           scale_y_continuous(trans= "log10")+
-          geom_smooth(size=0.3,se = T)+
+          geom_smooth(size=0.6,se = T)+
           ggtitle(label=title)+
           scale_color_manual(values = color.df$color)+
           xlab("log10 (distance)")+
@@ -68,7 +68,7 @@ contactsByDistByChr=function(df.gg,group,is.common){
   print(ggplot(df.gg, aes(x=distance, y=contactCount,group=!!ensym(x),color=!!ensym(x)))+
           scale_x_continuous(trans='log10')+
           scale_y_continuous(trans= "log10")+
-          geom_smooth(size=0.3)+
+          geom_smooth(size=0.6)+
           ggtitle(label=title)+
           scale_color_manual(values = color.df$color)+
           facet_wrap(chrom~., scales= "fixed",nrow=3)+
@@ -207,14 +207,14 @@ countBarLoopClass = function(df.gg.bar){
 }
 
 # loop count barplot (common, C1.specific, C2.specific)
-countBarStacked = function(df.gg){
-  print(ggplot(data=df.gg,aes(x=group,fill=group2))+
+countBarStacked = function(df.gg2){
+  print(ggplot(data=df.gg2,aes(x=group,fill=group2))+
           geom_bar(colour="black")+
           ylab("loop count")+
           xlab("")+
           labs(fill="loop class")+
           theme(axis.text.x = element_text(angle = -45))+
-          scale_fill_manual(values = keys.df2$color))
+          scale_fill_manual(values = keys.df3$color))
 }
 
 # loop % barplot (common, C1.specific, C2.specific)
@@ -299,6 +299,7 @@ promoterCountCommon = function(df.common){
     xlab("")
 }
 
+# promoter fraction common
 promoterFractionCommon = function(df.promoter.perc.common){
   ggplot(data=df.promoter.perc.common,aes(x=group2,y=frac,fill=group))+
     geom_bar(position="fill",stat="identity",colour="black",width=0.45)+
@@ -401,9 +402,10 @@ C2.specific=y[y$loops.ID %in% C2.loops$loops.ID[C2.loops$qcut1==T] & !(y$loops.I
 C2.specific=C2.specific[C2.specific$qcut1==T,]
 df.gg$group2=as.character(df.gg$group)
 df.gg$group2[df.gg$loops.ID %in% common.loops]="common"
+df.gg$group2[df.gg$group2 == "common" & df.gg$group == C1.lab]=paste0("common-",C1.lab)
+df.gg$group2[df.gg$group2 == "common" & df.gg$group == C2.lab]=paste0("common-",C2.lab)
 
 master.tab=df.gg[df.gg$group2 == "common" | df.gg$qcut1 == T,]
-master.tab=master.tab[!(master.tab$group2 == "common" & duplicated(master.tab$loops.ID)),]
 master.tab$group2=as.factor(master.tab$group2)
 master.tab=master.tab[,-c(23)]
 df.gg=df.gg[,-c(23)]
@@ -456,29 +458,32 @@ df.gg.bar=df.gg
 c1.unique.count=sum(df.gg.bar$group2==C1.lab,na.rm = T)
 c2.unique.count=sum(df.gg.bar$group2==C2.lab,na.rm = T)
 df.gg.bar=df.gg.bar[!duplicated(df.gg.bar$loops.ID),]
-common.count=sum(df.gg.bar$group2=="common",na.rm = T)
+common.count=length(grep("common",df.gg.bar$group2))
 
 # get counts
+df.gg.bar2=df.gg.bar
+df.gg.bar2$group2[grep("common",df.gg.bar2$group2)]="common"
 df.count=data.frame(group2=c("common",C1.lab,C2.lab),count=c(common.count,c1.unique.count,c2.unique.count))
 df.count$group2=as.factor(df.count$group2)
 df.count$group2=factor(df.count$group2,levels=c("common",C1.lab,C2.lab))
 df.count$color=c("darkgrey","blue","red")
-df.count=df.count[df.count$group2 %in% df.gg.bar$group2,]
+df.count=df.count[df.count$group2 %in% df.gg.bar2$group2,]
 tot.count=sum(df.count$count,na.rm = T)
 df.count$perc=round(df.count$count/tot.count,digits=2)
 df.count$all="loop class"
-df.gg.bar$group2=factor(df.gg.bar$group2,levels = df.count$group2)
-df.gg.bar$all="loop class"
+df.gg.bar2$group2=factor(df.gg.bar2$group2,levels = df.count$group2)
+df.gg.bar2$all="loop class"
 df.count$comparison=paste0(C2.lab,"_vs_",C1.lab)
 #write.table(df.count,paste0(outdir,"/metrics_count.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 # get fractions
 df.perc=data.frame(group2=c(C1.lab,C2.lab),unique=NA,common=NA)
-x=df.count$group2[df.count$group2 != "common"]
+x=df.count$group2[grep("common",df.count$group2,invert = T)]
 for (i in x){
-  df.perc$unique[df.perc$group2 == i]=round(df.count$count[df.count$group2 == i]/(df.count$count[df.count$group2 == i]+df.count$count[df.count$group2 == "common"]),digits = 2)
+  df.perc$unique[df.perc$group2 == i]=round(df.count$count[df.count$group2 == i]/(df.count$count[df.count$group2 == i]+df.count$count[grep("common",df.count$group2)]),digits = 2)
   df.perc$common[df.perc$group2 == i]=1-df.perc$unique[df.perc$group2 == i]
 }
+
 df.perc=data.frame(group=rep(df.perc$group2,2),perc=c(df.perc$unique,df.perc$common))
 df.perc$group2=rep(c("common","unique"),each=2)
 df.perc$perc=df.perc$perc*100
@@ -486,11 +491,11 @@ df.perc$comparison=paste0(C2.lab,"_vs_",C1.lab)
 #write.table(df.perc,paste0(outdir,"/metrics_fraction.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 # promoter count / fraction
-df.gg.bar$any.promoter="no-promoter"
-df.gg.bar$any.promoter[df.gg.bar$anchor1.promoter==T | df.gg.bar$anchor2.promoter==T]="promoter"
+df.gg.bar2$any.promoter="no-promoter"
+df.gg.bar2$any.promoter[df.gg.bar2$anchor1.promoter==T | df.gg.bar2$anchor2.promoter==T]="promoter"
 df.promoter.perc=data.frame(group=rep(c("promoter","no-promoter"),3),frac=NA,group2=c(rep("common",2),rep(C1.lab,2),rep(C2.lab,2)),stringsAsFactors = F)
 for (i in 1:nrow(df.promoter.perc)){
-  df.promoter.perc$frac[i]=round(sum(df.gg.bar$any.promoter==df.promoter.perc$group[i] & df.gg.bar$group2==df.promoter.perc$group2[i])/sum(df.gg.bar$group2==df.promoter.perc$group2[i]),digits = 2)
+  df.promoter.perc$frac[i]=round(sum(df.gg.bar2$any.promoter==df.promoter.perc$group[i] & df.gg.bar2$group2==df.promoter.perc$group2[i])/sum(df.gg.bar2$group2==df.promoter.perc$group2[i]),digits = 2)
 }
 #write.table(df.promoter.perc,paste0(outdir,"/metrics_promoter_annot.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
@@ -502,13 +507,27 @@ for (i in 1:nrow(df.promoter.perc.common)){
 }
 
 # customize colors
+df.gg2=df.gg
+df.gg2$group2=as.character(df.gg2$group2)
+df.gg2$group2[grep("common",df.gg2$group2)]="common"
+df.gg2$group2=as.factor(df.gg2$group2)
+df.gg2$group2=factor(df.gg2$group2,levels(df.gg2$group2))
+ins.stat2=unique(as.character(df.gg2$group2))
+df.gg2$group2=factor(df.gg2$group2,c("common",ins.stat2[ins.stat2 != "common"]))
+
+keys.df3=data.frame(keys=levels(df.gg2$group2),color=NA)
+keys.df3$color[keys.df3$keys =="common"]="darkgrey"
+keys.df3$color[keys.df3$keys == C1.lab]="blue"
+keys.df3$color[keys.df3$keys == C2.lab]="red"
+
 df.gg$group2=as.factor(df.gg$group2)
 df.gg$group2=factor(df.gg$group2,levels(df.gg$group2))
 ins.stat2=unique(as.character(df.gg$group2))
-df.gg$group2=factor(df.gg$group2,c("common",ins.stat2[ins.stat2 != "common"]))
+df.gg$group2=factor(df.gg$group2,c(paste0("common-",C1.lab),paste0("common-",C2.lab),ins.stat2[grep("common",ins.stat2,invert = T)]))
 
 keys.df2=data.frame(keys=levels(df.gg$group2),color=NA)
-keys.df2$color[keys.df2$keys =="common"]="darkgrey"
+keys.df2$color[keys.df2$keys ==paste0("common-",C1.lab)]="darkgreen"
+keys.df2$color[keys.df2$keys ==paste0("common-",C2.lab)]="black"
 keys.df2$color[keys.df2$keys == C1.lab]="blue"
 keys.df2$color[keys.df2$keys == C2.lab]="red"
 
@@ -553,11 +572,11 @@ p8=hexbinContacts(df.common)
 p9=scatterContactCount(df.common)
 p10=distanceBox(df.common,max.dist=10000000)
 p11=loopCountByDist(df.distance.num)
-p12=countBarLoopClass(df.gg.bar)
-p13=countBarStacked(df.gg)
+p12=countBarLoopClass(df.gg.bar2)
+p13=countBarStacked(df.gg2)
 p14=fractionBarStacked(df.perc)
 p15=fractionBarStackedLoopClass(df.count)
-p16=promoterCount(df.gg.bar)
+p16=promoterCount(df.gg.bar2)
 p17=promoterFraction(df.promoter.perc)
 p18=promoterCountCommon(df.common)
 p19=promoterFractionCommon(df.promoter.perc.common)
@@ -616,7 +635,7 @@ grid.arrange(arrangeGrob(p9,p8,nrow=1))
 grid.arrange(arrangeGrob(p5,p7,nrow=1))
 grid.arrange(arrangeGrob(p10,p11,nrow=1))
 p3
-p4
+#p4
 p6
 grid.arrange(arrangeGrob(p16,p17,nrow=1),arrangeGrob(p18,p19,nrow=1),top="Promoter-annotation: Common and group-specific loops",bottom="Criteria: one or more TSS in at least 1 of the loop-anchors")
 dev.off()
