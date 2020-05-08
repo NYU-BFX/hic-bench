@@ -1,6 +1,8 @@
 #!/bin/tcsh
 
 source ./inputs/params/params.tcsh
+module unload python
+module load python/gcc/2.7.15
 
 # TAD caller
 set domains_method = hicratio.d_0500

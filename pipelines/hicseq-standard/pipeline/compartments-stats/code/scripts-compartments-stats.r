@@ -191,8 +191,8 @@ classifyPc1Bins=function(mat,delta.cut){
     for (y in seq){
       if(y>x){
         df.mat=mat[,c(names(mat)[x],names(mat)[y])]
-        df.mat$pc1.diff=df.mat[,1]-df.mat[,2]
-        df.mat$delta=(df.mat[,1]-df.mat[,2])/abs(df.mat[,2])
+        df.mat$pc1.diff=df.mat[,2]-df.mat[,1]
+        df.mat$delta=(df.mat[,2]-df.mat[,1])/abs(df.mat[,2])
         df.mat$switch=NA
         df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] > 0]="AA"
         df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] < 0]="BB"
@@ -206,7 +206,7 @@ classifyPc1Bins=function(mat,delta.cut){
         df.switch$BA.number[nr]=sum(df.mat$switch=="BA",na.rm = T)
         df.switch$sampleName1[nr]=labelsMat[y]
         df.switch$sampleName2[nr]=labelsMat[x]
-        write.table(df.mat,paste0(out_dir,'/pc1.switch_',names(mat)[y],"_vs_",names(mat)[x],'.tsv'),sep='\t',row.names = T,col.names=T,quote=F)
+        write.table(df.mat,paste0(out_dir,'/pc1.switch_',names(mat)[x],"_vs_",names(mat)[y],'.tsv'),sep='\t',row.names = T,col.names=T,quote=F)
         nr=nr+1
       }
     }
