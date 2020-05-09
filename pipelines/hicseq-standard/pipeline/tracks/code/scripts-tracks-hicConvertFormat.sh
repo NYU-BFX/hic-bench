@@ -32,10 +32,8 @@ fi
 if [[ $format = h5  && $multi != TRUE ]]
 then
 # Convert .cool to .h5
-	conda activate hicexplorer
 	echo 'Converting .cool to .h5 file...'
 	hicConvertFormat --matrices filtered.cool --outFileName filtered.h5 --inputFormat cool --outputFormat h5
-	conda deactivate
 fi
 
 if [[ $format = h5  && $multi = TRUE ]]
@@ -47,10 +45,8 @@ fi
 if [[ $format = homer && $multi != TRUE ]]
 then
 # Convert .cool to .homer
-	conda activate hicexplorer
 	echo 'Converting .cool to .homer file...'
 	hicConvertFormat --matrices filtered.cool --outFileName filtered.homer --inputFormat cool --outputFormat homer
-	conda deactivate
 fi
 
 if [[ $format = homer  && $multi = TRUE ]]
