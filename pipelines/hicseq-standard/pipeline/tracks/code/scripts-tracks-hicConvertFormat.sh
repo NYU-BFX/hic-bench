@@ -12,6 +12,8 @@ resolution=$4
 keep_all=$5
 
 module unload python
+module unload anaconda3
+module unload miniconda3
 module load anaconda3/cpu/5.2.0
 
 # Check if its a single or multiple resolution run
@@ -22,10 +24,8 @@ cd $cwd/$outdir
 if [[ $format = cool || $format = h5 || $format = homer ]]
 then
 # Convert .hic to .cool/mcool
-	conda activate hicexplorer
 	echo 'Converting .hic to .cool file...'
 	hicConvertFormat --matrices filtered.hic --outFileName filtered.cool --inputFormat hic --outputFormat cool
-	conda deactivate
 fi
 
 ### H5 ###
