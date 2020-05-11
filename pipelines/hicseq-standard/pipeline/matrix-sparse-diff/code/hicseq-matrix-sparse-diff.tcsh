@@ -65,8 +65,8 @@ set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)
   mkdir -p $outdir/$chr
-  cat $viewpoints_file | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
-  cat $anchors_file | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/anchors.bed       # generate chromosome-specific target anchors file 
+  cat $viewpoints_file | gtools-regions center | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
+  cat $anchors_file | gtools-regions center | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/anchors.bed       # generate chromosome-specific target anchors file 
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     echo "Chromosome $chr..." | scripts-send2err
     set jpref = $outdir/__jdata/job.$chr
