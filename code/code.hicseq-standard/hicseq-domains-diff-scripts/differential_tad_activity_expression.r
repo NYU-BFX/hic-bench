@@ -87,7 +87,9 @@ for (tad.num in 1:nrow(tad_activity)) {
 write.table(file=paste(out_prefix,"_annotated.tsv",sep=""),tad_activity,sep="\t",quote=FALSE,row.names=FALSE)
 
 # Same output in .bed format, with the fold change as 5th column
-write.table(data.frame(tad_activity$chr, tad_activity$TAD_start, tad_activity$TAD_end, "Domains_diff_FC", ifelse(!is.na(tad_activity$logFC), tad_activity$logFC, 0.0), "*"), file=paste0(out_prefix, "_annotated.bed"), sep="\t", row.names=F, col.names=F, quote=F)
+# Notice the length shortening by 500 bp both sides. This is only to ensure that pygenometracks draws tracks in a single line.
+# Do not directly use this final_results_forpygenometracks.bed for downstream analysis. For visualization on pygenometracks only.
+write.table(data.frame(tad_activity$chr, tad_activity$TAD_start + 500, tad_activity$TAD_end - 500, "Domains_diff_FC", ifelse(!is.na(tad_activity$logFC), tad_activity$logFC, 0.0), "*"), file=paste0(out_prefix, "_forpygenometracks.bed"), sep="\t", row.names=F, col.names=F, quote=F)
 
 # get max absolute lfc & fdr values (helps to set axes limits)
 tad_activity.clean=tad_activity[abs(tad_activity$mean_diff) >= meanDiff_threshold &
