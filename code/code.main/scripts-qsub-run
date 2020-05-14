@@ -35,7 +35,7 @@ endif
 #qsub -q all.q -cwd $qsub_params -l mem_free=$mem -l h_vmem=$mem -l mem_token=$mem -o :$jpref.out -e :$jpref.err -pe threaded $nthreads $jpref.sh >! $jpref.jid
 
 echo '#\!/bin/tcsh' >! $jpref.sh
-echo '#'SBATCH --time=24:00:00 >> $jpref.sh
+echo '#'SBATCH --time=48:00:00 >> $jpref.sh
 echo '#'SBATCH -n 1 >> $jpref.sh
 echo '#'SBATCH -c $nthreads >> $jpref.sh
 echo '#'SBATCH -o $jpref.out >> $jpref.sh

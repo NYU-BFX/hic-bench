@@ -67,6 +67,15 @@ foreach chr ($CHR)
   mkdir -p $outdir/$chr
   cat $viewpoints_file | gtools-regions center | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
   cat $anchors_file | gtools-regions center | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/anchors.bed       # generate chromosome-specific target anchors file 
+  if (`cut -f4 $viewpoints_file | sort | uniq -d | wc -l` > 0) then
+    echo "Error: viewpoints bed file has duplicate labels in chromosome $chr." | scripts-send2err
+    exit
+  endif
+  if (`cut -f4 $anchors_file | sort | uniq -d | wc -l` > 0) then
+    echo "Error: anchors bed file has duplicate labels in chromosome $chr." | scripts-send2err
+    exit
+  endif
+  
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     echo "Chromosome $chr..." | scripts-send2err
     set jpref = $outdir/__jdata/job.$chr
@@ -74,7 +83,8 @@ foreach chr ($CHR)
     scripts-create-path $jpref
     set Rcmd = "Rscript ./code/sparse-matrix-diff.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2"
     echo $Rcmd | scripts-send2err
-    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
+    $Rcmd
+    #set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif
 end
 
