@@ -90,7 +90,7 @@ scripts-qsub-wait "$jid"
 set v5C_files = $outdir/*/virtual-5C.csv
 head -1 $v5C_files[1] >! $outdir/virtual-5C.csv
 foreach v5C_file ($v5C_files)
-  cat $v5C_files | scripts-skipn 1 >> $outdir/virtual-5C.csv
+  cat $v5C_file | scripts-skipn 1 >> $outdir/virtual-5C.csv
 end
 
 # organize virtual 4Cs into a single directory
