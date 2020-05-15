@@ -15,6 +15,7 @@ set params = $2
 set branch = $3
 set object1 = ($4)
 set object2 = ($5)
+set DEBUG = false
 
 if (($#object1>1)||($#object2>1)) then
   send2err "Error: matrix-sparse-diff operation is not implemented for multi-object grouping."
@@ -35,6 +36,20 @@ scripts-create-path $outdir/
 # -------------------------------------
 # -----  MAIN CODE BELOW --------------
 # -------------------------------------
+
+# Check format of viewpoints/anchors files
+cat $viewpoints_file | gtools-regions reg | gtools-regions bed | cut -f-6 >! $outdir/viewpoints.bed
+cat $anchors_file | gtools-regions reg | gtools-regions bed | cut -f-6 >! $outdir/anchors.bed
+foreach f (viewpoints anchors)
+  if (`cat $outdir/$f.bed | gtools-regions n | awk '$2>10' | wc -l` > 0) then
+    echo "Error: $f.bed file includes regions instead of single points." | scripts-send2err
+    exit
+  endif
+  if (`cut -f4 $outdir/$f.bed | sort | uniq -d | wc -l` > 0) then
+    echo "Error: $f.bed file has duplicate labels." | scripts-send2err
+    exit
+  endif
+end
 
 # determine number of reads in each sample
 set normalization = genome-intra
@@ -65,16 +80,8 @@ set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 set jid =
 foreach chr ($CHR)
   mkdir -p $outdir/$chr
-  cat $viewpoints_file | gtools-regions center | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
-  cat $anchors_file | gtools-regions center | gtools-regions bed | cut -f-6 | awk -v c=$chr '$1==c' >! $outdir/$chr/anchors.bed       # generate chromosome-specific target anchors file 
-  if (`cut -f4 $viewpoints_file | sort | uniq -d | wc -l` > 0) then
-    echo "Error: viewpoints bed file has duplicate labels in chromosome $chr." | scripts-send2err
-    exit
-  endif
-  if (`cut -f4 $anchors_file | sort | uniq -d | wc -l` > 0) then
-    echo "Error: anchors bed file has duplicate labels in chromosome $chr." | scripts-send2err
-    exit
-  endif
+  cat $outdir/viewpoints.bed | awk -v c=$chr '$1==c' >! $outdir/$chr/vp.bed         # generate chromosome-specific viewpoints file 
+  cat $outdir/anchors.bed | awk -v c=$chr '$1==c' >! $outdir/$chr/anchors.bed       # generate chromosome-specific target anchors file 
   
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     echo "Chromosome $chr..." | scripts-send2err
@@ -83,8 +90,11 @@ foreach chr ($CHR)
     scripts-create-path $jpref
     set Rcmd = "Rscript ./code/sparse-matrix-diff.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object1/matrix.$chr.mtx $branch/$object2/matrix.$chr.mtx $object1 $object2"
     echo $Rcmd | scripts-send2err
-    $Rcmd
-    #set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
+    if ($DEBUG == true) then
+      $Rcmd
+    else
+      set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
+    endif
   endif
 end
 
