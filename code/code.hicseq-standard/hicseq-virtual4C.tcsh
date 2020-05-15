@@ -44,7 +44,7 @@ scripts-send2err "- number of reads = $n_reads"
 set radius = `echo $resolution/2 | bc`
 
 # set options
-set OPTIONS = "--nreads=$n_reads --unit=$unit --maxdist=$maxdist --radius=$radius --mincount=$mincount"
+set OPTIONS = "--nreads=$n_reads --unit=$unit --maxdist=$maxdist --radius=$radius --minvalue=$minvalue"
 
 # Check format of viewpoints/anchors files
 cat $viewpoints_file | gtools-regions reg | gtools-regions bed | cut -f-6 >! $outdir/viewpoints.bed

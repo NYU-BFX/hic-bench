@@ -9,6 +9,6 @@ set anchors_file = $viewpoints_file                                    # bed fil
 
 set resolution = 10000                                                 # resolution (bp)
 set maxdist = 2500000                                                  # maximum distance from viewpoint (bp)
-set mincount = 10                                                      # minimum count filter for virtual 5C
+set minvalue = 2.0                                                     # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results
 
 

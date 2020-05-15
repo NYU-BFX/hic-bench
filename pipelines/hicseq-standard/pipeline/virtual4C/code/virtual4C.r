@@ -17,7 +17,7 @@ option_list <- list(
   make_option(c("-u","--unit"),default=0, help="maximum resolution (bp)"),
   make_option(c("-d","--maxdist"),default=2500000, help="maximum distance from viewpoint (bp)"),
   make_option(c("-r","--radius"),default=10000, help="radius around viewpoints and target anchors (bp)"),
-  make_option(c("--mincount"),default=10, help="minimum count filter for virtual 5C")
+  make_option(c("--minvalue"),default=2.0, help="minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results")
 )
 
 # process command line arguments
@@ -33,7 +33,7 @@ n_reads = as.integer(opt$"nreads")        # number of sequenced read pairs in sa
 U = as.integer(opt$"unit")                # maximum resolution (bp)
 d = as.integer(opt$"maxdist")             # maximum distance from viewpoint
 r = as.integer(opt$"radius")              # radius around viewpoint
-mincount = as.numeric(opt$"mincount")     # minimum count filter for virtual 5C
+minvalue = as.numeric(opt$"minvalue")     # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results
 
 # input matrices
 mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
@@ -138,7 +138,7 @@ for (k in 1:n_vp)
   J = abs(delta)<=D                                                        # indexes of anchors that are within distance D from VP
   anchor_labels = as.character(anchor_table$label[J])                      # labels of these anchors
   anchor_offsets = vp_offset + delta[J]                                    # positions of these anchors in v4C vector
-  K = x[anchor_offsets]>=mincount                                          # find anchors with enough counts
+  K = x[anchor_offsets]>=minvalue                                          # find anchors with enough counts
   K[is.na(K)] = FALSE
   if (sum(K)>0) {
     anchor_data =
