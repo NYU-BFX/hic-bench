@@ -147,8 +147,8 @@ for (method in methods){
       
       specific1=ggHmapAPA(c1.mats.specific.c1,paste0(C1,"\nspecific"))
       specific2=ggHmapAPA(c1.mats.specific.c2,paste0(C1,"\nspecific"))
-      specific3=ggHmapAPA(c1.mats.specific.c1,paste0(C2,"\nspecific"))
-      specific4=ggHmapAPA(c1.mats.specific.c2,paste0(C2,"\nspecific"))
+      specific3=ggHmapAPA(c2.mats.specific.c1,paste0(C2,"\nspecific"))
+      specific4=ggHmapAPA(c2.mats.specific.c2,paste0(C2,"\nspecific"))
       
       # Measures plots
       measures.files=list.files(pattern="measures",recursive = T)
