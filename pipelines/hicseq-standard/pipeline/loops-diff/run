@@ -17,7 +17,7 @@ set opt = "$1"
 
 # setup
 set op = loops-diff
-set inpdirs = "inpdirs/*"             # indicate input directories
+set inpdirs = "inpdirs/loops"             # indicate input directories
 set filter = ""                       # filter input objects
 set results = results
 scripts-create-path $results/

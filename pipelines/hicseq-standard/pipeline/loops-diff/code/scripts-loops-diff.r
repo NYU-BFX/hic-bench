@@ -431,10 +431,12 @@ df.common$loop.strength[abs(df.common$lfc.contacts) < common.lfc]="stable"
 df.common=df.common[order(df.common$C1,decreasing = T),]
 df.common$rank=nrow(df.common):1
 
+common.stable=df.common[df.common$loop.strength=="stable",c(1:4,7,10:11,13)]
 common.up=df.common[df.common$loop.strength=="increased",c(1:4,7,10:11,13)]
 common.down=df.common[df.common$loop.strength=="decreased",c(1:4,7,10:11,13)]
 write.table(common.up,paste0(outdir,"/common.loops_increased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 write.table(common.down,paste0(outdir,"/common.loops_decreased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(common.stable,paste0(outdir,"/common.loops_stable.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 write.table(df.common,paste0(outdir,"/common.loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 #distance
