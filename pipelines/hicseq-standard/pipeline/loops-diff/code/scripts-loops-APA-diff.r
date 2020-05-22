@@ -3,7 +3,7 @@ inpdir = argv[1L]
 APA_res = as.numeric(argv[2L])
 C1 = argv[3L]
 C2 = argv[4L]
-outdir="./in-house-analysis/"
+outdir="in-house-analysis"
 
 #inpdir="/Users/javrodher/Work/RStudio-PRJs/leukemia-cell-line-DR/data/loops-diff-may21st/APA/diff/"
 #APA_res=10000
@@ -92,7 +92,7 @@ plotMetrics=function(m,metric,xlab){
 
 ##### RUN #####
 all.files=list.files(pattern=".txt",recursive = T,full.names = F,include.dirs = F)
-
+print(all.files)
 methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
 #methods=c("APA")
 scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
@@ -110,21 +110,24 @@ for (method in methods){
       
       #APA plots
       mats=list.files(pattern=mth,recursive = T)
-      
+      print(mats)
       #common
       mats.common=mats[grep("common",mats)]
-      mats.common=mats[grep("increased|decreased|stable",mats.common)]
-      
+      print(mats.common)
+      mats.common=mats.common[grep("increased|decreased|stable",mats.common)]
+      print(mats.common)
       mats.common.c1=mats.common[grep(C1,mats.common)]
       mats.common.c2=mats.common[grep(C2,mats.common)]
-      
+      print(mats.common.c1)
+      print(mats.common.c2)
       mat.common.increased.c1=mats.common.c1[grep("increased",mats.common.c1)]
       mat.common.decreased.c1=mats.common.c1[grep("decreased",mats.common.c1)]
       mat.common.stable.c1=mats.common.c1[grep("stable",mats.common.c1)]
       mat.common.increased.c2=mats.common.c2[grep("increased",mats.common.c2)]
       mat.common.decreased.c2=mats.common.c2[grep("decreased",mats.common.c2)]
       mat.common.stable.c2=mats.common.c2[grep("stable",mats.common.c2)]
-      
+      print(mat.common.increased.c1)
+      print(mat.common.increased.c2)
       common1=ggHmapAPA(mat.common.decreased.c1,"common loops - decreased")
       common2=ggHmapAPA(mat.common.decreased.c2,"common loops - decreased")
       common3=ggHmapAPA(mat.common.increased.c1,"common loops - increased")
@@ -191,7 +194,7 @@ for (method in methods){
       p1=plotMetrics(common.specific,!!ensym(score),xlab = "")
     
       # report
-      pdf(paste0(outdir,paste0("hmap_diff_",method,"_",score,".pdf")), width=10 ,height=6) 
+      pdf(paste0(outdir,paste0("/hmap_diff_",method,"_",score,".pdf")), width=10 ,height=6) 
       grid.arrange(arrangeGrob(common1,common3,common5,specific1,specific3,nrow=1,left=C1,right=C1),
                    arrangeGrob(common2,common4,common5,specific2,specific4,nrow=1,left=C2,right=C2),
                   p1,nrow=3,top="APA analysis on FitHiC loop-subsets")

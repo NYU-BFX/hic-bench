@@ -105,7 +105,7 @@ if ($APA_diff == TRUE) then
         scripts-send2err "Waiting for job array [$jid2] to complete..."
 	scripts-qsub-wait "$jid1"
        	scripts-qsub-wait "$jid2"
-	#rm -fr $outdir/APA/diff/*/*/*v*
+	rm -fr $outdir/APA/diff/*/*/*v*
 
 	echo "Performing in-house APA analysis on the loop-subsets..." | scripts-send2err
 	Rscript ./code/scripts-loops-APA-diff.r $outdir/APA/diff/ $APA_resolution $object1 $object2
@@ -120,7 +120,8 @@ if ($APA_quantiles == TRUE) then
 	awk -v q="$qcut1" -v c="$min_cpm" '{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $outdir/l1_q2.tsv >! $outdir/t1.tsv
 	awk -v min="$min_distance" -v max="$max_distance" 'NR == 1 || \!/fragment/ && ($4-$2) < max && ($4-$2) > min' $outdir/t1.tsv >! $outdir/t2.tsv
 	awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' $outdir/t2.tsv >! $outdir/l1_q2.bedpe
-	rm -f t1.tsv t2.tsv
+	rm -f $outdir/t1.tsv $outdir/t2.tsv
+	rm -fr $outdir/APA/quantiles/*/*/*v*
 
 	echo "Obtaining quantile-subsets..." | scripts-send2err
         Rscript ./code/scripts-loops-quantiles.r $outdir/l1_q2.bedpe $outdir/APA/quantiles/
