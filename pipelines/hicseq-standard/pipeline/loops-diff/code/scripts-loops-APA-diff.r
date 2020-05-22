@@ -61,7 +61,7 @@ ggHmapAPA=function(mat.path,title){
           xlab(paste0("bins (",APA_res/1000," kb)"))+
           ylab(paste0("bins (",APA_res/1000," kb)"))+
           ggtitle(title)+
-          scale_fill_gradient(low="white",high="red",limits=c(0,UR))+
+          scale_fill_gradient(low="white",high="red")+
           theme(plot.title = element_text(hjust = 0.5,size=8),panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
                 panel.background = element_blank(), axis.line = element_blank()))
 }  
