@@ -1,0 +1,48 @@
+###### Start of params.template.for.hic_matrix.txt
+# This file creates the structure in the .ini file for Hi-C tracks.
+# Depends on both .cool file and domains (TAD) result.
+
+[hic_matrix]
+file_type = hic_matrix
+file = template_and_modify_hic_matrix_file
+title = template_and_modify_hic_matrix_title
+
+# If the visualization shows too shallow or too deep figure, adjust the depth.
+depth = 800000
+
+# Currently, the minimum and maximum values cannot be set for multiple Hi-C input.
+# These must be configured manually.
+min_value = auto
+max_value = auto
+# max_value = 100.0
+
+transform = log1p
+show_masked_bins = false
+
+scale_factor = template_and_modify_hic_matrix_scale_factor
+
+# Showing the default parameters here. Free to modify.
+# colormap = RdYlBu_r
+# height = 10
+# rasterize = false
+
+# If one needs to show the matrix in inverted triangle, use this.
+# orientation = inverted
+
+
+
+[TAD triangle]
+file_type = domains
+file = template_and_modify_domains_file
+
+overlay_previous = share-y
+
+display = triangles
+border_color = red
+color = none
+show_data_range = false
+line_width = 2.0
+
+
+###### End of params.template.for.hic_matrix.txt
+

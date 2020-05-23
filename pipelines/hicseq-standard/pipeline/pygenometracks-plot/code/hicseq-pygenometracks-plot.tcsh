@@ -37,10 +37,8 @@ scripts-create-path $outdir/
 # -------------------------------------
 
 module load python/cpu/3.6.5
-# pyGenomeTracks
-
+pyGenomeTracks --tracks $outini --region chr15:58,445,797-59,458,364 --outFileName $outdir/region.pdf
 module unload python
-
 
 
 # -------------------------------------

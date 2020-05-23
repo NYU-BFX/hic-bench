@@ -5,7 +5,8 @@ source ./code/code.main/custom-tcshrc      # customize shell environment
 ## USAGE: run [--dry-run]
 ##
 
-#% <ADD DESCRIPTION>
+#% pyGenomeTracks plots beautiful visualizations.
+#% Utilizes all available information from hic-bench.
 
 # process command-line inputs
 if ($#argv > 1) then
@@ -18,15 +19,15 @@ set opt = "$1"
 # setup
 set op = pygenometracks-plot
 set inpdirs = "inpdirs/*"             # indicate input directories
-set filter = ""                       # filter input objects
+set filter = "tracks.by_group.h5"                       # filter input objects
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
-set resources = 1,10G,24
+set resources = 1,64G,24
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
-Rscript ./code/code.main/pipeline-master-explorer.r -v -F "$filter" "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "*" 1
+Rscript ./code/code.main/pipeline-master-explorer.r -v -F "$filter" "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "group" 1
 
 # run and wait until done!
 if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $pipeline_max_jobs
