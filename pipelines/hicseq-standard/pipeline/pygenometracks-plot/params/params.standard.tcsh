@@ -2,6 +2,57 @@
 
 source ./inputs/params/params.tcsh
 
+######## List of external files used for pygenometracks
+# One can change the list of files by providing file paths that can be accessed.
+
+# 1. hic_matrix
+# The script automatically detects .h5 files from pipeline/tracks.
+# 2. domains-diff
+# The script automatically detects .bed file from pipeline/domains-diff.
+# 3. compartments
+# The script automatically detects .bedGraph files from pipeline/compartments.
+# 4. virtual4C
+# The script automatically detects .bedGraph.gz files from pipeline/virtual4C.
+
+# E1. External .bigWig files (extension should end in .bw)
+# The file link should be accessible from main-directory/pipelines/hicseq-standard/pipeline/pygenometracks-plot.
+# Preferred order: ATAC-seq, H3K27ac ChIP-seq, RNA-seq
+# Preferred color: #666666 for ATAC-seq, #FF33FF for H3K27ac ChIP-seq, #0033FF for RNA-seq
+
+set external_bigwigs = ( \
+  'inputs/data_external/group/ESC-untreated/ATAC-seq.ESC_treat_pileup.bw' \
+  'inputs/data_external/group/MEF-untreated/ATAC-seq.MEF_treat_pileup.bw' \
+  'inputs/data_external/group/ESC-untreated/H3K27ac-ChIP-seq.ESC_treat_pileup.bw' \
+  'inputs/data_external/group/MEF-untreated/H3K27ac-ChIP-seq.MEF_treat_pileup.bw' \
+  'inputs/data_external/group/ESC-untreated/RNA-seq.ESC.merged.scaled.bw' \
+  'inputs/data_external/group/MEF-untreated/RNA-seq.MEF.merged.scaled.bw' \
+)
+set external_colors = ( \
+  '#666666' \
+  '#666666' \
+  '#FF33FF' \
+  '#FF33FF' \
+  '#0033FF' \
+  '#0033FF' \
+)
+
+
+# Final. Gene annotation
+# The script automatically detects .gtf file from inputs/genome/$genome.
+
+######## End of list
+
+# Output settings
+# A bed file may be set with the location accessible from pipelines/pygenometracks-plot.
+# set inbed = params/Mtss1.and.Thada.bed
+set inbed = "chr15:58,445,797-59,458,364"
+
+
+
+
+
+# Now, process the directory structure of hic-bench for internal files.
+
 set branch_medium = `echo $branch | sed 's/.*results\///'`
 # $branch_medium example: tracks.by_group.h5.res_5kb/filter.by_sample.mapq_20/align.by_sample.bowtie2
 # $branch_medium is what comes after inpdir/tracks/results
@@ -12,23 +63,9 @@ set branch_short = `echo $branch_medium | sed 's/.*filter\.by/filter.by/g'`
 # $branch_short example: filter.by_sample.mapq_20/align.by_sample.bowtie2
 
 
-# A bed file may be set with the exact location.
-# set inbed = params/whgusdnflditlfh.bed
-set inbed = ""
-set outini = $outdir/hic_matrix.made.ini
 
-
-# hic_matrix
-set hic_matrix_file_1 = $inpdir/filtered.h5
-
+# 1. hic_matrix
 set library_size_branch = ../filter/results/$branch_short
-set scaling_factor_for_object = `Rscript ./code/hicseq-collect-library-size.r $library_size_branch $object`
-
-# compartments
-set compartment_method = homer
-set compartment_resolution = res_50kb
-
-set compartment_dir = ../compartments/results/compartments.$group_var.$compartment_method.$compartment_resolution/$branch_short
 
 # domains
 set tad_caller = "hicratio.d_0500"
@@ -36,7 +73,10 @@ set tad_caller = "hicratio.d_0500"
 
 set domains_branch = ../domains/results/domains.$group_var.$tad_caller/matrix-ic.$group_var.cutoff_0/matrix-filtered.$group_var.res_40kb/$branch_short
 
-# domains-diff
+# 2. domains-diff
+# Select output from domains-diff
+# is_normalize: "cpm" and "dist_norm" are available
+# use_sample1_ref: TRUE or FALSE. TRUE selects "ref1" and FALSE selects "common".
 set is_normalize = dist_norm
 set use_sample1_ref = FALSE
 
@@ -49,95 +89,17 @@ endif
 set domains_diff_branch = ../domains-diff/results/domains-diff.$group_var.$tad_caller.$is_normalize.$tad_1_or_2/matrix-ic.$group_var.cutoff_0/matrix-filtered.$group_var.res_40kb/$branch_short
 
 
-# 1. hic_matrix
-Rscript ./code/hicseq-prepare-ini-hicmatrix.r $hic_matrix_file_1 $object $scaling_factor_for_object $domains_branch/$object/domains.k=001.bed $outdir
-
-# foreach line1 ( params/params.template.for.hic_matrix.txt )
-#   if ( "$line1" == "file = template_and_modify_hic_matrix_file" ) then
-#     echo $line1 | awk -v REP1="$hic_matrix_file_1" '{ gsub( /template_and_modify_hic_matrix_file/, REP1 ); print }' >> $outini
-#   else if ( "$line1" == "title = template_and_modify_hic_matrix_title" ) then
-#     echo $line1 | awk -v REP1="$object" '{ gsub( /template_and_modify_hic_matrix_title/, REP1 ); print }' >> $outini
-#   else if ( "$line1" == "scale_factor = template_and_modify_hic_matrix_scale_factor" ) then
-#     echo $line1 | awk -v REP1="$scaling_factor_for_object" '{ gsub( /template_and_modify_hic_matrix_scale_factor/, REP1 ); print }' >> $outini
-#   else if ( "$line1" == "file = template_and_modify_domains_file" ) then
-#     echo $line1 | awk -v REP1="$domains_branch\/$object\/domains.k=001.bed" '{ gsub( /template_and_modify_domains_file/, REP1 ); print }' >> $outini
-#   else
-#     cat $line1 >> $outini
-#   endif
-
-# end
-
-# foreach line1 ( params/params.template.for.hic_matrix.txt )
-#   if ( `echo "$line1" | grep -q "template_and_modify_hic_matrix_file"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_file/$hic_matrix_file_1/g" >> $outini
-#   else if ( `echo "$line1" | grep -q "template_and_modify_hic_matrix_title"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_title/$object/g" >> $outini
-#   else if ( `echo "$line1" | grep -q "template_and_modify_hic_matrix_scale_factor"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_scale_factor/$scaling_factor_for_object/g" >> $outini
-#   else if ( `echo "$line1" | grep -q "template_and_modify_domains_file"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_domains_file/$domains_branch\/$object\/domains.k=001.bed/g" >> $outini
-#   else
-#     cat $line1 >> $outini
-#   endif
-
-# end
-
-# foreach line1 ( params/params.template.for.hic_matrix.txt )
-#   if ( `echo "$line1" | grep -q "template_and_modify_hic_matrix_file"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_file/$hic_matrix_file_1/g" >> $outini
-#   else if ( `echo "$line1" | grep -q "template_and_modify_hic_matrix_title"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_title/$object/g" >> $outini
-#   else if ( `echo "$line1" | grep -q "template_and_modify_hic_matrix_scale_factor"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_scale_factor/$scaling_factor_for_object/g" >> $outini
-#   else if ( `echo "$line1" | grep -q "template_and_modify_domains_file"; echo $?` == 0 ) then
-#     cat $line1 | sed "s/template_and_modify_domains_file/$domains_branch\/$object\/domains.k=001.bed/g" >> $outini
-#   else
-#     cat $line1 >> $outini
-#   endif
-
-# end
-
-# foreach line1 ( params/params.template.for.hic_matrix.txt )
-#   if ( "$line1" =~ "*template_and_modify_hic_matrix_file" ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_file/$hic_matrix_file_1/g" >> $outini
-#   else if ( "$line1" =~ "*template_and_modify_hic_matrix_title" ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_title/$object/g" >> $outini
-#   else if ( "$line1" =~ "*template_and_modify_hic_matrix_scale_factor" ) then
-#     cat $line1 | sed "s/template_and_modify_hic_matrix_scale_factor/$scaling_factor_for_object/g" >> $outini
-#   else if ( "$line1" =~ "*template_and_modify_domains_file" ) then
-#     cat $line1 | sed "s/template_and_modify_domains_file/$domains_branch\/$object\/domains.k=001.bed/g" >> $outini
-#   else
-#     cat $line1 >> $outini
-#   endif
-
-# end
-
-
-# 2. domains-diff
-# Select output from domains-diff
-# is_normalize: "cpm" and "dist_norm" are available
-# use_sample1_ref: TRUE or FALSE. TRUE selects "ref1" and FALSE selects "common".
-
-
-
 # 3. compartments
+set compartment_method = homer
+set compartment_resolution = res_50kb
+
+set compartment_dir = ../compartments/results/compartments.$group_var.$compartment_method.$compartment_resolution/$branch_short
+
 
 # 4. virtual4C
 
+set virtual4c_dir = ../virtual4C/results/virtual4C.by_group.win_10kb/matrix-sparse.by_group.unit_100bp.maxd_5Mb/$branch_short
 
-
-### External data here.
-
-# Preferred order of assays:
-
-# ATAC-seq
-# set external_atac = ./inputs/data_external/group/$object/ATAC-seq.ESC_treat_pileup.bw
-
-# H3K27ac ChIP-seq
-# set external_h3k27ac = ./inputs/data_external/group/$object/H3K27ac-ChIP-seq.ESC_treat_pileup.bw
-
-# RNA-seq
-# set external_rna = ./inputs/data_external/group/$object/RNA-seq.ESC.merged.scaled.bw
 
 ### Finally, gene annotation goes here.
 

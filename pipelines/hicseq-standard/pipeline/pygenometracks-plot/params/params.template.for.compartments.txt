@@ -1,0 +1,33 @@
+###### Start of params.template.for.hic_matrix.txt
+# This file creates the structure in the .ini file for the A/B compartments from Hi-C bench.
+# Depends on .bedGraph file from compartments result.
+
+[compartments]
+file_type = bedgraph
+file = template_and_modify_compartments_file
+title = template_and_modify_compartments_title
+
+height = 2
+
+# These lines ensure that the A/B compartment plot is shown as polygons in 2 colors.
+color = red
+negative_color = blue
+type = fill
+
+min_value = auto
+max_value = auto
+# If needed, change the values to the same scale across multiple samples.
+
+nans_to_zeros = true
+
+
+# If one needs to show the matrix in inverted triangle, use this.
+# orientation = inverted
+# if you want to plot the track on top of the previous track. Options are 'yes' or 'share-y'. For the 'share-y'
+# option the y axis values is shared between this plot and the overlay plot. Otherwise, each plot use its own scale
+# overlay_previous = share-y
+# alpha = 1.0
+
+
+###### End of params.template.for.hic_matrix.txt
+

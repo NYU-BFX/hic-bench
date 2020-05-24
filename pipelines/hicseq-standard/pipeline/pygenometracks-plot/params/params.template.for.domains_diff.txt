@@ -1,0 +1,28 @@
+###### Start of params.template.for.domains_diff.txt
+# This file creates the structure in the .ini file for domains-diff tracks.
+# Depends on intra TAD activity (domains-diff) result.
+
+[Differential intra TAD]
+file_type = bed
+file = template_and_modify_domains_diff_file
+title = template_and_modify_domains_diff_title
+
+color = seismic
+
+height = 1
+labels = false
+
+# Parameters where default values were used. Shown below.
+# 
+# If y inversion is necessary:
+# orientation = inverted
+# If the track need to be overlaid:
+# overlay_previous = yes
+# overlay_previous = share-y
+# fontsize = 10
+# line_width = 0.5
+# border_color = black
+# border_color = none
+
+
+###### End of params.template.for.domains_diff.txt
