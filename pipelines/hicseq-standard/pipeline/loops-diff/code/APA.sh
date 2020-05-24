@@ -15,9 +15,6 @@ object=$5
 is_batch=$6
 analysis=$7
 
-echo $object
-echo $bedpes
-
 if [[ $is_batch = FALSE ]]
 then
 	bedpe=$bedpes
@@ -35,9 +32,9 @@ if [[ $is_batch = TRUE && $analysis = quantiles ]]
 then
     	bedpe=`echo $bedpes | awk -v n="${SLURM_ARRAY_TASK_ID}" '{print $n}'`
         bedpe_path=$inpdir/APA/quantiles/$bedpe
+
 fi
 
-echo $bedpe
 outname=`echo $bedpe | sed 's/.bedpe//g'`
 outdir=$inpdir/APA/"$analysis"/"$outname"_"$object"
 

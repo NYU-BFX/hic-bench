@@ -120,16 +120,24 @@ if ($APA_quantiles == TRUE) then
         mkdir -p $outdir/APA
         mkdir -p $outdir/APA/quantiles
 	
-	# get quantiles-wise loop subsets
-	awk -v q="$qcut1" -v c="$min_cpm" '{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $outdir/l1_q2.tsv >! $outdir/t1.tsv
-	awk -v min="$min_distance" -v max="$max_distance" 'NR == 1 || \!/fragment/ && ($4-$2) < max && ($4-$2) > min' $outdir/t1.tsv >! $outdir/t2.tsv
+	# get quantiles-wise loop subsets	
+	if (APA_qfile == ref1) then
+		set qf = $outdir/l1_q2.tsv
+	else
+		awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$6"\t0.000000000001\t0.00000000001"}' $outdir/common.loops.tsv > $outdir/common.loops_clean.tsv
+            	set qf = $outdir/common.loops_clean.tsv
+	endif
+	
+	echo $qf
+	
+	awk -v q="$qcut1" -v c="$min_cpm" '{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $qf >! $outdir/t1.tsv
+        awk -v min="$min_distance" -v max="$max_distance" 'NR == 1 || \!/fragment/ && ($4-$2) < max && ($4-$2) > min' $outdir/t1.tsv >! $outdir/t2.tsv        
 	awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' $outdir/t2.tsv >! $outdir/l1_q2.bedpe
-	rm -f $outdir/t1.tsv $outdir/t2.tsv
-	rm -fr $outdir/APA/quantiles/*/*/*v*
+        rm -f $outdir/t1.tsv $outdir/t2.tsv 
 
 	echo "Obtaining quantile-subsets..." | scripts-send2err
         Rscript ./code/scripts-loops-quantiles.r $outdir/l1_q2.bedpe $outdir/APA/quantiles/
-	
+
 	# perform APA on quantile-subsets
 	set job_dir = $outdir/__jdata_APA
 	mkdir -p $job_dir
@@ -158,6 +166,7 @@ if ($APA_quantiles == TRUE) then
 	# perform in-house analysis
 	echo "Performing in-house APA analysis on the quantile-subsets..." | scripts-send2err
 	Rscript ./code/scripts-loops-APA-quantiles.r $outdir/APA/quantiles/ $APA_resolution $object1 $object2 $URm
+
 endif
 
 rm -f $outdir/l*.bedpe $outdir/l*.tsv

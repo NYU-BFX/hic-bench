@@ -18,12 +18,12 @@ dir.create(outdir)
 options(scipen=10000)
 pdf(NULL)
 
-#### Functions ####
+# Functions #
 
 # rotate matrix
 rotate=function(x) {t(apply(x, 2, rev))}
 
-# plot heatmap
+# plot APA heatmap
 ggHmapAPA=function(mat.path,title,URm){
   if(length(mat.path)==1){
     x=read.csv(mat.path,header = F)
@@ -52,24 +52,23 @@ ggHmapAPA=function(mat.path,title,URm){
                 panel.background = element_blank(), axis.line = element_blank()))
 }  
 
+# prep scores table
 prepMetrics=function(measures.file,q){
-  x=read.table(measures.file[q],stringsAsFactors = F)
+  x=read.table(measures.file,stringsAsFactors = F)
   m=as.data.frame(t(x[2]))
   names(m)=x$V1
   m$q=q
   return(m)
 }
 
-#m=md.all.merge
-#metric="P2LL"
-#qtab=qcpmtab
-#xlab=""
-plotMetrics=function(m,metric,xlab,qtab){
+# plot scores
+plotMetrics=function(m,metric,xlab,ylab,qtab){
   t=read.csv(qtab,stringsAsFactors = F)
   t[,1]=round(t[,1],digits = 3)
   print(ggplot(m,aes(x=q,y=!!ensym(metric),group=group,color=group))+
           geom_point()+
           geom_line()+
+          ylab(ylab)+
           xlab(xlab)+
           geom_hline(yintercept = log2(1),linetype=3,color="red")+
           scale_x_continuous(breaks=c(1:10),labels=paste0("q",1:10),sec.axis = dup_axis(labels=c(t[,1],paste0(">",t[9,1])))))
@@ -78,6 +77,7 @@ plotMetrics=function(m,metric,xlab,qtab){
 ##### RUN #####
 all.files=list.files(pattern=".txt",recursive = T,full.names = F,include.dirs = F)
 tables=list.files(pattern=".csv",recursive = T,full.names = F,include.dirs = F)
+
 methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
 scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
 
@@ -107,49 +107,49 @@ for (method in methods){
     mats.q.c1=mats.q.c1[grep("cpm",mats.q.c1)][c(1,3:10,2)]
     mats.q.c2=mats.q.c2[grep("cpm",mats.q.c2)][c(1,3:10,2)]
     
-    qdist1.c1=ggHmapAPA(mats.dist.c1[1],"1st quantile",URm)
-    qdist2.c1=ggHmapAPA(mats.dist.c1[2],"2nd quantile",URm)
-    qdist3.c1=ggHmapAPA(mats.dist.c1[3],"3rd quantile",URm)
-    qdist4.c1=ggHmapAPA(mats.dist.c1[4],"4rd quantile",URm)
-    qdist5.c1=ggHmapAPA(mats.dist.c1[5],"5th quantile",URm)
-    qdist6.c1=ggHmapAPA(mats.dist.c1[6],"6th quantile",URm)
-    qdist7.c1=ggHmapAPA(mats.dist.c1[7],"7th quantile",URm)
-    qdist8.c1=ggHmapAPA(mats.dist.c1[8],"8th quantile",URm)
-    qdist9.c1=ggHmapAPA(mats.dist.c1[9],"9th quantile",URm)
-    qdist10.c1=ggHmapAPA(mats.dist.c1[10],"10th quantile",URm)
+    qdist1.c1=ggHmapAPA(mats.dist.c1[grep("_qdist1_",mats.dist.c1)],"1st quantile",URm)
+    qdist2.c1=ggHmapAPA(mats.dist.c1[grep("_qdist2_",mats.dist.c1)],"2nd quantile",URm)
+    qdist3.c1=ggHmapAPA(mats.dist.c1[grep("_qdist3_",mats.dist.c1)],"3rd quantile",URm)
+    qdist4.c1=ggHmapAPA(mats.dist.c1[grep("_qdist4_",mats.dist.c1)],"4rd quantile",URm)
+    qdist5.c1=ggHmapAPA(mats.dist.c1[grep("_qdist5_",mats.dist.c1)],"5th quantile",URm)
+    qdist6.c1=ggHmapAPA(mats.dist.c1[grep("_qdist6_",mats.dist.c1)],"6th quantile",URm)
+    qdist7.c1=ggHmapAPA(mats.dist.c1[grep("_qdist7_",mats.dist.c1)],"7th quantile",URm)
+    qdist8.c1=ggHmapAPA(mats.dist.c1[grep("_qdist8_",mats.dist.c1)],"8th quantile",URm)
+    qdist9.c1=ggHmapAPA(mats.dist.c1[grep("_qdist9_",mats.dist.c1)],"9th quantile",URm)
+    qdist10.c1=ggHmapAPA(mats.dist.c1[grep("_qdist10_",mats.dist.c1)],"10th quantile",URm)
     
-    qdist1.c2=ggHmapAPA(mats.dist.c2[1],"1st quantile",URm)
-    qdist2.c2=ggHmapAPA(mats.dist.c2[2],"2nd quantile",URm)
-    qdist3.c2=ggHmapAPA(mats.dist.c2[3],"3rd quantile",URm)
-    qdist4.c2=ggHmapAPA(mats.dist.c2[4],"4rd quantile",URm)
-    qdist5.c2=ggHmapAPA(mats.dist.c2[5],"5th quantile",URm)
-    qdist6.c2=ggHmapAPA(mats.dist.c2[6],"6th quantile",URm)
-    qdist7.c2=ggHmapAPA(mats.dist.c2[7],"7th quantile",URm)
-    qdist8.c2=ggHmapAPA(mats.dist.c2[8],"8th quantile",URm)
-    qdist9.c2=ggHmapAPA(mats.dist.c2[9],"9th quantile",URm)
-    qdist10.c2=ggHmapAPA(mats.dist.c2[10],"10th quantile",URm)
+    qdist1.c2=ggHmapAPA(mats.dist.c2[grep("_qdist1_",mats.dist.c2)],"1st quantile",URm)
+    qdist2.c2=ggHmapAPA(mats.dist.c2[grep("_qdist2_",mats.dist.c2)],"2nd quantile",URm)
+    qdist3.c2=ggHmapAPA(mats.dist.c2[grep("_qdist3_",mats.dist.c2)],"3rd quantile",URm)
+    qdist4.c2=ggHmapAPA(mats.dist.c2[grep("_qdist4_",mats.dist.c2)],"4rd quantile",URm)
+    qdist5.c2=ggHmapAPA(mats.dist.c2[grep("_qdist5_",mats.dist.c2)],"5th quantile",URm)
+    qdist6.c2=ggHmapAPA(mats.dist.c2[grep("_qdist6_",mats.dist.c2)],"6th quantile",URm)
+    qdist7.c2=ggHmapAPA(mats.dist.c2[grep("_qdist7_",mats.dist.c2)],"7th quantile",URm)
+    qdist8.c2=ggHmapAPA(mats.dist.c2[grep("_qdist8_",mats.dist.c2)],"8th quantile",URm)
+    qdist9.c2=ggHmapAPA(mats.dist.c2[grep("_qdist9_",mats.dist.c2)],"9th quantile",URm)
+    qdist10.c2=ggHmapAPA(mats.dist.c2[grep("_qdist10_",mats.dist.c2)],"10th quantile",URm)
     
-    cpm1.c1=ggHmapAPA(mats.q.c1[1],"1st quantile",URm)
-    cpm2.c1=ggHmapAPA(mats.q.c1[2],"2nd quantile",URm)
-    cpm3.c1=ggHmapAPA(mats.q.c1[3],"3rd quantile",URm)
-    cpm4.c1=ggHmapAPA(mats.q.c1[4],"4th quantile",URm)
-    cpm5.c1=ggHmapAPA(mats.q.c1[5],"5th quantile",URm)
-    cpm6.c1=ggHmapAPA(mats.q.c1[6],"6th quantile",URm)
-    cpm7.c1=ggHmapAPA(mats.q.c1[7],"7th quantile",URm)
-    cpm8.c1=ggHmapAPA(mats.q.c1[8],"8th quantile",URm)
-    cpm9.c1=ggHmapAPA(mats.q.c1[9],"9th quantile",URm)
-    cpm10.c1=ggHmapAPA(mats.q.c1[10],"10th quantile",URm)
+    cpm1.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q1_",mats.q.c1)],"1st quantile",URm)
+    cpm2.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q2_",mats.q.c1)],"2nd quantile",URm)
+    cpm3.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q3_",mats.q.c1)],"3rd quantile",URm)
+    cpm4.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q4_",mats.q.c1)],"4th quantile",URm)
+    cpm5.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q5_",mats.q.c1)],"5th quantile",URm)
+    cpm6.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q6_",mats.q.c1)],"6th quantile",URm)
+    cpm7.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q7_",mats.q.c1)],"7th quantile",URm)
+    cpm8.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q8_",mats.q.c1)],"8th quantile",URm)
+    cpm9.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q9_",mats.q.c1)],"9th quantile",URm)
+    cpm10.c1=ggHmapAPA(mats.q.c1[grep("_cpm_q10_",mats.q.c1)],"10th quantile",URm)
     
-    cpm1.c2=ggHmapAPA(mats.q.c2[1],"1st quantile",URm)
-    cpm2.c2=ggHmapAPA(mats.q.c2[2],"2nd quantile",URm)
-    cpm3.c2=ggHmapAPA(mats.q.c2[3],"3rd quantile",URm)
-    cpm4.c2=ggHmapAPA(mats.q.c2[4],"4th quantile",URm)
-    cpm5.c2=ggHmapAPA(mats.q.c2[5],"5th quantile",URm)
-    cpm6.c2=ggHmapAPA(mats.q.c2[6],"6th quantile",URm)
-    cpm7.c2=ggHmapAPA(mats.q.c2[7],"7th quantile",URm)
-    cpm8.c2=ggHmapAPA(mats.q.c2[8],"8th quantile",URm)
-    cpm9.c2=ggHmapAPA(mats.q.c2[9],"9th quantile",URm)
-    cpm10.c2=ggHmapAPA(mats.q.c2[10],"10th quantile",URm)
+    cpm1.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q1_",mats.q.c2)],"1st quantile",URm)
+    cpm2.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q2_",mats.q.c2)],"2nd quantile",URm)
+    cpm3.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q3_",mats.q.c2)],"3rd quantile",URm)
+    cpm4.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q4_",mats.q.c2)],"4th quantile",URm)
+    cpm5.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q5_",mats.q.c2)],"5th quantile",URm)
+    cpm6.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q6_",mats.q.c2)],"6th quantile",URm)
+    cpm7.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q7_",mats.q.c2)],"7th quantile",URm)
+    cpm8.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q8_",mats.q.c2)],"8th quantile",URm)
+    cpm9.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q9_",mats.q.c2)],"9th quantile",URm)
+    cpm10.c2=ggHmapAPA(mats.q.c2[grep("_cpm_q10_",mats.q.c2)],"10th quantile",URm)
     
     # Measures plots
     measures.files=list.files(pattern="measures",recursive = T)
@@ -163,67 +163,67 @@ for (method in methods){
     measures.q.c1=measures.q[grep(C1,measures.q)][c(1,3:10,2)]
     measures.q.c2=measures.q[grep(C2,measures.q)][c(1,3:10,2)]
     
-    md1.c1=prepMetrics(measures.dist.c1,1)
-    md2.c1=prepMetrics(measures.dist.c1,2)
-    md3.c1=prepMetrics(measures.dist.c1,3)
-    md4.c1=prepMetrics(measures.dist.c1,4)
-    md5.c1=prepMetrics(measures.dist.c1,5)
-    md6.c1=prepMetrics(measures.dist.c1,6)
-    md7.c1=prepMetrics(measures.dist.c1,7)
-    md8.c1=prepMetrics(measures.dist.c1,8)
-    md9.c1=prepMetrics(measures.dist.c1,9)
-    md10.c1=prepMetrics(measures.dist.c1,10)
+    md1.c1=prepMetrics(measures.dist.c1[grep("_qdist1_",measures.dist.c1)],1)
+    md2.c1=prepMetrics(measures.dist.c1[grep("_qdist2_",measures.dist.c1)],2)
+    md3.c1=prepMetrics(measures.dist.c1[grep("_qdist3_",measures.dist.c1)],3)
+    md4.c1=prepMetrics(measures.dist.c1[grep("_qdist4_",measures.dist.c1)],4)
+    md5.c1=prepMetrics(measures.dist.c1[grep("_qdist5_",measures.dist.c1)],5)
+    md6.c1=prepMetrics(measures.dist.c1[grep("_qdist6_",measures.dist.c1)],6)
+    md7.c1=prepMetrics(measures.dist.c1[grep("_qdist7_",measures.dist.c1)],7)
+    md8.c1=prepMetrics(measures.dist.c1[grep("_qdist8_",measures.dist.c1)],8)
+    md9.c1=prepMetrics(measures.dist.c1[grep("_qdist9_",measures.dist.c1)],9)
+    md10.c1=prepMetrics(measures.dist.c1[grep("_qdist10_",measures.dist.c1)],10)
     md.all.c1=rbind(md1.c1,md2.c1,md3.c1,md4.c1,md5.c1,md6.c1,md7.c1,md8.c1,md9.c1,md10.c1)
     md.all.c1[,1:5]=log2(md.all.c1[,1:5])
     md.all.c1$group=C1
     
-    md1.c2=prepMetrics(measures.dist.c2,1)
-    md2.c2=prepMetrics(measures.dist.c2,2)
-    md3.c2=prepMetrics(measures.dist.c2,3)
-    md4.c2=prepMetrics(measures.dist.c2,4)
-    md5.c2=prepMetrics(measures.dist.c2,5)
-    md6.c2=prepMetrics(measures.dist.c2,6)
-    md7.c2=prepMetrics(measures.dist.c2,7)
-    md8.c2=prepMetrics(measures.dist.c2,8)
-    md9.c2=prepMetrics(measures.dist.c2,9)
-    md10.c2=prepMetrics(measures.dist.c2,10)
+    md1.c2=prepMetrics(measures.dist.c2[grep("_qdist1_",measures.dist.c2)],1)
+    md2.c2=prepMetrics(measures.dist.c2[grep("_qdist2_",measures.dist.c2)],2)
+    md3.c2=prepMetrics(measures.dist.c2[grep("_qdist3_",measures.dist.c2)],3)
+    md4.c2=prepMetrics(measures.dist.c2[grep("_qdist4_",measures.dist.c2)],4)
+    md5.c2=prepMetrics(measures.dist.c2[grep("_qdist5_",measures.dist.c2)],5)
+    md6.c2=prepMetrics(measures.dist.c2[grep("_qdist6_",measures.dist.c2)],6)
+    md7.c2=prepMetrics(measures.dist.c2[grep("_qdist7_",measures.dist.c2)],7)
+    md8.c2=prepMetrics(measures.dist.c2[grep("_qdist8_",measures.dist.c2)],8)
+    md9.c2=prepMetrics(measures.dist.c2[grep("_qdist9_",measures.dist.c2)],9)
+    md10.c2=prepMetrics(measures.dist.c2[grep("_qdist10_",measures.dist.c2)],10)
     md.all.c2=rbind(md1.c2,md2.c2,md3.c2,md4.c2,md5.c2,md6.c2,md7.c2,md8.c2,md9.c2,md10.c2)
     md.all.c2[,1:5]=log2(md.all.c2[,1:5])
     md.all.c2$group=C2
     
     md.all.merge=rbind(md.all.c1,md.all.c2)
     
-    q1.c1=prepMetrics(measures.q.c1,1)
-    q2.c1=prepMetrics(measures.q.c1,2)
-    q3.c1=prepMetrics(measures.q.c1,3)
-    q4.c1=prepMetrics(measures.q.c1,4)
-    q5.c1=prepMetrics(measures.q.c1,5)
-    q6.c1=prepMetrics(measures.q.c1,6)
-    q7.c1=prepMetrics(measures.q.c1,7)
-    q8.c1=prepMetrics(measures.q.c1,8)
-    q9.c1=prepMetrics(measures.q.c1,9)
-    q10.c1=prepMetrics(measures.q.c1,10)
+    q1.c1=prepMetrics(measures.q.c1[grep("_cpm_q1_",measures.q.c1)],1)
+    q2.c1=prepMetrics(measures.q.c1[grep("_cpm_q2_",measures.q.c1)],2)
+    q3.c1=prepMetrics(measures.q.c1[grep("_cpm_q3_",measures.q.c1)],3)
+    q4.c1=prepMetrics(measures.q.c1[grep("_cpm_q4_",measures.q.c1)],4)
+    q5.c1=prepMetrics(measures.q.c1[grep("_cpm_q5_",measures.q.c1)],5)
+    q6.c1=prepMetrics(measures.q.c1[grep("_cpm_q6_",measures.q.c1)],6)
+    q7.c1=prepMetrics(measures.q.c1[grep("_cpm_q7_",measures.q.c1)],7)
+    q8.c1=prepMetrics(measures.q.c1[grep("_cpm_q8_",measures.q.c1)],8)
+    q9.c1=prepMetrics(measures.q.c1[grep("_cpm_q9_",measures.q.c1)],9)
+    q10.c1=prepMetrics(measures.q.c1[grep("_cpm_q10_",measures.q.c1)],10)
     q.all.c1=rbind(q1.c1,q2.c1,q3.c1,q4.c1,q5.c1,q6.c1,q7.c1,q8.c1,q9.c1,q10.c1)
     q.all.c1[,1:5]=log2(q.all.c1[,1:5])
     q.all.c1$group=C1
     
-    q1.c2=prepMetrics(measures.q.c2,1)
-    q2.c2=prepMetrics(measures.q.c2,2)
-    q3.c2=prepMetrics(measures.q.c2,3)
-    q4.c2=prepMetrics(measures.q.c2,4)
-    q5.c2=prepMetrics(measures.q.c2,5)
-    q6.c2=prepMetrics(measures.q.c2,6)
-    q7.c2=prepMetrics(measures.q.c2,7)
-    q8.c2=prepMetrics(measures.q.c2,8)
-    q9.c2=prepMetrics(measures.q.c2,9)
-    q10.c2=prepMetrics(measures.q.c2,10)
+    q1.c2=prepMetrics(measures.q.c2[grep("_cpm_q1_",measures.q.c2)],1)
+    q2.c2=prepMetrics(measures.q.c2[grep("_cpm_q2_",measures.q.c2)],2)
+    q3.c2=prepMetrics(measures.q.c2[grep("_cpm_q3_",measures.q.c2)],3)
+    q4.c2=prepMetrics(measures.q.c2[grep("_cpm_q4_",measures.q.c2)],4)
+    q5.c2=prepMetrics(measures.q.c2[grep("_cpm_q5_",measures.q.c2)],5)
+    q6.c2=prepMetrics(measures.q.c2[grep("_cpm_q6_",measures.q.c2)],6)
+    q7.c2=prepMetrics(measures.q.c2[grep("_cpm_q7_",measures.q.c2)],7)
+    q8.c2=prepMetrics(measures.q.c2[grep("_cpm_q8_",measures.q.c2)],8)
+    q9.c2=prepMetrics(measures.q.c2[grep("_cpm_q9_",measures.q.c2)],9)
+    q10.c2=prepMetrics(measures.q.c2[grep("_cpm_q10_",measures.q.c2)],10)
     q.all.c2=rbind(q1.c2,q2.c2,q3.c2,q4.c2,q5.c2,q6.c2,q7.c2,q8.c2,q9.c2,q10.c2)
     q.all.c2[,1:5]=log2(q.all.c2[,1:5])
     q.all.c2$group=C2
     q.all.merge=rbind(q.all.c1,q.all.c2)
     
-    p1.merge=plotMetrics(q.all.merge,!!ensym(score),xlab = "",qcpmtab)
-    p2.merge=plotMetrics(md.all.merge,!!ensym(score),xlab = "",qdisttab)
+    p1.merge=plotMetrics(q.all.merge,!!ensym(score),xlab = "",ylab = paste0("log2 (",score,")"),qcpmtab)
+    p2.merge=plotMetrics(md.all.merge,!!ensym(score),xlab = "",ylab = paste0("log2 (",score,")"),qdisttab)
     
     # report
     pdf(paste0(outdir,"/hmap_quantiles_",method,"_",score,".pdf"), width=25 ,height=6) 
