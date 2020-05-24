@@ -41,7 +41,7 @@ params.template[hic_matrix_scale_factor_index] = gsub("template_and_modify_hic_m
 domains_file_index = grep("template_and_modify_domains_file", params.template)
 params.template[domains_file_index] = gsub("template_and_modify_domains_file", domains_bed, params.template[domains_file_index])
 
-writeLines(params.template, con=paste0(outdir, "/", sprintf("%02d", index), ".", hic_matrix_title_1, "-hic_matrix.made.ini"))
+writeLines(params.template, con=paste0(outdir, "/", sprintf("%02d", index), ".", hic_matrix_title_1, ".made.ini"))
 
 
 

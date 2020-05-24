@@ -31,9 +31,9 @@ compartment_file_index = grep("template_and_modify_compartments_file", params.te
 params.template[compartment_file_index] = gsub("template_and_modify_compartments_file", compartment_file_1, params.template[compartment_file_index])
 
 compartment_title_index = grep("template_and_modify_compartments_title", params.template)
-params.template[compartment_title_index] = gsub("template_and_modify_compartments_file", compartment_title_1, params.template[compartment_title_index])
+params.template[compartment_title_index] = gsub("template_and_modify_compartments_title", compartment_title_1, params.template[compartment_title_index])
 
-writeLines(params.template, con=paste0(outdir, "/", sprintf("%02d", index), ".", compartment_title_1, "-hic_matrix.made.ini"))
+writeLines(params.template, con=paste0(outdir, "/", sprintf("%02d", index), ".", compartment_title_1, ".made.ini"))
 
 
 

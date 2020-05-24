@@ -8,8 +8,11 @@ file = template_and_modify_domains_diff_file
 title = template_and_modify_domains_diff_title
 
 color = seismic
+min_value = auto
+max_value = auto
 
 height = 1
+border_color = black
 labels = false
 
 # Parameters where default values were used. Shown below.

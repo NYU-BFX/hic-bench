@@ -88,6 +88,9 @@ endif
 
 set domains_diff_branch = ../domains-diff/results/domains-diff.$group_var.$tad_caller.$is_normalize.$tad_1_or_2/matrix-ic.$group_var.cutoff_0/matrix-filtered.$group_var.res_40kb/$branch_short
 
+# Choose $object_pair among the directory name inside $domains_diff_branch.
+set object_pair = "ESC-untreated.MEF.untreated"
+
 
 # 3. compartments
 set compartment_method = homer
