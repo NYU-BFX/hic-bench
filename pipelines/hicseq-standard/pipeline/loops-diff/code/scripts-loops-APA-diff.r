@@ -7,13 +7,6 @@ URm = as.numeric(argv[5L])
 loopCount.path = argv[6L]
 outdir="in-house-analysis"
 
-#inpdir="/Users/javrodher/Work/RStudio-PRJs/leukemia-cell-line-DR/data/loops-diff-may21st/APA/diff/"
-#APA_res=10000
-#C1="CUTLL1_DMSO_A"
-#C2="CUTLL1_THZ1"
-#URm=2.5
-#loopCount.path = "/Users/javrodher/Documents/loop_count.tsv"
-
 library(ggplot2)
 library(gridExtra)
 library(pheatmap)
@@ -26,9 +19,12 @@ options(scipen=10000)
 dir.create(outdir)
 pdf(NULL)
 
-# Functions #
+#### Functions ####
+
+# rotate matrix
 rotate=function(x) {t(apply(x, 2, rev))}
 
+# plot heatmap
 ggHmapAPA=function(mat.path,title,URm){
   if(length(mat.path)==1){
     x=read.csv(mat.path,header = F)
@@ -57,6 +53,7 @@ ggHmapAPA=function(mat.path,title,URm){
                 panel.background = element_blank(), axis.line = element_blank()))
 }  
 
+# prepare scores table
 prepMetrics=function(measures.file,q,s){
   if(length(measures.file)==1){
     x=read.table(measures.file,stringsAsFactors = F)
@@ -68,11 +65,7 @@ prepMetrics=function(measures.file,q,s){
   return(m)
 }
 
-#metric="P2LL"
-#qtab=qcpmtab
-#xlab=""
-#m=common.specific
-
+# plot scores by loop-subset
 plotMetrics=function(m,metric,xlab){
   m$n=1:nrow(m)
   print(ggplot(m,aes(x=n,y=!!ensym(metric),color=q))+
@@ -85,12 +78,8 @@ plotMetrics=function(m,metric,xlab){
 
 ##### RUN #####
 all.files=list.files(pattern=".txt",recursive = T,full.names = F,include.dirs = F)
-print(all.files)
 methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
-#methods=c("APA")
 scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
-#scores=c("P2LL")
-getwd()
 loopCount=read.csv(loopCount.path,sep="\t",header=F)
 names(loopCount)=c("count","file")
 count.increased=loopCount$count[grep("increased",loopCount$file)]
@@ -98,9 +87,6 @@ count.decreased=loopCount$count[grep("decreased",loopCount$file)]
 count.stable=loopCount$count[grep("stable",loopCount$file)]
 count.specific.c1=loopCount$count[grep(paste0(C1,"_specific_loops"),loopCount$file)]
 count.specific.c2=loopCount$count[grep(paste0(C2,"_specific_loops"),loopCount$file)]
-
-#method="APA"
-#score="P2LL"
 
 for (method in methods){
   print(method)

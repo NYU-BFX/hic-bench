@@ -6,11 +6,6 @@ C2 = argv[4L]
 URm = as.numeric(argv[5L])
 outdir = "in-house-analysis"
 
-#inpdir="/Users/javrodher/Work/RStudio-PRJs/leukemia-cell-line-DR/data/loops-diff-may21st/APA/quantiles/"
-#APA_res=10000
-#C1="CUTLL1_DMSO_A"
-#C2="CUTLL1_THZ1"
-
 library(ggplot2)
 library(gridExtra)
 library(pheatmap)
@@ -23,9 +18,12 @@ dir.create(outdir)
 options(scipen=10000)
 pdf(NULL)
 
-# Functions #
+#### Functions ####
+
+# rotate matrix
 rotate=function(x) {t(apply(x, 2, rev))}
 
+# plot heatmap
 ggHmapAPA=function(mat.path,title,URm){
   if(length(mat.path)==1){
     x=read.csv(mat.path,header = F)
@@ -54,14 +52,11 @@ ggHmapAPA=function(mat.path,title,URm){
                 panel.background = element_blank(), axis.line = element_blank()))
 }  
 
-prepMetrics=function(measures.file,q,s){
-  if(length(measures.file)==1){
-    x=read.table(measures.file,stringsAsFactors = F)
-    m=as.data.frame(t(x[2]))
-    names(m)=x$V1
-  } else { m=data.frame(P2M=NA,P2UL=NA,P2UR=NA,P2LL=NA,P2LR=NA,ZscoreLL=NA,stringsAsFactors = F) }
+prepMetrics=function(measures.file,q){
+  x=read.table(measures.file[q],stringsAsFactors = F)
+  m=as.data.frame(t(x[2]))
+  names(m)=x$V1
   m$q=q
-  m$s=s
   return(m)
 }
 
@@ -83,11 +78,8 @@ plotMetrics=function(m,metric,xlab,qtab){
 ##### RUN #####
 all.files=list.files(pattern=".txt",recursive = T,full.names = F,include.dirs = F)
 tables=list.files(pattern=".csv",recursive = T,full.names = F,include.dirs = F)
-
 methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
-#methods=c("APA")
 scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
-#scores=c("P2LL")
 
 for (method in methods){
   print(method)
