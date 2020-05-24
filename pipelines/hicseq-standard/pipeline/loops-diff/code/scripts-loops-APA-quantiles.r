@@ -3,6 +3,7 @@ inpdir = argv[1L]
 APA_res = as.numeric(argv[2L])
 C1 = argv[3L]
 C2 = argv[4L]
+URm = as.numeric(argv[5L])
 outdir = "in-house-analysis"
 
 #inpdir="/Users/javrodher/Work/RStudio-PRJs/leukemia-cell-line-DR/data/loops-diff-may21st/APA/quantiles/"
@@ -23,38 +24,25 @@ options(scipen=10000)
 pdf(NULL)
 
 # Functions #
-APAhmap=function(mat.path){
-  x=read.csv(mat.path,header = F)
-  x$V1=gsub(pattern = "[",replacement = "",x = x$V1,fixed = T)
-  x[,ncol(x)]=gsub(pattern = "]",replacement = "",x = x[,ncol(x)],fixed = T)
-  x=apply(x,2,as.numeric)
-  UR=mean(x[1:6,(ncol(x)-6):ncol(x)])*5
-  x[x > UR]=UR
-  
-  x=as.data.frame(x)
-  names(x)=1:ncol(x)*APA_res
-  print(pheatmap(x,
-                 scale ="none",
-                 cluster_rows = F,
-                 cluster_cols = F,
-                 color = colorRampPalette(colors = c("white","red"))(50),
-                 border_color = NA))
-}
-
 rotate=function(x) {t(apply(x, 2, rev))}
 
-ggHmapAPA=function(mat.path,title){
-  x=read.csv(mat.path,header = F)
-  x$V1=gsub(pattern = "[",replacement = "",x = x$V1,fixed = T)
-  x[,ncol(x)]=gsub(pattern = "]",replacement = "",x = x[,ncol(x)],fixed = T)
-  x=rotate(x)
-  x=apply(x,2,as.numeric)
-  UR=mean(x[1:6,(ncol(x)-6):ncol(x)])*5
-  x[x > UR]=UR
-  min=min(x)
-  n=nrow(x)
-  df.hmap=data.frame(row=rep(1:n,each=n),col=rep(1:n,times=n),values=NA,stringsAsFactors = F)
-  for(i in 1:nrow(df.hmap)){df.hmap$values[i]=x[df.hmap$row[i],df.hmap$col[i]]}
+ggHmapAPA=function(mat.path,title,URm){
+  if(length(mat.path)==1){
+    x=read.csv(mat.path,header = F)
+    x$V1=gsub(pattern = "[",replacement = "",x = x$V1,fixed = T)
+    x[,ncol(x)]=gsub(pattern = "]",replacement = "",x = x[,ncol(x)],fixed = T)
+    x=rotate(x)
+    x=apply(x,2,as.numeric)
+    UR=mean(x[1:6,(ncol(x)-6):ncol(x)])*URm
+    x[x > UR]=UR
+    min=min(x)
+    n=nrow(x)
+    df.hmap=data.frame(row=rep(1:n,each=n),col=rep(1:n,times=n),values=NA,stringsAsFactors = F)
+    for(i in 1:nrow(df.hmap)){df.hmap$values[i]=x[df.hmap$row[i],df.hmap$col[i]]}
+  } else{ 
+    df.hmap=data.frame(row=1,col=1,values=0,stringsAsFactors = F)
+    UR=0
+  }
   
   print(ggplot(df.hmap, aes(row, col, fill= values)) + 
           geom_tile(show.legend = F,color=NA,size=0)+
@@ -62,15 +50,18 @@ ggHmapAPA=function(mat.path,title){
           ylab(paste0("bins (",APA_res/1000," kb)"))+
           ggtitle(title)+
           scale_fill_gradient(low="white",high="red",limits=c(0,UR))+
-          theme(plot.title = element_text(hjust = 0.5,size=10),panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
+          theme(plot.title = element_text(hjust = 0.5,size=8),panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
                 panel.background = element_blank(), axis.line = element_blank()))
 }  
 
-prepMetrics=function(measures.file,q){
-  x=read.table(measures.file[q],stringsAsFactors = F)
-  m=as.data.frame(t(x[2]))
-  names(m)=x$V1
+prepMetrics=function(measures.file,q,s){
+  if(length(measures.file)==1){
+    x=read.table(measures.file,stringsAsFactors = F)
+    m=as.data.frame(t(x[2]))
+    names(m)=x$V1
+  } else { m=data.frame(P2M=NA,P2UL=NA,P2UR=NA,P2LL=NA,P2LR=NA,ZscoreLL=NA,stringsAsFactors = F) }
   m$q=q
+  m$s=s
   return(m)
 }
 
@@ -124,49 +115,49 @@ for (method in methods){
     mats.q.c1=mats.q.c1[grep("cpm",mats.q.c1)][c(1,3:10,2)]
     mats.q.c2=mats.q.c2[grep("cpm",mats.q.c2)][c(1,3:10,2)]
     
-    qdist1.c1=ggHmapAPA(mats.dist.c1[1],"1st quantile")
-    qdist2.c1=ggHmapAPA(mats.dist.c1[2],"2nd quantile")
-    qdist3.c1=ggHmapAPA(mats.dist.c1[3],"3rd quantile")
-    qdist4.c1=ggHmapAPA(mats.dist.c1[4],"4rd quantile")
-    qdist5.c1=ggHmapAPA(mats.dist.c1[5],"5th quantile")
-    qdist6.c1=ggHmapAPA(mats.dist.c1[6],"6th quantile")
-    qdist7.c1=ggHmapAPA(mats.dist.c1[7],"7th quantile")
-    qdist8.c1=ggHmapAPA(mats.dist.c1[8],"8th quantile")
-    qdist9.c1=ggHmapAPA(mats.dist.c1[9],"9th quantile")
-    qdist10.c1=ggHmapAPA(mats.dist.c1[10],"10th quantile")
+    qdist1.c1=ggHmapAPA(mats.dist.c1[1],"1st quantile",URm)
+    qdist2.c1=ggHmapAPA(mats.dist.c1[2],"2nd quantile",URm)
+    qdist3.c1=ggHmapAPA(mats.dist.c1[3],"3rd quantile",URm)
+    qdist4.c1=ggHmapAPA(mats.dist.c1[4],"4rd quantile",URm)
+    qdist5.c1=ggHmapAPA(mats.dist.c1[5],"5th quantile",URm)
+    qdist6.c1=ggHmapAPA(mats.dist.c1[6],"6th quantile",URm)
+    qdist7.c1=ggHmapAPA(mats.dist.c1[7],"7th quantile",URm)
+    qdist8.c1=ggHmapAPA(mats.dist.c1[8],"8th quantile",URm)
+    qdist9.c1=ggHmapAPA(mats.dist.c1[9],"9th quantile",URm)
+    qdist10.c1=ggHmapAPA(mats.dist.c1[10],"10th quantile",URm)
     
-    qdist1.c2=ggHmapAPA(mats.dist.c2[1],"1st quantile")
-    qdist2.c2=ggHmapAPA(mats.dist.c2[2],"2nd quantile")
-    qdist3.c2=ggHmapAPA(mats.dist.c2[3],"3rd quantile")
-    qdist4.c2=ggHmapAPA(mats.dist.c2[4],"4rd quantile")
-    qdist5.c2=ggHmapAPA(mats.dist.c2[5],"5th quantile")
-    qdist6.c2=ggHmapAPA(mats.dist.c2[6],"6th quantile")
-    qdist7.c2=ggHmapAPA(mats.dist.c2[7],"7th quantile")
-    qdist8.c2=ggHmapAPA(mats.dist.c2[8],"8th quantile")
-    qdist9.c2=ggHmapAPA(mats.dist.c2[9],"9th quantile")
-    qdist10.c2=ggHmapAPA(mats.dist.c2[10],"10th quantile")
+    qdist1.c2=ggHmapAPA(mats.dist.c2[1],"1st quantile",URm)
+    qdist2.c2=ggHmapAPA(mats.dist.c2[2],"2nd quantile",URm)
+    qdist3.c2=ggHmapAPA(mats.dist.c2[3],"3rd quantile",URm)
+    qdist4.c2=ggHmapAPA(mats.dist.c2[4],"4rd quantile",URm)
+    qdist5.c2=ggHmapAPA(mats.dist.c2[5],"5th quantile",URm)
+    qdist6.c2=ggHmapAPA(mats.dist.c2[6],"6th quantile",URm)
+    qdist7.c2=ggHmapAPA(mats.dist.c2[7],"7th quantile",URm)
+    qdist8.c2=ggHmapAPA(mats.dist.c2[8],"8th quantile",URm)
+    qdist9.c2=ggHmapAPA(mats.dist.c2[9],"9th quantile",URm)
+    qdist10.c2=ggHmapAPA(mats.dist.c2[10],"10th quantile",URm)
     
-    cpm1.c1=ggHmapAPA(mats.q.c1[1],"1st quantile")
-    cpm2.c1=ggHmapAPA(mats.q.c1[2],"2nd quantile")
-    cpm3.c1=ggHmapAPA(mats.q.c1[3],"3rd quantile")
-    cpm4.c1=ggHmapAPA(mats.q.c1[4],"4th quantile")
-    cpm5.c1=ggHmapAPA(mats.q.c1[5],"5th quantile")
-    cpm6.c1=ggHmapAPA(mats.q.c1[6],"6th quantile")
-    cpm7.c1=ggHmapAPA(mats.q.c1[7],"7th quantile")
-    cpm8.c1=ggHmapAPA(mats.q.c1[8],"8th quantile")
-    cpm9.c1=ggHmapAPA(mats.q.c1[9],"9th quantile")
-    cpm10.c1=ggHmapAPA(mats.q.c1[10],"10th quantile")
+    cpm1.c1=ggHmapAPA(mats.q.c1[1],"1st quantile",URm)
+    cpm2.c1=ggHmapAPA(mats.q.c1[2],"2nd quantile",URm)
+    cpm3.c1=ggHmapAPA(mats.q.c1[3],"3rd quantile",URm)
+    cpm4.c1=ggHmapAPA(mats.q.c1[4],"4th quantile",URm)
+    cpm5.c1=ggHmapAPA(mats.q.c1[5],"5th quantile",URm)
+    cpm6.c1=ggHmapAPA(mats.q.c1[6],"6th quantile",URm)
+    cpm7.c1=ggHmapAPA(mats.q.c1[7],"7th quantile",URm)
+    cpm8.c1=ggHmapAPA(mats.q.c1[8],"8th quantile",URm)
+    cpm9.c1=ggHmapAPA(mats.q.c1[9],"9th quantile",URm)
+    cpm10.c1=ggHmapAPA(mats.q.c1[10],"10th quantile",URm)
     
-    cpm1.c2=ggHmapAPA(mats.q.c2[1],"1st quantile")
-    cpm2.c2=ggHmapAPA(mats.q.c2[2],"2nd quantile")
-    cpm3.c2=ggHmapAPA(mats.q.c2[3],"3rd quantile")
-    cpm4.c2=ggHmapAPA(mats.q.c2[4],"4th quantile")
-    cpm5.c2=ggHmapAPA(mats.q.c2[5],"5th quantile")
-    cpm6.c2=ggHmapAPA(mats.q.c2[6],"6th quantile")
-    cpm7.c2=ggHmapAPA(mats.q.c2[7],"7th quantile")
-    cpm8.c2=ggHmapAPA(mats.q.c2[8],"8th quantile")
-    cpm9.c2=ggHmapAPA(mats.q.c2[9],"9th quantile")
-    cpm10.c2=ggHmapAPA(mats.q.c2[10],"10th quantile")
+    cpm1.c2=ggHmapAPA(mats.q.c2[1],"1st quantile",URm)
+    cpm2.c2=ggHmapAPA(mats.q.c2[2],"2nd quantile",URm)
+    cpm3.c2=ggHmapAPA(mats.q.c2[3],"3rd quantile",URm)
+    cpm4.c2=ggHmapAPA(mats.q.c2[4],"4th quantile",URm)
+    cpm5.c2=ggHmapAPA(mats.q.c2[5],"5th quantile",URm)
+    cpm6.c2=ggHmapAPA(mats.q.c2[6],"6th quantile",URm)
+    cpm7.c2=ggHmapAPA(mats.q.c2[7],"7th quantile",URm)
+    cpm8.c2=ggHmapAPA(mats.q.c2[8],"8th quantile",URm)
+    cpm9.c2=ggHmapAPA(mats.q.c2[9],"9th quantile",URm)
+    cpm10.c2=ggHmapAPA(mats.q.c2[10],"10th quantile",URm)
     
     # Measures plots
     measures.files=list.files(pattern="measures",recursive = T)

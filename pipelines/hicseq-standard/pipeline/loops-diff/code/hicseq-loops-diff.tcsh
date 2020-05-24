@@ -37,6 +37,7 @@ else
 	set m = "nobias"
 endif
 
+set main_dir = `echo ${cwd}`
 set l1 = "$branch"/"$object1"/loops_unfiltered_"$m"_cpm.tsv.gz
 set l2 = "$branch"/"$object2"/loops_unfiltered_"$m"_cpm.tsv.gz
 set tss = $genome_dir/tss.bed
@@ -67,6 +68,9 @@ awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"
 awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' $outdir/common.loops_increased.tsv >! $outdir/bedpe_files/common.loops_increased.bedpe
 awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' $outdir/common.loops.tsv >! $outdir/bedpe_files/common.loops.bedpe
 awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' $outdir/common.loops_stable.tsv >! $outdir/bedpe_files/common.loops_stable.bedpe
+
+cd $outdir/bedpe_files/ ; wc -l *.bedpe | fgrep -v "total" | awk '{print $1"\t"$2}' > loop_count.tsv
+cd $main_dir
 
 #igv
 awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' $outdir/common.loops_decreased.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! $outdir/igv_files/common.loops_decreased.igv.bed
@@ -108,7 +112,7 @@ if ($APA_diff == TRUE) then
 	rm -fr $outdir/APA/diff/*/*/*v*
 
 	echo "Performing in-house APA analysis on the loop-subsets..." | scripts-send2err
-	Rscript ./code/scripts-loops-APA-diff.r $outdir/APA/diff/ $APA_resolution $object1 $object2
+	Rscript ./code/scripts-loops-APA-diff.r $outdir/APA/diff/ $APA_resolution $object1 $object2 $URm "$main_dir"/"$outdir"/bedpe_files/loop_count.tsv
 endif
 
 # Generate loops sets by quantiles and perform APA analyisis
@@ -153,7 +157,7 @@ if ($APA_quantiles == TRUE) then
 
 	# perform in-house analysis
 	echo "Performing in-house APA analysis on the quantile-subsets..." | scripts-send2err
-	Rscript ./code/scripts-loops-APA-quantiles.r $outdir/APA/quantiles/ $APA_resolution $object1 $object2
+	Rscript ./code/scripts-loops-APA-quantiles.r $outdir/APA/quantiles/ $APA_resolution $object1 $object2 $URm
 endif
 
 rm -f $outdir/l*.bedpe $outdir/l*.tsv
