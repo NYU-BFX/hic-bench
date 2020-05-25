@@ -66,11 +66,12 @@ prepMetrics=function(measures.file,q,s){
 }
 
 # plot scores by loop-subset
-plotMetrics=function(m,metric,xlab){
+plotMetrics=function(m,metric,xlab,ylab){
   m$n=1:nrow(m)
   print(ggplot(m,aes(x=n,y=!!ensym(metric),color=q))+
           geom_point(show.legend = F)+
           xlab(xlab)+
+          ylab(ylab)+
           scale_x_continuous(breaks=c(1:nrow(m)),labels=m$q,sec.axis = dup_axis(labels=m$s))+
           geom_hline(yintercept = log2(1),linetype=3,color="red")+
           theme(axis.text.x=element_text(size=6,angle=0,vjust = 0.5,hjust=0.5)))
@@ -155,7 +156,7 @@ for (method in methods){
     common.down.c2=prepMetrics(mat.common.decreased.c2,"common decreased",C2)
     common.stable.c1=prepMetrics(mat.common.stable.c1,"common stable",C1)
     common.stable.c2=prepMetrics(mat.common.stable.c2,"common stable",C2)
-    common.merged=rbind(common.up.c1,common.up.c2,common.down.c1,common.down.c2,common.stable.c1,common.stable.c2)
+    common.merged=rbind(common.down.c1,common.down.c2,common.up.c1,common.up.c2,common.stable.c1,common.stable.c2)
     
     #specific
     measures.files.specific=measures.files[!measures.files %in% measures.files.common]
@@ -174,7 +175,7 @@ for (method in methods){
     md.all=rbind(md1,md2,md3,md4)
     
     common.specific=rbind(common.merged,md.all)
-    p1=plotMetrics(common.specific,!!ensym(score),xlab = "")
+    p1=plotMetrics(common.specific,!!ensym(score),xlab = "",ylab = paste0("log2 (",score,")"))
     
     # report
     pdf(paste0(outdir,paste0("/hmap_diff_",method,"_",score,".pdf")), width=10 ,height=6) 
