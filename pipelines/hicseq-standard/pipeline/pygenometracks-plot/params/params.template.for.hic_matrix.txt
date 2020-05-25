@@ -10,11 +10,12 @@ title = template_and_modify_hic_matrix_title
 # If the visualization shows too shallow or too deep figure, adjust the depth.
 depth = 800000
 
-# Currently, the minimum and maximum values cannot be set for multiple Hi-C input.
-# These must be configured manually.
+# Currently, the minimum and maximum values cannot be set for the same scale for multiple Hi-C input.
+# These must be configured manually. Just find out the ranges of each first.
 min_value = auto
 max_value = auto
-# max_value = 100.0
+# min_value = 1
+# max_value = 10.0
 
 transform = log1p
 show_masked_bins = false

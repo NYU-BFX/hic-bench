@@ -1,15 +1,15 @@
 argv = commandArgs(trailingOnly = TRUE)
 infile = argv[1L]
 outdir = argv[2L]
-
+print(infile)
 library(ggplot2)
 
-label="ref1_loops_filtered_cpm"
+label="loops_filtered_cpm"
 options(scipen=10000)
 x=read.table(infile,header = F,stringsAsFactors = F)
 names(x)[7]="cpm"
 x$distance=x$V5-x$V3
-  
+
 qdist=quantile(x$distance,c(0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9),na.rm=T)
 qdist1=x[x$distance<=qdist[1],]
 qdist2=x[x$distance>qdist[1] & x$cpm<=qdist[2],]

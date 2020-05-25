@@ -1,0 +1,35 @@
+###### Start of params.template.for.external_bigwigs.txt
+# This file creates the structure in the .ini file for .bigWig files from external assays.
+# Depends on .bigWig file definitions written on params.standard.tcsh file.
+
+[bigWig]
+file_type = bigwig
+file = template_and_modify_bigwig_file
+title = template_and_modify_bigwig_title
+color = template_and_modify_bigwig_color
+
+type = fill
+height = 2
+
+min_value = 0
+max_value = auto
+# Will probably need manual adjustments to present multiple .bigWig files in the same scale.
+# max_value = 4.0
+
+number_of_bins = 700
+nans_to_zeros = true
+summary_method = mean
+
+show_data_range = true
+
+# Default parameters. Uncomment and change if needed.
+# alpha = 1
+
+# If inverted orientation is necessary:
+# orientation = inverted
+# If overlay is necessary:
+# overlay_previous = yes
+# overlay_previous = share-y
+
+###### End of params.template.for.external_bigwigs.txt
+
