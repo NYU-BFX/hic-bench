@@ -128,8 +128,6 @@ if ($APA_quantiles == TRUE) then
             	set qf = $outdir/common.loops_clean.tsv
 	endif
 	
-	echo $qf
-	
 	awk -v q="$qcut1" -v c="$min_cpm" '{if ((NR == 1) || ($7 <= q) && ($5 >= c)){print}}' $qf >! $outdir/t1.tsv
         awk -v min="$min_distance" -v max="$max_distance" 'NR == 1 || \!/fragment/ && ($4-$2) < max && ($4-$2) > min' $outdir/t1.tsv >! $outdir/t2.tsv        
 	awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' $outdir/t2.tsv >! $outdir/l1_q2.bedpe
