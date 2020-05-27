@@ -1,0 +1,33 @@
+###### Start of params.template.for.virtual4C.txt
+# This file creates the structure in the .ini file for the desired virtual4C file from Hi-C bench.
+# Depends on .bedGraph.gz file(s) from virtual4C result.
+
+[virtual4C]
+file_type = bedgraph
+file = template_and_modify_virtual4C_file
+title = template_and_modify_virtual4C_title
+
+height = 4
+overlay_previous = template_and_modify_virtual4C_overlay
+# if you want to plot the track on top of the previous track. Options are 'yes' or 'share-y'. For the 'share-y'
+# overlay_previous is currently set such that it is 'no' for the first entry, and 'share-y' for the rest.
+
+# These lines ensure that the A/B compartment plot is shown as polygons in 2 colors.
+color = template_and_modify_virtual4C_color
+type = line:1
+
+min_value = auto
+max_value = auto
+# If needed, change the values to the same scale across multiple samples.
+
+nans_to_zeros = true
+
+
+# If one needs to show the matrix in inverted triangle, use this.
+# orientation = inverted
+# option the y axis values is shared between this plot and the overlay plot. Otherwise, each plot use its own scale
+# alpha = 1.0
+
+
+###### End of params.template.for.virtual4C.txt
+

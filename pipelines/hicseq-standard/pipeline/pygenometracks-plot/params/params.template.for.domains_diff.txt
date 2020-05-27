@@ -13,6 +13,7 @@ max_value = auto
 
 height = 1
 border_color = black
+display = collapsed
 labels = false
 
 # Parameters where default values were used. Shown below.
