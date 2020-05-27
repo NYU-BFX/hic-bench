@@ -54,4 +54,4 @@ awk '{print $2"\t"$3"\t"$4}' pca_HKgenesFix_Acompartments.txt >! pca_HKgenesFix_
 awk '{print $2"\t"$3"\t"$4}' pca_HKgenesFix_Bcompartments.txt >! pca_HKgenesFix_Bcompartments.bed
 
 # Clean up
-rm -fr filtered.temp filtered.reg filtered.bed TAG pca_HKgenesFix_Acompartments.txt pca_HKgenesFix_Bcompartments.txt pca_tssFix.PC1* pca_HKgenesFix.PC1.txt pca_HKgenesFix.PC1_counts.bed
+rm -fr filtered.temp filtered.reg filtered.bed TAG pca_HKgenesFix_Acompartments.txt pca_HKgenesFix_Bcompartments.txt pca_tssFix.PC1* pca_HKgenesFix.PC1_counts.bed
