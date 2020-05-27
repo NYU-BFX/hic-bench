@@ -17,8 +17,8 @@ set opt = "$1"
 
 # setup
 set op = loops
-set inpdirs = "inpdirs/tracks"             # indicate input directories
-set filter = "*juicer"                       # filter input objects
+set inpdirs = "inpdirs/filter"             # indicate input directories
+set filter = ""                       # filter input objects
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
@@ -26,7 +26,7 @@ set resources = 1,10G,24
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script
-Rscript ./code/code.main/pipeline-master-explorer.r -v --exclude-branch="tracks.by_sample.juicer" -F "$filter" "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "group" 1
+Rscript ./code/code.main/pipeline-master-explorer.r -v -F "$filter" "$cmd" $results/$op "params/params.*.tcsh" "$inpdirs" "" "sample group" 1
 
 # run and wait until done!
 if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $pipeline_max_jobs
