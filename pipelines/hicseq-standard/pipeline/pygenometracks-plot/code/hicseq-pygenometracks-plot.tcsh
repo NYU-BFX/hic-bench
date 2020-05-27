@@ -29,10 +29,6 @@ scripts-create-path $outdir/
 # -------------------------------------
 
 
-# echo $inpdirs
-# echo $inpdirs[1]
-# echo $inpdirs[2]
-
 # 1. hic_matrix
 if ( $?inpdirs ) then
   foreach j ( `seq $#inpdirs` )
@@ -66,6 +62,23 @@ if ( $?compartment_dir ) then
 endif
 
 # 4. virtual4C
+if ( $?virtual4C_dir ) then
+  set virtual4C_title_1 = 'Virtual 4C'
+  foreach j ( `seq $#objects` )
+    set virtual4C_file_1 = $v4c_bdgs[$j]
+    set virtual4C_color_1 = $v4c_colors[$j]
+    if ( $j == 1 ) then
+      set virtual4C_overlay = "no"
+    else
+      set virtual4C_overlay = "share-y"
+    endif
+
+    Rscript ./code/hicseq-prepare-ini-virtual4C.r $virtual4C_file_1 $virtual4C_color_1 $j $objects[$j] $virtual4C_overlay $outdir
+
+  end
+  # After 4. Combine *virtual4C.made.ini to one.
+  cat $outdir/*virtual4C*.made.ini >> $outdir/combined.04.virtual4C.ini
+endif
 
 # E1. external_bigwigs
 if ( $?external_bigwigs ) then
@@ -76,20 +89,38 @@ if ( $?external_bigwigs ) then
   cat $outdir/*-bigwig.made.ini >> $outdir/combined.E1.external.data.ini
 endif
 
+# E2. Gene annotation
+set inbed_sep = `echo $inbed | sed -e 's/,//g' -e 's/:/ /g' -e 's/-/ /g'`
+module unload bedtools
+module load bedtools
+echo "${inbed_sep[1]}\t${inbed_sep[2]}\t${inbed_sep[3]}" | intersectBed -a stdin -b $GENE_GTF -wb | cut -f4- > $outdir/gene.gtf.for.use.in.$inbed.gtf
+module unload bedtools
+
+module load python/cpu/3.6.5
+make_tracks_file --trackFiles $outdir/gene.gtf.for.use.in.$inbed.gtf -o $outdir/combined.E2.gene.annotation.ini
+module unload python
+
+
+
 cat $outdir/combined.*.ini >> $outdir/final.combined.manually.adjust.scales.ini
+
+
+
+# pyGenomeTracks run here.
 
 module load python/cpu/3.6.5
 
-pyGenomeTracks --tracks $outdir/final.combined.manually.adjust.scales.ini --region $inbed --dpi 300 --outFileName $outdir/final.combined.manually.adjust.scales.pdf
+pyGenomeTracks --tracks $outdir/final.combined.manually.adjust.scales.ini --region $inbed --dpi 300 --outFileName $outdir/final.combined.manually.adjust.scales.$inbed.pdf
 
 # pyGenomeTracks --tracks $outini --region chr15:58,445,797-59,458,364 --outFileName $outdir/region.pdf
 # pyGenomeTracks --tracks results/pygenometracks-plot.standard/tracks.by_group.h5.res_5kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/all-samples/external.data.ini --region chr15:58,445,797-59,458,364 --outFileName results/pygenometracks-plot.standard/tracks.by_group.h5.res_5kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/all-samples/region1.pdf
 module unload python
 
 
-if ( [ -z $outdir/final.combined.manually.adjust.scales.pdf ] && [ ! -e $outdir/final.combined.manually.adjust.scales.pdf ] ) then
+if ( -e $outdir/final.combined.manually.adjust.scales.$inbed.pdf && ! -z $outdir/final.combined.manually.adjust.scales.$inbed.pdf ) then
   rm $outdir/0*.made.ini
 endif
+
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
@@ -99,6 +130,8 @@ endif
 source ./code/code.main/scripts-save-job-vars
 
 # done
+scripts-send2err "NOTICE: This automatic code does not produce multiple plots in the same comparable scale."
+scripts-send2err "Try modifying the min_value and max_value provided in the .ini file for the desired output."
 scripts-send2err "Done."
 
 

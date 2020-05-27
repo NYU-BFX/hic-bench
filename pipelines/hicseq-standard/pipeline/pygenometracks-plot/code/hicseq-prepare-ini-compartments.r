@@ -23,8 +23,6 @@ compartment_title_1 = args[2]
 index = as.numeric(args[3])
 outdir = args[4]
 
-print(args)
-
 params.template = readLines("params/params.template.for.compartments.txt")
 
 compartment_file_index = grep("template_and_modify_compartments_file", params.template)

@@ -25,8 +25,6 @@ domains_bed = args[4]
 index = as.numeric(args[5])
 outdir = args[6]
 
-print(args)
-
 params.template = readLines("params/params.template.for.hic_matrix.txt")
 
 hic_matrix_file_index = grep("template_and_modify_hic_matrix_file", params.template)

@@ -22,8 +22,6 @@ domains_diff_file_1 = args[1]
 domains_diff_title_1 = args[2]
 outdir = args[3]
 
-print(args)
-
 params.template = readLines("params/params.template.for.domains_diff.txt")
 
 domains_diff_file_index = grep("template_and_modify_domains_diff_file", params.template)

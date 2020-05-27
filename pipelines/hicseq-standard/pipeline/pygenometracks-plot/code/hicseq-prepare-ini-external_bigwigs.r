@@ -24,8 +24,6 @@ color_1 = args[3]
 index = as.numeric(args[4])
 outdir = args[5]
 
-print(args)
-
 params.template = readLines("params/params.template.for.external_bigwigs.txt")
 
 bigwig_file_index = grep("template_and_modify_bigwig_file", params.template)

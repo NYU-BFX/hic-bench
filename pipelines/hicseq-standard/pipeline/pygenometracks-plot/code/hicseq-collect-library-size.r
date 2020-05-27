@@ -44,11 +44,6 @@ total$SAMPLE <- factor(total$SAMPLE)
 # Find number of unique categories
 read_category_no <- length(unique(total$READ_CATEGORY))
 
-# Assign color palette based on category number
-my_classes = c("ds-accepted-intra","ds-accepted-inter","ds-duplicate-intra","ds-duplicate-inter","multihit","single-sided","ds-no-fragment","ds-same-fragment","ds-too-close","ds-too-far","unpaired","unmapped","unclassified")
-my_colors <- c("#33a02c","#b2df8a","#e31a1c","#fb9a99","#a6cee3","#1f78b4","#fdbf6f","#ff7f00","#cab2d6","#6a3d9a","#ffff99","#b15928","#000000")
-names(my_colors) = my_classes
-
 # Create data frame for raw reads
 ce1 <- ddply(total,"SAMPLE",transform, READS)
 # Remove "rep1 or rep2" texts

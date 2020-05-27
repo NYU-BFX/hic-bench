@@ -1,4 +1,4 @@
-###### Start of params.template.for.hic_matrix.txt
+###### Start of params.template.for.compartments.txt
 # This file creates the structure in the .ini file for the A/B compartments from Hi-C bench.
 # Depends on .bedGraph file from compartments result.
 
@@ -29,5 +29,5 @@ nans_to_zeros = true
 # alpha = 1.0
 
 
-###### End of params.template.for.hic_matrix.txt
+###### End of params.template.for.compartments.txt
 
