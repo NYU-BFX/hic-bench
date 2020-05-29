@@ -38,7 +38,7 @@ awk '{ if ($2 == $5) { print } }' filtered.temp >! filtered.bed
 makeTagDirectory TAG -format HiCsummary filtered.bed
 
 ## Principal Component Analysis of Hi-C Data ##
-runHiCpca.pl pca_HKgenesFix TAG -res ${resolution} -cpu 8 -active $hkgene_path
+runHiCpca.pl pca_HKgenesFix TAG -res ${resolution} -pc 2 -cpu 8 -active $hkgene_path
 runHiCpca.pl pca_tssFix TAG -res ${resolution} -cpu 8 -active $tss_path
 
 ## Fix sign ##
