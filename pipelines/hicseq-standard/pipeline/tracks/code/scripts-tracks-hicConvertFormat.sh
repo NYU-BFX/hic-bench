@@ -25,7 +25,9 @@ if [[ $format = cool || $format = h5 || $format = homer ]]
 then
 # Convert .hic to .cool/mcool
 	echo 'Converting .hic to .cool file...'
+	conda activate hicexplorer
 	hicConvertFormat --matrices filtered.hic --outFileName filtered.cool --inputFormat hic --outputFormat cool
+	conda deactivate
 fi
 
 ### H5 ###
@@ -33,7 +35,9 @@ if [[ $format = h5  && $multi != TRUE ]]
 then
 # Convert .cool to .h5
 	echo 'Converting .cool to .h5 file...'
+	conda activate hicexplorer
 	hicConvertFormat --matrices filtered.cool --outFileName filtered.h5 --inputFormat cool --outputFormat h5
+	conda deactivate
 fi
 
 if [[ $format = h5  && $multi = TRUE ]]
@@ -46,7 +50,9 @@ if [[ $format = homer && $multi != TRUE ]]
 then
 # Convert .cool to .homer
 	echo 'Converting .cool to .homer file...'
+	conda activate hicexplorer
 	hicConvertFormat --matrices filtered.cool --outFileName filtered.homer --inputFormat cool --outputFormat homer
+	conda deactivate
 fi
 
 if [[ $format = homer  && $multi = TRUE ]]
