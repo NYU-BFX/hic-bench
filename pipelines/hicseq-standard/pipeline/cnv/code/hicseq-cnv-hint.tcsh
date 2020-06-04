@@ -53,7 +53,7 @@ echo "Waiting for job array [$jid] to complete..."
 cd $main_dir
 scripts-qsub-wait "$jid"
 
-#rm -f $outdir/hint-cnv*sh
+rm -f $outdir/hint-cnv*sh
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
