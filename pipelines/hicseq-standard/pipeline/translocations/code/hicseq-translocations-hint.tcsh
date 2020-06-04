@@ -48,12 +48,13 @@ set jid = `echo $jid | sed 's/.* //'`
 echo $jid >! __jdata/job.id
 echo "Waiting for job array [$jid] to complete..."
 
-rm -f hint-tl*sh
+cd $main_dir
+scripts-qsub-wait "$jid"
+rm -f $outdir/hint-tl*sh
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
 # -------------------------------------
 
 # done
-cd $main_dir
 scripts-send2err "Done."

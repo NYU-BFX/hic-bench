@@ -5,7 +5,7 @@ source ./code/code.main/custom-tcshrc     # shell settings
 ## USAGE: hicseq-template.tcsh OUTPUT-DIR PARAM-SCRIPT BRANCH OBJECT(S)
 ##
 
-if ($#argv != 4) then
+if ($#argv != 5) then
   grep '^##' $0
   exit
 endif
@@ -14,9 +14,7 @@ set outdir = $1
 set params = $2
 set genome = $3
 set enzyme = $4
-
-# read variables from input branch
-source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir bin_size"
+set hic_file = $5
 
 # run parameter script
 source $params
@@ -34,23 +32,32 @@ source ./code/code.main/scripts-save-job-vars
 mkdir $outdir/hint
 mkdir $outdir/hint/cnv
 
+set main_dir = `echo ${cwd}`
+set hicfile_full = $main_dir/$hic_file
+
 cp ./code/scripts-hint-cnv.sh $outdir/hint-cnv.sh
+
 cd $outdir
 sed 's/GENOME/'$genome'/g' hint-cnv.sh > hint-cnv2.sh
 sed 's/ENZYME/'$enzyme'/g' hint-cnv2.sh > hint-cnv3.sh
-sed 's/RESOLUTION/'$resolution'/g' hint-cnv3.sh > hint-cnv-custom.sh
+sed 's/RESOLUTION/'$resolution'/g' hint-cnv3.sh > hint-cnv4.sh
+sed 's|HICFILE|'$hicfile_full'|g' hint-cnv4.sh > hint-cnv-custom.sh
 
-sbatch hint-cnv-custom.sh
-rm -f hint-cnv*sh
+echo "Calling cnv with HiNT..."
+mkdir __jdata
+set jid = `sbatch --output="__jdata/job.%a.out" --error="__jdata/job.%a.err" hint-cnv-custom.sh`
+set jid = `echo $jid | sed 's/.* //'`
+echo $jid >! __jdata/job.id
+
+echo "Waiting for job array [$jid] to complete..."
+cd $main_dir
+scripts-qsub-wait "$jid"
+
+#rm -f $outdir/hint-cnv*sh
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
 # -------------------------------------
 
-# save variables
-source ./code/code.main/scripts-save-job-vars
-
 # done
 scripts-send2err "Done."
-
-

@@ -2,7 +2,7 @@
 source ./code/code.main/custom-tcshrc     # shell settings
 
 ##
-## USAGE: hicseq-translocations.tcsh OUTPUT-DIR PARAM-SCRIPT BRANCH OBJECT(S)
+## USAGE: hicseq-cnv.tcsh OUTPUT-DIR PARAM-SCRIPT BRANCH OBJECT(S)
 ##
 
 if ($#argv != 4) then
@@ -14,6 +14,11 @@ set outdir = $1
 set params = $2
 set branch = $3
 set objects = ($4)
+
+echo $outdir
+echo $params
+echo $objects
+echo $branch
 
 # read variables from input branch
 source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir"
@@ -28,14 +33,11 @@ scripts-create-path $outdir/
 # -----  MAIN CODE BELOW --------------
 # -------------------------------------
 
-# make a list of filtered read files for all input objects
-echo $objects
-
+set hic_file = $branch/$objects/filtered.hic
 set enzyme = `cut -f1-2,5-7 inputs/sample-sheet.tsv | grep -w "$objects" | cut -f4 | head -n1`
-echo $enzyme
 
 if ($tool == hint) then
-  ./code/hicseq-cnv-hint.tcsh $outdir $params $genome $enzyme
+  ./code/hicseq-cnv-hint.tcsh $outdir $params $genome $enzyme $hic_file
 else
   echo "Error: Cnv tool $tool not supported." | scripts-send2err
 endif
