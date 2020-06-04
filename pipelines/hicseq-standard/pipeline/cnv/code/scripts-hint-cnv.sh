@@ -8,5 +8,5 @@ module unload python
 module load anaconda3/cpu/5.2.0
 
 conda activate hint
-hint cnv -m HICFILE -f juicer --refdir /gpfs/data/skoklab/home/rodrij92/biodata/hint/hintref/GENOME/ -r RESOLUTION -g GENOME -n cnv -o ./hint/cnv/ --bicseq /gpfs/home/rodrij92/home/install/BICseq2-seg_v0.7.3 -e ENZYME
+hint cnv -m HICFILE -f juicer --refdir REFDIR -r RESOLUTION -g GENOME -n cnv -o ./hint/cnv/ --bicseq BICSEQ -e ENZYME
 conda deactivate

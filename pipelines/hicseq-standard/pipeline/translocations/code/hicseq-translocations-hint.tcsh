@@ -33,17 +33,21 @@ mkdir $outdir/hint
 mkdir $outdir/hint/tl
 set main_dir = `echo ${cwd}`
 set hicfile_full = $main_dir/$hic_file
+set refdir = $main_dir/inputs/data/genomes/$genome/hint-data/hintref/
+set backdir = $main_dir/inputs/data/genomes/$genome/hint-data/background/
 
 cp ./code/scripts-hint-tl.sh $outdir/hint-tl.sh
 
 cd $outdir
-sed 's/GENOME/'$genome'/g' hint-tl.sh > hint-tl2.sh
-sed 's/ENZYME/'$enzyme'/g' hint-tl2.sh > hint-tl3.sh
-sed 's|HICFILE|'$hicfile_full'|g' hint-tl3.sh > hint-tl-custom.sh
+sed -i 's/GENOME/'$genome'/g' hint-tl.sh
+sed -i 's/ENZYME/'$enzyme'/g' hint-tl.sh
+sed -i 's|REFDIR|'$refdir'|g' hint-tl.sh              
+sed -i 's|BACKDIR|'$backdir'|g' hint-tl.sh              
+sed -i 's|HICFILE|'$hicfile_full'|g' hint-tl.sh
 
 echo "Calling translocations with HiNT..."
 mkdir __jdata
-set jid = `sbatch --output="__jdata/job.%a.out" --error="__jdata/job.%a.err" hint-tl-custom.sh`
+set jid = `sbatch --output="__jdata/job.%a.out" --error="__jdata/job.%a.err" hint-tl.sh`
 set jid = `echo $jid | sed 's/.* //'`
 echo $jid >! __jdata/job.id
 echo "Waiting for job array [$jid] to complete..."

@@ -34,18 +34,22 @@ mkdir $outdir/hint/cnv
 
 set main_dir = `echo ${cwd}`
 set hicfile_full = $main_dir/$hic_file
+set refdir = $main_dir/inputs/data/genomes/$genome/hint-data/hintref/
+set bicseq = $main_dir/inputs/data/tools/BICseq2-seg_v0.7.3
 
 cp ./code/scripts-hint-cnv.sh $outdir/hint-cnv.sh
 
 cd $outdir
-sed 's/GENOME/'$genome'/g' hint-cnv.sh > hint-cnv2.sh
-sed 's/ENZYME/'$enzyme'/g' hint-cnv2.sh > hint-cnv3.sh
-sed 's/RESOLUTION/'$resolution'/g' hint-cnv3.sh > hint-cnv4.sh
-sed 's|HICFILE|'$hicfile_full'|g' hint-cnv4.sh > hint-cnv-custom.sh
+sed -i 's/GENOME/'$genome'/g' hint-cnv.sh
+sed -i 's/ENZYME/'$enzyme'/g' hint-cnv.sh
+sed -i 's/RESOLUTION/'$resolution'/g' hint-cnv.sh
+sed -i 's|REFDIR|'$refdir'|g' hint-cnv.sh                
+sed -i 's|BICSEQ|'$bicseq'|g' hint-cnv.sh                
+sed -i 's|HICFILE|'$hicfile_full'|g' hint-cnv.sh
 
 echo "Calling cnv with HiNT..."
 mkdir __jdata
-set jid = `sbatch --output="__jdata/job.%a.out" --error="__jdata/job.%a.err" hint-cnv-custom.sh`
+set jid = `sbatch --output="__jdata/job.%a.out" --error="__jdata/job.%a.err" hint-cnv.sh`
 set jid = `echo $jid | sed 's/.* //'`
 echo $jid >! __jdata/job.id
 
