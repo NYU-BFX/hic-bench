@@ -8,3 +8,5 @@ hexbin_plots/
 template_intraTAD.tex
 loops_unfiltered*.gz
 __jdata/
+__jdata/
+__jdata_APA/

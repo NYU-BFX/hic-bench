@@ -27,6 +27,9 @@ endif
 rm -rf $report
 mkdir $report
 
+
+if ("$standard" == "TRUE") then
+
 #filter-stats
 cp ../pipeline/filter-stats/results/filter-stats.standard/$main_branch/all-samples/counts.pdf $report/read-counts-classification.pdf
 cp ../pipeline/filter-stats/results/filter-stats.standard/$main_branch/all-samples/percent.pdf $report/read-percentages-classification.pdf
@@ -77,7 +80,11 @@ ln -sf ../../pipeline/domains/results/domains.by_group.hicratio.d_0500/matrix-ic
 #hicplotter
 #ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_group.hicratio-selected-regions/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} hicplotter-diff
 #rm -f hicplotter-diff/*/job* hicplotter-diff/*/*.png
+cd..
 
+endif
+
+cd $report
 #loops
 if ("$include_loops" == "TRUE") then
 	mkdir loops
@@ -94,6 +101,7 @@ if ("$include_loops_diff" == "TRUE") then
 	cd ..
 endif
 
+if ("$standard" == "TRUE") then
 #### CREATE DOMAINS-DIFF tex-templates FOR ALL THE COMPARISONS SELECTED ####
 mkdir domains-diff
 
@@ -230,6 +238,13 @@ cp $report/compartments-stats-by-group/density_plots/* $report/report-figures/co
 cp $report/compartments-stats-by-sample/hexbin_plots/* $report/report-figures/compartments-hexbinPlots-by-sample/
 cp $report/compartments-stats-by-group/hexbin_plots/* $report/report-figures/compartments-hexbinPlots-by-group/
 
+endif
+
+if ("$standard" == "TRUE") then
+	echo "standard == TRUE"
+else
+	cd ..
+endif
 
 #########################################################################################
 #                                  MAIN ABOVE BELOW                                     #
