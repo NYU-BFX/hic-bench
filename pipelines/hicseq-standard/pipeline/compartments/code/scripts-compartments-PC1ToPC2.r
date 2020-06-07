@@ -7,13 +7,10 @@ samplePath = argv[1L] #path to the sample/group results directory
 chromsList = argv[2L] #comma separeted list of the chromosomes to be flipped
 
 chromsToFlip=unlist(strsplit(chromsList,split = ","))
-head(chromsToFlip)
 bedgraph=read.csv(paste0(samplePath,"/pca_HKgenesFix.PC1.bedGraph"),sep="\t",header = F,skip=1,,stringsAsFactors = F,col.names = c("chr","start","end","pc1"))
 bedgraph$bin.ID=paste(bedgraph$chr,bedgraph$start,bedgraph$end,sep = ":")
-head(bedgraph)
 bedgraph.PC2=read.csv(paste0(samplePath,"/pca_HKgenesFix.PC1.PC2.txt"),sep="\t",header = T,stringsAsFactors = F)
 bedgraph.PC2$bin.ID=paste(bedgraph.PC2$chr,bedgraph.PC2$start,bedgraph.PC2$end,sep = ":")
-head(bedgraph.PC2)
 bedgraph.PC2=bedgraph.PC2[bedgraph.PC2$bin.ID %in% bedgraph$bin.ID,]
 print("after")
 write.table(bedgraph,paste0(samplePath,"/pca_HKgenesFix.PC1_old.bedGraph"),quote = F,col.names = F,row.names = F,sep="\t")
