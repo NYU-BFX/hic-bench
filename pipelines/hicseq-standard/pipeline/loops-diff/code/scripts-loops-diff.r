@@ -323,6 +323,8 @@ colnames(tss)=c("chr","start","end","geneID")
 tss$geneID=gsub(pattern = "tss:",replacement = "",x = tss$geneID)
 
 # set labels (to avoid ggplot error when first character of label is numeric -> add "S" as first char)
+C1.lab.original=C1.lab
+C2.lab.original=C2.lab
 test.1st.char=as.numeric(substr(x = C1.lab,start = 1,stop = 1)) 
 test.1st.char=test.1st.char[!is.na(test.1st.char)]
 if(length(test.1st.char)>0){C1.lab=paste0("S",C1.lab)}
@@ -400,6 +402,8 @@ C1.specific=y[y$loops.ID %in% C1.loops$loops.ID[C1.loops$qcut1==T] & !(y$loops.I
 C1.specific=C1.specific[C1.specific$qcut1==T,]
 C2.specific=y[y$loops.ID %in% C2.loops$loops.ID[C2.loops$qcut1==T] & !(y$loops.ID %in% C1.loops$loops.ID[C1.loops$qcut1==T]),]
 C2.specific=C2.specific[C2.specific$qcut1==T,]
+
+df.gg=df.gg[df.gg$loops.ID %in% c(C1.specific$loops.ID,C2.specific$loops.ID,common.loops),]
 df.gg$group2=as.character(df.gg$group)
 df.gg$group2[df.gg$loops.ID %in% common.loops]="common"
 df.gg$group2[df.gg$group2 == "common" & df.gg$group == C1.lab]=paste0("common-",C1.lab)
@@ -410,8 +414,8 @@ master.tab$group2=as.factor(master.tab$group2)
 master.tab=master.tab[,-c(23)]
 df.gg=df.gg[,-c(23)]
 
-write.table(C1.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C1.lab,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(C2.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C2.lab,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(C1.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C1.lab.original,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(C2.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C2.lab.original,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 write.table(master.tab[,c(1:5,7,10,11,19:20,23)],paste0(outdir,"/master_table.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 # common loops
