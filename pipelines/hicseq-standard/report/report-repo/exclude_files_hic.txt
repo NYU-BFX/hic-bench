@@ -1,0 +1,10 @@
+.db/**
+job*
+filtered.hic
+labels.tsv
+*_old*
+density_plots/
+hexbin_plots/
+template_intraTAD.tex
+loops_unfiltered*.gz
+__jdata/

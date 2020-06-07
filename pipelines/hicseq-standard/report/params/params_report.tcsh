@@ -17,15 +17,14 @@ set caller = hicratio 	# (e.g. hicratio, crane, topdom)
 set compBinSize = 100  	# compartments resolution (kb)
 
 # set domains-diff parameters (intraTAD activity section)
-set by_group = "TRUE"	# creates intraTAD activity slides showing group pair-wise comparisons
+set by_group = "FALSE"	# creates intraTAD activity slides showing group pair-wise comparisons
 set comparisons_group = "" # select which group-comparisons will be included" e.g. "CUTLL1_DMSO_A.CUTLL1_THZ1 CUTLL1_DMSO_H.CUTLL1_gSI"
 set by_sample = "FALSE" # creates intraTAD activity slides showing sample pair-wise comparisons
 set comparisons_sample = "" # select which sample-comparisons will be included
 
 # set loops parameters
-set winsize = 20
-set include_loops = "TRUE"
-set include_loops_diff = "TRUE"
+set include_loops = "FALSE"
+set include_loops_diff = "FALSE"
 
 ### OPTIONAL PARAMETERS ### 
 
