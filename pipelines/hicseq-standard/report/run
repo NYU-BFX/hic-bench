@@ -80,7 +80,7 @@ ln -sf ../../pipeline/domains/results/domains.by_group.hicratio.d_0500/matrix-ic
 #hicplotter
 #ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_group.hicratio-selected-regions/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} hicplotter-diff
 #rm -f hicplotter-diff/*/job* hicplotter-diff/*/*.png
-cd..
+cd ..
 
 endif
 
