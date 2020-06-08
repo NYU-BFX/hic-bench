@@ -33,6 +33,8 @@ set reg_files = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/
 
 if ($tool == homer) then
   ./code/hicseq-compartments-homer.tcsh $outdir $params "$reg_files" $genome
+else if ($tool == cscore) then
+  ./code/hicseq-compartments-cscore.tcsh $outdir $params "$reg_files" "$inpdirs" "$objects" $genome
 else
   echo "Error: Compartment calling tool $tool not supported." | scripts-send2err
 endif
