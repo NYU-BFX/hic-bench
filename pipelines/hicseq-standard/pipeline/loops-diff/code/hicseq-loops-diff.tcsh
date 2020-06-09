@@ -91,8 +91,9 @@ if ($APA_diff == TRUE) then
 	set job_dir = $outdir/__jdata_APA
 	mkdir -p $job_dir
 
-	set hicfile1 = inpdirs/tracks/results/tracks.by_*/*/*/"$object1"/filtered.hic
-	set hicfile2 = inpdirs/tracks/results/tracks.by_*/*/*/"$object2"/filtered.hic
+        set hicfile1 = `ls -l inpdirs/tracks/results/tracks.by_*/*/*/"$object1"/filtered.hic | awk '{print $9}' | head -n1`
+        set hicfile2 = `ls -l inpdirs/tracks/results/tracks.by_*/*/*/"$object2"/filtered.hic | awk '{print $9}' | head -n1`
+  
 	set nbed = `ls -l $outdir/bedpe_files/*.bedpe | wc -l`
 	
         echo "Computing APA scores on the loop-subsets..." | scripts-send2err
@@ -167,7 +168,7 @@ if ($APA_quantiles == TRUE) then
 
 endif
 
-rm -f $outdir/l*.bedpe $outdir/l*.tsv
+#rm -f $outdir/l*.bedpe $outdir/l*.tsv
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
