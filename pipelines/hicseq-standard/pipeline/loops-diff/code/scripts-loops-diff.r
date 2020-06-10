@@ -43,8 +43,8 @@ contactsByDist=function(df.gg,group,is.common){
           geom_smooth(size=0.6,se = T)+
           ggtitle(label=title)+
           scale_color_manual(values = color.df$color)+
-          xlab("log10 (distance)")+
-          ylab("log10 (contactCount)")+
+          xlab("distance")+
+          ylab("contactCount")+
           xlim(0,2500000)+
           theme_bw() +  theme(plot.title = element_text(hjust = 0.5,size=12),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank()) +
           theme(axis.text.x = element_text(angle = 90),legend.title = element_blank()))
@@ -72,8 +72,8 @@ contactsByDistByChr=function(df.gg,group,is.common){
           ggtitle(label=title)+
           scale_color_manual(values = color.df$color)+
           facet_wrap(chrom~., scales= "fixed",nrow=3)+
-          xlab("log10 (distance)")+
-          ylab("log10 (contactCount)")+
+          xlab("distance")+
+          ylab("contactCount")+
           xlim(0,2500000)+
           theme_bw() +  theme(plot.title = element_text(hjust = 0.5,size=12),panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank()) +
           theme(axis.text.x = element_text(angle = 90),legend.title = element_blank()))
@@ -159,8 +159,8 @@ loopCountByDist=function(df){
           scale_y_continuous(trans= "log10")+
           geom_smooth(size=0.3)+
           scale_color_manual(name="loop class",values = keys.df.distance$color)+
-          xlab("log10 (distance)")+
-          ylab("log10 (loop count)")+
+          xlab("distance")+
+          ylab("loop count")+
           xlim(0,5000000)+
           labs()+
           theme_bw() +  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank()) +
