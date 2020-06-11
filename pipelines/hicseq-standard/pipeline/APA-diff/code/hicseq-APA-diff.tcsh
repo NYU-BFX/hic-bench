@@ -32,9 +32,9 @@ scripts-create-path $outdir/
 
 # Set parameters
 set main_dir = `echo ${cwd}`
-set bedpes =  `cd ./bedpes/; ls *.bedpe`
+set bedpes =  `cd ./params/; ls *.bedpe`
 cd $main_dir
-set nbed = `ls -l ./bedpes/*.bedpe | wc -l`
+set nbed = `ls -l ./params/*.bedpe | wc -l`
 
 ### APA Analysis ###
 	

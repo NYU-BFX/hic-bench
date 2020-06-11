@@ -1,0 +1,5 @@
+#### INSTRUCTIONS ####
+
+1) populate the ./params/ directory with the .bedpe files of interest (requires the .bedpe extension in the file name)
+
+2) RUN step (./run)
