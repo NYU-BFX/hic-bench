@@ -46,6 +46,18 @@ dev.off()
 # D cutoff is +0.20 and p cutoff is 0.01 (pretty lenient).
 needs.to.be.flipped = (!(ks.test.result.correct$statistic >= +0.20 & ks.test.result.correct$p.value <= 0.01)) & (ks.test.result.reverse$statistic >= +0.20 & ks.test.result.reverse$p.value <= 0.01)
 
+# Condition for ambiguous matching: hope this is very rare, and that's what I observe by far.
+# One: both not significant
+ambiguous.condition.one = (ks.test.result.correct$statistic < +0.20 & ks.test.result.correct$p.value > 0.01) & (ks.test.result.reverse$statistic < +0.20 & ks.test.result.reverse$p.value > 0.01)
+if (ambiguous.condition.one) {
+  print("The KS test did not produce significant difference on either direction. Please check if the enrichment is actually happening!")
+}
+
+# Two: both significant widely.
+ambiguous.condition.two = (ks.test.result.correct$statistic >= +0.05 & ks.test.result.correct$p.value <= 0.01) & (ks.test.result.reverse$statistic >= +0.05 & ks.test.result.reverse$p.value <= 0.01)
+if (ambiguous.condition.two) {
+  print("The KS test on either direction is producing significant difference. This means KS test is inadequate to determine the signs. Please use your best judgment whether to flip the sign or not.")
+}
 
 
 # If statement works only if flipping is needed.
