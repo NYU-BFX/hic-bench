@@ -85,8 +85,6 @@ hexbinContacts=function(df){
   print(ggplot(data = df.common, aes_string(x="C1",y="C2"))+ 
           stat_binhex(bins=70) +
           ggtitle("Common loops")+
-          # scale_x_continuous(trans='log10')+
-          #scale_y_continuous(trans= "log10")+
           xlab(paste0("contactCount [",C1.lab,"]"))+
           ylab(paste0("contactCount [",C2.lab,"]"))+
           scale_fill_gradientn(colours=c("blue","orange","red"),trans="log10","  log10 count\n(contactCounts)\n")+
@@ -112,8 +110,9 @@ distanceBox=function(df.common, max.dist){
   min.y=min(df.gg.distance$distance,na.rm=T)
   max.y=max(df.gg.distance$distance,na.rm=T)
   title="Loop distance in common and group-specific loops"
-  subtitle=paste0("Median loop distance (kb): Common=",p_meds$med[1],"; C2-specific=",p_meds$med[2],"; C1-specific=",p_meds$med[3])
-  
+  subtitle=paste0("Median loop distance (kb): Common=",p_meds$med[p_meds$group=="common"],
+                  "; C2-specific=",p_meds$med[p_meds$group==C2.lab],
+                  "; C1-specific=",p_meds$med[p_meds$group==C1.lab])
   #set colors
   df.gg.distance$group=as.factor(df.gg.distance$group)
   df.gg.distance$group=factor(df.gg.distance$group,levels(df.gg.distance$group))
@@ -183,8 +182,6 @@ lfcRankedContacts = function(df.common){
 scatterContactCount = function(df.common){
   print(ggplot(df.common, aes(x=C1, y=C2,color=loop.strength))+ 
           geom_point(size=2)+
-          #scale_x_continuous(trans='log10')+
-          #scale_y_continuous(trans= "log10")+
           ggtitle(label="Common loops",subtitle=paste0("log2FC(contactCounts) threshold = ",common.lfc))+
           scale_color_manual(values=keys.df.common2$color)+
           geom_abline(slope = 1,intercept = 0,linetype=3,color="black")+
