@@ -50,7 +50,7 @@ echo -n "" >! $outdir/data.tsv
 echo -n "" >! $outdir/metrics.tsv
 
 foreach object ($objects)
-	cat $branch/$object/pca_HKgenesFix.PC1.bedGraph | cut -f1-4 | sed '1d' | grep -vwE "$chrom_excluded" | awk '{print $1":"$2"-"$3"\t"$4}' | sed "s/\t/\t$object\t/" >> $outdir/data.tsv
+	cat $branch/$object/compartments.scores.bedGraph | cut -f1-4 | sed '1d' | grep -vwE "$chrom_excluded" | awk '{print $1":"$2"-"$3"\t"$4}' | sed "s/\t/\t$object\t/" >> $outdir/data.tsv
 	cat $branch/$object/pc1_metrics_summary.txt >> $outdir/metrics.tsv
 end
 

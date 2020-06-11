@@ -63,8 +63,10 @@ cut -f1-6 pca_HKgenesFix.PC1.PC2.txt  > pca_HKgenesFix.PC1.txt
 findHiCCompartments.pl pca_HKgenesFix.PC1.txt >! pca_HKgenesFix_Acompartments.txt
 findHiCCompartments.pl pca_HKgenesFix.PC1.txt -opp >! pca_HKgenesFix_Bcompartments.txt
 
-awk '{print $2"\t"$3"\t"$4}' pca_HKgenesFix_Acompartments.txt >! pca_HKgenesFix_Acompartments.bed
-awk '{print $2"\t"$3"\t"$4}' pca_HKgenesFix_Bcompartments.txt >! pca_HKgenesFix_Bcompartments.bed
+awk '{print $2"\t"$3"\t"$4}' pca_HKgenesFix_Acompartments.txt >! A_compartments.bed
+awk '{print $2"\t"$3"\t"$4}' pca_HKgenesFix_Bcompartments.txt >! B_compartments.bed
+
+mv pca_HKgenesFix.PC1.bedGraph compartments.scores.bedGraph 
 
 ## Clean up
 rm -fr filtered.temp filtered.reg filtered.bed TAG pca_HKgenesFix_Acompartments.txt pca_HKgenesFix_Bcompartments.txt pca_tssFix.PC1* pca_HKgenesFix.PC1_counts.bed pca_HKgenesFix.PC1.PC2.bedGraph pca_HKgenesFix.PC1.txt
