@@ -108,7 +108,7 @@ end
 cat `ls $outdir/__jdata/*/*_cscore.bedgraph` > $outdir/CscoreTool.scores.temp.bedGraph
 
 # Need only one "track type bedGraph" at the top. Only once.
-echo "track type=\"bedGraph\"" > $outdir/compartments.scores.bedGraph
+echo 'track type="bedGraph"' > $outdir/compartments.scores.bedGraph
 grep -v "^track" $outdir/CscoreTool.scores.temp.bedGraph >> $outdir/compartments.scores.bedGraph
 
 # track type="bedGraph" name="/gpfs/data/abl/home/choh09/Work/05_May/Effie_visualize/pipelines/hicseq-standard/pipeline/compartments/results/compartments.by_sample.cscore.res_100kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/MEF-untreated-Arima-rep2/__jdata/job.chr1/chr1_cscore.bedgraph"
