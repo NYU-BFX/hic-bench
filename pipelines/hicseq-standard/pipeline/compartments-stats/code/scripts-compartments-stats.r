@@ -339,9 +339,12 @@ if (file.exists(paste0(out_dir,"/density_plots"))==FALSE) { dir.create(paste0(ou
 
 # load input files
 pca1.matrix=read.table(files,stringsAsFactors = F) 
+
+if (file.size(metrics_file) > 0){
 metrics=read.table(metrics_file,header = T,stringsAsFactors = F)
 metrics=metrics[!metrics$chromosome %in% c("chromosome","chrY"),]
 metrics=metrics[,!colnames(metrics) %in%"invertSign"]
+}
 
 centrotelo=read.table(centrotelo_file,stringsAsFactors = F) 
 bed.cols=c("chr","start","end")
@@ -426,7 +429,9 @@ if (plain==FALSE){
   getBarSwitch(df.switch)
   dev.off()
   
+  if (file.size(metrics_file) > 0){
   pdf(paste0(out_dir,'/metrics_logratio.AB.pdf'),width = 14,height = 7,useDingbats=FALSE)
   getMetricsBox(metrics)
   dev.off()
+  }
 }
