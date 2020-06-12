@@ -13,8 +13,8 @@ endif
 set outdir = $1
 set params = $2
 set branch = $3
-set object1 = $4
-set object2 = $5
+set object1 = "$4"
+set object2 = "$5"
 set objects = ($object1 $object2)
 
 # read variables from input branch
