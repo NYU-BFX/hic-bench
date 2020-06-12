@@ -67,7 +67,8 @@ rm -fr $outdir/APA/diff/*/*/*v*
 
 echo "Performing in-house APA analysis on the loops set..." | scripts-send2err
 
-Rscript ./code/scripts-APA-diff.r $outdir/APA/diff/ $APA_resolution $object1 $object2 $URm
+set inbedpes = `echo $bedpes | sed 's/ /,/g'`  # comma separated list of bedpe file names
+Rscript ./code/scripts-APA-diff.r $outdir/APA/diff/ $inbedpes $APA_resolution $object1 $object2 $URm
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------

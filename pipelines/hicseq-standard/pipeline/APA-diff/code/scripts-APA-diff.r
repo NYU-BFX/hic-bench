@@ -1,17 +1,10 @@
 argv = commandArgs(trailingOnly = TRUE)
 inpdir = argv[1L]
-APA_res = as.numeric(argv[2L])
-C1 = argv[3L]
-C2 = argv[4L]
-URm = as.numeric(argv[5L])
-outdir="plots-APA"
-
-# inpdir="/Users/javrodher/Work/RStudio-PRJs/leukemia-cell-line-DR/data/APA-diff/APA/APA/diff/"
-# outdir="/Users/javrodher/Work/RStudio-PRJs/leukemia-cell-line-DR/data/APA-diff/APA/"
-# URm=2.5
-# C1="CUTLL1_DMSO_A"
-# C2="CUTLL1_THZ1"
-# APA_res=10000
+bedpes = argv[2L]
+APA_res = as.numeric(argv[3L])
+C1 = argv[4L]
+C2 = argv[5L]
+URm = as.numeric(argv[6L])
 
 library(ggplot2)
 library(gridExtra)
@@ -22,11 +15,9 @@ library(ggplotify)
 
 setwd(inpdir)
 options(scipen=10000)
-dir.create(outdir)
 pdf(NULL)
 
-#### Functions ####
-
+############################ Functions ###################################
 # rotate matrix
 rotate=function(x) {t(apply(x, 2, rev))}
 
@@ -84,16 +75,25 @@ plotMetrics=function(m,metric,xlab,ylab){
         plot.margin = unit(c(1, 1, 1, 1), "cm")))
 }
 
-##### RUN #####
-all.files=list.files(pattern=".txt",recursive = T,full.names = F,include.dirs = F)
+######################################## MAIN  CODE BELOW  ##################################################
+
+bedpes=unlist(strsplit(bedpes,split = ","))
+bedpes=gsub(x=bedpes,pattern=".bedpe",replacement="")
+
+## loop through all the bedpe files provided and produce APA reports ##
+for (bedpe in bedpes){
+outdir=paste0("results_",bedpe)
+dir.create(outdir)
+
+files.C1=list.files(paste0(bedpe,"_",C1),pattern=".txt",recursive = T,full.names = F,include.dirs = F)
+files.C2=list.files(paste0(bedpe,"_",C2),pattern=".txt",recursive = T,full.names = F,include.dirs = F)
+all.files=c(files.C1,files.C2)
+
 methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
 scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
 dirs=list.dirs(recursive = F,full.names = F)
 bedpes=dirs[grep(paste0("_",C1),dirs)]
 bedpes=gsub(pattern = paste0("_",C1),replacement = "",bedpes)
-
-#method="APA"
-#score="P2LL"
 
 for (method in methods){
   print(method)
@@ -132,4 +132,6 @@ for (method in methods){
     dev.off()
     }
   }
+}
+
 }
