@@ -1,110 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Beamer Presentation
-% LaTeX Template
-% Version 1.0 (10/11/12)
-%
-% This template has been downloaded from:
-% http://www.LaTeXTemplates.com
-%
-% License:
-% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%----------------------------------------------------------------------------------------
-%	PACKAGES AND THEMES
-%----------------------------------------------------------------------------------------
-
-\documentclass{beamer}
-
-\mode<presentation> {
-
-% The Beamer class comes with a number of default slide themes
-% which change the colors and layouts of slides. Below this is a list
-% of all the themes, uncomment each in turn to see what they look like.
-
-%\usetheme{default}
-%\usetheme{AnnArbor}
-%\usetheme{Antibes}
-%\usetheme{Bergen}
-%\usetheme{Berkeley}
-%\usetheme{Berlin}
-%\usetheme{Boadilla}
-%\usetheme{CambridgeUS}
-%\usetheme{Copenhagen}
-%\usetheme{Darmstadt}
-%\usetheme{Dresden}
-%\usetheme{Frankfurt}
-%\usetheme{Goettingen}
-%\usetheme{Hannover}
-%\usetheme{Ilmenau}
-%\usetheme{JuanLesPins}
-%\usetheme{Luebeck}
-\usetheme{Madrid}
-%\usetheme{Malmoe}
-%\usetheme{Marburg}
-%\usetheme{Montpellier}
-%\usetheme{PaloAlto}
-%\usetheme{Pittsburgh}
-%\usetheme{Rochester}
-%\usetheme{Singapore}
-%\usetheme{Szeged}
-%\usetheme{Warsaw}
-
-% As well as themes, the Beamer class has a number of color themes
-% for any slide theme. Uncomment each of these in turn to see how it
-% changes the colors of your current slide theme.
-
-%\usecolortheme{albatross}
-%\usecolortheme{beaver}
-%\usecolortheme{beetle}
-%\usecolortheme{crane}
-%\usecolortheme{dolphin}
-%\usecolortheme{dove}
-%\usecolortheme{fly}
-%\usecolortheme{lily}
-%\usecolortheme{orchid}
-%\usecolortheme{rose}
-%\usecolortheme{seagull}
-%\usecolortheme{seahorse}
-%\usecolortheme{whale}
-%\usecolortheme{wolverine}
-
-%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
-%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
-
-%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
-}
-
-\usepackage{graphicx} % Allows including images
-\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
-
-%----------------------------------------------------------------------------------------
-%	TITLE PAGE
-%----------------------------------------------------------------------------------------
-
- % The short title appears at the bottom of every slide, the full title is only on the title page
-\title[Report]{Analysis Report \\ ____PROJECT-TITLE_____}
-
-\author{
-\newline Aristotelis Tsirigos & 
-\newline Javier Rodriguez-Hernaez
-} % Your name
-\institute[NYU] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
-{NYU School of Medicine\\ % Your institution for the title page
-\medskip
-\textit{
-\newline Aristotelis.Tsirigos@nyulangone.org
-\newline Javier.RodriguezHernaez@nyulangone.org
-} % Your email address
-}
-\date{\today} % Date, can be changed to a custom date
-
-\begin{document}
-
-\begin{frame}
-\titlepage % Print the title page as the first slide
-\end{frame}
 
 %----------------------------------------------------------------------------------------
 %	PRESENTATION SLIDES
@@ -130,32 +23,32 @@
 \end{figure}
 \end{frame}
 
-%------------------------------------------------
+%------------------------------------------------						%isSAMPLE
+												%isSAMPLE
+\begin{frame}											%isSAMPLE
+\frametitle{Read average by distance per sample}						%isSAMPLE	
+\begin{figure}											%isSAMPLE
+\includegraphics[width=0.8\linewidth]{REPORT_NAME/read-average-by-distance_bySample.pdf}	%isSAMPLE
+\end{figure}											%isSAMPLE
+\end{frame}											%isSAMPLE
 
-\begin{frame}
-\frametitle{Read average by distance per sample}
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{REPORT_NAME/read-average-by-distance_bySample.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------						%isGROUP
+												%isGROUP
+\begin{frame}											%isGROUP
+\frametitle{Read average by distance per group}							%isGROUP
+\begin{figure}											%isGROUP
+\includegraphics[width=0.8\linewidth]{REPORT_NAME/read-average-by-distance_byGroup.pdf}		%isGROUP
+\end{figure}											%isGROUP
+\end{frame}											%isGROUP
 
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Read average by distance per group}
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{REPORT_NAME/read-average-by-distance_byGroup.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{PCA by activity}
-\begin{figure}
-\includegraphics[width=0.6\linewidth]{REPORT_NAME/pca-by-activity.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------						
+												
+\begin{frame}											
+\frametitle{PCA by activity}									
+\begin{figure}											
+\includegraphics[width=0.6\linewidth]{REPORT_NAME/pca-by-activity.pdf}			
+\end{figure}											
+\end{frame}											
 
 %------------------------------------------------
 
@@ -166,121 +59,112 @@
 \end{figure}
 \end{frame}
 
-%------------------------------------------------
+%------------------------------------------------						%isSAMPLE
+												%isSAMPLE
+\begin{frame}											%isSAMPLE
+\frametitle{Topological domain numbers and sizes per sample}					%isSAMPLE
+\begin{figure}											%isSAMPLE
+\includegraphics[width=0.6\linewidth]{REPORT_NAME/domains-stats_bySample.pdf}			%isSAMPLE
+\end{figure}											%isSAMPLE
+\end{frame}											%isSAMPLE
 
-\begin{frame}
-\frametitle{Topological domain numbers and sizes per sample}
-\begin{figure}
-\includegraphics[width=0.6\linewidth]{REPORT_NAME/domains-stats_bySample.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------						%isGROUP
+												%isGROUP
+\begin{frame}											%isGROUP
+\frametitle{Topological domain numbers and sizes per group}					%isGROUP
+\begin{figure}											%isGROUP
+\includegraphics[width=0.6\linewidth]{REPORT_NAME/domains-stats_byGroup.pdf}			%isGROUP
+\end{figure}											%isGROUP
+\end{frame}											%isGROUP
 
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Topological domain numbers and sizes per group}
-\begin{figure}
-\includegraphics[width=0.6\linewidth]{REPORT_NAME/domains-stats_byGroup.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Compartments PCA (eigenvector-1 bins) per sample}
-\begin{figure}
+%------------------------------------------------						
+													
+\begin{frame}														
+\frametitle{Compartments PCA (eigenvector-1 bins) per sample}					
+\begin{figure}												
 \includegraphics[width=0.6\linewidth]{REPORT_NAME/compartments-stats-by-sample/eigenPCA.pdf}
-\end{figure}
+\end{figure}											
 \end{frame}
 
-%------------------------------------------------
+%------------------------------------------------						
+												
+\begin{frame}											
+\frametitle{Compartments HEATMAP (eigenvector-1 bins) per sample}				
+\begin{figure}											
+\includegraphics[width=0.9\linewidth]{REPORT_NAME/compartments-stats-by-sample/eigenHMAP.pdf}	
+\end{figure}											
+\end{frame}											
 
-\begin{frame}
-\frametitle{Compartments PCA (eigenvector-1 bins) per group}
-\begin{figure}
-\includegraphics[width=0.6\linewidth]{REPORT_NAME/compartments-stats-by-group/eigenPCA.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------							%isSAMPLE
+													%isSAMPLE
+\begin{frame} 												%isSAMPLE
+\frametitle{Eigenvector-1 sample pairs - compartment size}						%isSAMPLE
+\begin{figure}												%isSAMPLE
+\includegraphics[width=0.65\linewidth]{REPORT_NAME/compartments-stats-by-sample/eigenPairsGrid.pdf}	%isSAMPLE
+\end{figure}												%isSAMPLE
+\end{frame}												%isSAMPLE
 
-%------------------------------------------------
+%------------------------------------------------							%isGROUP
+													%isGROUP
+\begin{frame}												%isGROUP
+\frametitle{Eigenvector-1 group pairs - compartment size}						%isGROUP
+\begin{figure}												%isGROUP
+\includegraphics[width=0.65\linewidth]{REPORT_NAME/compartments-stats-by-group/eigenPairsGrid.pdf}	%isGROUP
+\end{figure}												%isGROUP
+\end{frame}												%isGROUP
 
-\begin{frame}
-\frametitle{Compartments HEATMAP (eigenvector-1 bins) per group}
-\begin{figure}
-\includegraphics[width=0.9\linewidth]{REPORT_NAME/compartments-stats-by-sample/eigenHMAP.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------							%isSAMPLE
+													%isSAMPLE
+\begin{frame}												%isSAMPLE
+\frametitle{Compartments size per sample}								%isSAMPLE
+\begin{figure}												%isSAMPLE
+\includegraphics[width=0.9\linewidth]{REPORT_NAME/compartments-stats-by-sample/size_barplots.pdf}	%isSAMPLE
+\end{figure}												%isSAMPLE
+\end{frame}												%isSAMPLE
 
-%------------------------------------------------
+%------------------------------------------------							%isGROUP
+													%isGROUP
+\begin{frame}												%isGROUP
+\frametitle{Compartments size per group}								%isGROUP
+\begin{figure}												%isGROUP
+\includegraphics[width=0.8\linewidth]{REPORT_NAME/compartments-stats-by-group/size_barplots.pdf}	%isGROUP
+\end{figure}												%isGROUP
+\end{frame}												%isGROUP
 
-\begin{frame}
-\frametitle{Eigenvector-1 sample pairs - compartment size}
-\begin{figure}
-\includegraphics[width=0.65\linewidth]{REPORT_NAME/compartments-stats-by-sample/eigenPairsGrid.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------							%isSAMPLE
+													%isSAMPLE
+\begin{frame}												%isSAMPLE	
+\frametitle{Eigenvector-1 shifts per sample}								%isSAMPLE
+\begin{figure}												%isSAMPLE
+\includegraphics[width=0.9\linewidth]{REPORT_NAME/compartments-stats-by-sample/switch_bins_barplot.pdf}	%isSAMPLE
+\end{figure}												%isSAMPLE
+\end{frame}												%isSAMPLE
 
-%------------------------------------------------
+%------------------------------------------------							%isGROUP
+													%isGROUP			
+\begin{frame}												%isGROUP
+\frametitle{Eigenvector-1 shifts per group}								%isGROUP			
+\begin{figure}												%isGROUP
+\includegraphics[width=0.8\linewidth]{REPORT_NAME/compartments-stats-by-group/switch_bins_barplot.pdf}	%isGROUP
+\end{figure}												%isGROUP
+\end{frame}												%isGROUP
 
-\begin{frame}
-\frametitle{Eigenvector-1 group pairs - compartment size}
-\begin{figure}
-\includegraphics[width=0.65\linewidth]{REPORT_NAME/compartments-stats-by-group/eigenPairsGrid.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------							%isSAMPLE
+													%isSAMPLE
+\begin{frame}												%isSAMPLE
+\frametitle{TAD boundary overlap per sample}								%isSAMPLE
+\begin{figure}												%isSAMPLE
+\centering												%isSAMPLE
+\includegraphics[width=0.7\linewidth]{REPORT_NAME/correlograms_bySample.pdf}				%isSAMPLE
+\end{figure}												%isSAMPLE
+\end{frame}												%isSAMPLE
 
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Compartments size per sample}
-\begin{figure}
-\includegraphics[width=0.9\linewidth]{REPORT_NAME/compartments-stats-by-sample/size_barplots.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Compartments size per group}
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{REPORT_NAME/compartments-stats-by-group/size_barplots.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Eigenvector-1 shifts per sample}
-\begin{figure}
-\includegraphics[width=0.9\linewidth]{REPORT_NAME/compartments-stats-by-sample/switch_bins_barplot.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Eigenvector-1 shifts per group}
-\begin{figure}
-\includegraphics[width=0.8\linewidth]{REPORT_NAME/compartments-stats-by-group/switch_bins_barplot.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{TAD boundary overlap per sample}
-\begin{figure}
-\centering
-\includegraphics[width=0.7\linewidth]{REPORT_NAME/correlograms_bySample.pdf}
-\end{figure}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{TAD boundary overlap per group}
-\begin{figure}
-\centering
-\includegraphics[width=0.7\linewidth]{REPORT_NAME/correlograms_byGroup.pdf}
-\end{figure}
-\end{frame}
+%------------------------------------------------							%isGROUP
+													%isGROUP
+\begin{frame}												%isGROUP
+\frametitle{TAD boundary overlap per group}								%isGROUP
+\begin{figure}												%isGROUP
+\centering												%isGROUP
+\includegraphics[width=0.7\linewidth]{REPORT_NAME/correlograms_byGroup.pdf}				%isGROUP
+\end{figure}												%isGROUP
+\end{frame}												%isGROUP

@@ -23,11 +23,25 @@ endif
 #                                  MAIN CODE BELOW                                      #
 #########################################################################################
 
-#### COPY PLOTS ####
 rm -rf $report
 mkdir $report
 
 
+### TRACKS ###
+if ("$tracks_bysample" == "TRUE") then
+cd $report
+ln -sf ../../pipeline/tracks/results/tracks.by_sample.juicer/${main_branch} hicfiles-juicer-by-sample
+cd ..
+endif
+
+if ("$tracks_bygroup" == "TRUE") then
+cd $report
+ln -sf ../../pipeline/tracks/results/tracks.by_group.juicer/${main_branch} hicfiles-juicer-by-group
+cd ..
+endif
+
+
+### STANDARD ###
 if ("$standard" == "TRUE") then
 
 #filter-stats
@@ -53,8 +67,6 @@ cp ../pipeline/domains-stats/results/domains-stats.standard/domains.by_sample.hi
 cp ../pipeline/compare-boundaries-stats/results/compare-boundaries-stats.standard/compare-boundaries.by_group.standard/domains.by_group.hicratio.d_0500/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/$main_branch/all-samples/correlograms.pdf $report/correlograms_byGroup.pdf
 cp ../pipeline/compare-boundaries-stats/results/compare-boundaries-stats.standard/compare-boundaries.by_sample.standard/domains.by_sample.hicratio.d_0500/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/$main_branch/all-samples/correlograms.pdf $report/correlograms_bySample.pdf
 
-
-#### MAKE STEPS SOFT-LINKS #### (will be used to upload the files of interest to the gdrive)
 cd $report
 
 #compartments
@@ -65,10 +77,6 @@ ln -sf ../../pipeline/compartments/results/compartments.by_sample.homer.res_${co
 ln -sf ../../pipeline/compartments-stats/results/compartments-stats.standard/compartments.by_sample.homer.res_${compBinSize}kb/${main_branch}/all-samples/ compartments-stats-by-sample
 ln -sf ../../pipeline/compartments-stats/results/compartments-stats.standard/compartments.by_group.homer.res_${compBinSize}kb/${main_branch}/all-samples/ compartments-stats-by-group
 
-#tracks
-ln -sf ../../pipeline/tracks/results/tracks.by_sample.juicer/${main_branch} hicfiles-juicer-by-sample
-ln -sf ../../pipeline/tracks/results/tracks.by_group.juicer/${main_branch} hicfiles-juicer-by-group
-
 #boundary-scores
 mkdir boundary-scores
 cp ../../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/boundary-scores.by_sample.activity_500kb/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/${main_branch}/all-samples/matrix.ratio.k\=001.tsv boundary-scores/matrix.insulation.scores.tsv 
@@ -76,140 +84,168 @@ cp ../../pipeline/boundary-scores-pca/results/boundary-scores-pca.standard/bound
 
 #domains
 ln -sf ../../pipeline/domains/results/domains.by_group.hicratio.d_0500/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} domains
-
-#hicplotter
-#ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_group.hicratio-selected-regions/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} hicplotter-diff
-#rm -f hicplotter-diff/*/job* hicplotter-diff/*/*.png
 cd ..
-
 endif
 
+### HICPLOTTER-DIFF ###
+if ("$hicplotter_bygroup" == "TRUE") then
 cd $report
+mkdir -p hicplotter-diff
+mkdir -p hicplotter-diff/by_group/
+ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_group.hicratio-selected-regions/matrix-ic.by_group.cutoff_0/matrix-filtered.by_group.res_${binsize}kb/${main_branch} hicplotter-diff/by_group
+rm -f hicplotter-diff/by_group/*/job* hicplotter-diff/by_group/*/*.png
+cd ..
+endif
+
+if ("$hicplotter_bysample" == "TRUE") then
+cd $report
+mkdir -p hicplotter-diff
+mkdir -p hicplotter-diff/by_sample/
+ln -sf ../../pipeline/hicplotter-diff/results/hicplotter-diff.by_sample.hicratio-selected-regions/matrix-ic.by_sample.cutoff_0/matrix-filtered.by_sample.res_${binsize}kb/${main_branch} hicplotter-diff/by_sample
+rm -f hicplotter-diff/by_sample/*/job* hicplotter-diff/by_sample/*/*.png
+cd ..
+endif
+
+
+### LOOPS ###
 #loops
 if ("$include_loops" == "TRUE") then
+	cd $report
 	mkdir loops
 	cd loops
 	ln -sn ../../../pipeline/loops/results/* ./
-	cd ..
+	cd ../../
 endif
 
 #loops-diff
 if ("$include_loops_diff" == "TRUE") then
+	cd $report
 	mkdir loops-diff
 	cd loops-diff
 	ln -sn ../../../pipeline/loops-diff/results/* ./
-	cd ..
+	cd ../../
 endif
 
-if ("$standard" == "TRUE") then
-#### CREATE DOMAINS-DIFF tex-templates FOR ALL THE COMPARISONS SELECTED ####
-mkdir domains-diff
+#### DOMAINS-DIFF ### (create tex-templates for the selected comparisons)
 
 #BY GROUP
-if ("$by_group" == "TRUE") then
-	if ("$comparisons_group" == "") then
-		echo 'Warning: No group-comparisons have been set in the 'params' file. All the group-wise comparisons will be created.'
-		set comparisons_group = `ls ../../pipeline/domains-diff/results/domains-diff.by_group."$caller".d_0500.cpm.common/matrix-"$matrix".by_group.cutoff_0/matrix-filtered.by_group.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
-	endif
+if ("$activity_bygroup" == "TRUE") then
+cd $report
+mkdir -p domains-diff
+
+foreach intraTAD_method ($intraTAD_methods)
+	mkdir -p domains-diff/"${intraTAD_method}"
 	
-foreach comparison ($comparisons_group)
-	mkdir domains-diff/"${comparison}"
+	foreach norm_method ($norm_methods)
+		mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"
+		set comparisons_group = `ls ../../pipeline/domains-diff/results/domains-diff.by_group."$caller".d_0500."$norm_method"."$intraTAD_method"/matrix-"$matrix".by_group.cutoff_0/matrix-filtered.by_group.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
+		
+		foreach comparison ($comparisons_group)
+			mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
+			set plotPath = domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
 
-	foreach intraTAD_method (common ref1)
-	mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/
-
-		foreach norm_method (cpm dist_norm)
-			mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
-			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
-
-			foreach plot (final_results_volcano_TADs.png final_results_mean-TAD_activity.png final_results_scatter_meanTadActivity.pdf)		
-				cp ../../pipeline/domains-diff/results/domains-diff.by_group."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_group.cutoff_0/matrix-filtered.by_group.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/"${plot}" "${plotPath}"/
-				cp ../../pipeline/domains-diff/results/domains-diff.by_group."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_group.cutoff_0/matrix-filtered.by_group.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/final_results* "${plotPath}"/
+			foreach plot (final_results_volcano_TADs.png final_results_mean-TAD_activity.png final_results_scatter_meanTadActivity.pdf)
+			cp ../../pipeline/domains-diff/results/domains-diff.by_group."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_group.cutoff_0/matrix-filtered.by_group.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/"${plot}" "${plotPath}"/
+			cp ../../pipeline/domains-diff/results/domains-diff.by_group."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_group.cutoff_0/matrix-filtered.by_group.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/final_results* "${plotPath}"/
 			end
 		end
 	end
 end
 
-foreach comparison ($comparisons_group)	# generate intraTAD templates
-	foreach intraTAD_method (common ref1)
-		foreach norm_method (cpm dist_norm)
-			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
-			cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex	
-			sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
-			sed 's/INTRATAD_METHOD/'${intraTAD_method}'/g' $plotPath/template_intraTAD_tmp1.tex > $plotPath/template_intraTAD_tmp2.tex
-			sed 's/NORM_METHOD/'${norm_method}'/g' $plotPath/template_intraTAD_tmp2.tex > $plotPath/template_intraTAD_tmp3.tex
-			sed 's PLOT_PATH '${plotPath}' g' $plotPath/template_intraTAD_tmp3.tex > $plotPath/template_intraTAD.tex
-			rm -f $plotPath/template_intraTAD_tmp*.tex
-		end
-	end
+# generate intraTAD templates
+foreach intraTAD_method ($intraTAD_methods)
+	foreach norm_method ($norm_methods)
+		foreach comparison ($comparisons_group)			
+                        set plotPath = domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
+                        cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex
+                        sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
+                        sed 's/INTRATAD_METHOD/'${intraTAD_method}'/g' $plotPath/template_intraTAD_tmp1.tex > $plotPath/template_intraTAD_tmp2.tex
+                        sed 's/NORM_METHOD/'${norm_method}'/g' $plotPath/template_intraTAD_tmp2.tex > $plotPath/template_intraTAD_tmp3.tex
+                        sed 's PLOT_PATH '${plotPath}' g' $plotPath/template_intraTAD_tmp3.tex > $plotPath/template_intraTAD.tex
+                        rm -f $plotPath/template_intraTAD_tmp*.tex
+                end
+        end
 end
+cd..
 endif
+
 
 #BY SAMPLE
-if ("$by_sample" == "TRUE") then
-	if ("$comparisons_sample" == "") then
-			echo 'Warning: No sample-comparisons have been set in the 'params' file. All the sample-wise comparisons will be created.'
-			set comparisons_sample = `ls ../../pipeline/domains-diff/results/domains-diff.by_sample."$caller".d_0500.cpm.common/matrix-"$matrix".by_sample.cutoff_0/matrix-filtered.by_sample.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
-	endif
+if ("$activity_bysample" == "TRUE") then
+cd $report
+mkdir -p domains-diff
 
-foreach comparison ($comparisons_sample)
-	mkdir domains-diff/"${comparison}"
+foreach intraTAD_method ($intraTAD_methods)
+	mkdir -p domains-diff/"${intraTAD_method}"
+	
+	foreach norm_method ($norm_methods)
+		mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"
+		set comparisons_group = `ls ../../pipeline/domains-diff/results/domains-diff.by_sample."$caller".d_0500."$norm_method"."$intraTAD_method"/matrix-"$matrix".by_sample.cutoff_0/matrix-filtered.by_sample.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
+		
+		foreach comparison ($comparisons_group)
+			mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
+			set plotPath = domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
 
-	foreach intraTAD_method (common ref1)
-	mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/
-
-		foreach norm_method (cpm dist_norm)
-			mkdir domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
-			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
-
-			foreach plot (final_results_volcano_TADs.png final_results_mean-TAD_activity.png final_results_scatter_meanTadActivity.pdf)		
-				cp ../../pipeline/domains-diff/results/domains-diff.by_sample."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_sample.cutoff_0/matrix-filtered.by_sample.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/"${plot}" "${plotPath}"/
-				cp ../../pipeline/domains-diff/results/domains-diff.by_sample."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_sample.cutoff_0/matrix-filtered.by_sample.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/final_results* "${plotPath}"/
+			foreach plot (final_results_volcano_TADs.png final_results_mean-TAD_activity.png final_results_scatter_meanTadActivity.pdf)
+			cp ../../pipeline/domains-diff/results/domains-diff.by_sample."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_sample.cutoff_0/matrix-filtered.by_sample.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/"${plot}" "${plotPath}"/
+			cp ../../pipeline/domains-diff/results/domains-diff.by_sample."${caller}".d_0500."${norm_method}"."${intraTAD_method}"/matrix-"${matrix}".by_sample.cutoff_0/matrix-filtered.by_sample.res_"${binsize}"kb/"${main_branch}"/"${comparison}"/final_results* "${plotPath}"/
 			end
 		end
 	end
 end
 
-foreach comparison ($comparisons_sample)	# generate intraTAD templates
-	foreach intraTAD_method (common ref1)
-		foreach norm_method (cpm dist_norm)
-			set plotPath = domains-diff/"${comparison}"/"${intraTAD_method}"/"${norm_method}"
-			cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex	
-			sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
-			sed 's/INTRATAD_METHOD/'${intraTAD_method}'/g' $plotPath/template_intraTAD_tmp1.tex > $plotPath/template_intraTAD_tmp2.tex
-			sed 's/NORM_METHOD/'${norm_method}'/g' $plotPath/template_intraTAD_tmp2.tex > $plotPath/template_intraTAD_tmp3.tex
-			sed 's PLOT_PATH '${plotPath}' g' $plotPath/template_intraTAD_tmp3.tex > $plotPath/template_intraTAD.tex
-			rm -f $plotPath/template_intraTAD_tmp*.tex
-		end
-	end
+# generate intraTAD templates
+foreach intraTAD_method ($intraTAD_methods)
+	foreach norm_method ($norm_methods)
+		foreach comparison ($comparisons_group)			
+                        set plotPath = domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
+                        cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex
+                        sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
+                        sed 's/INTRATAD_METHOD/'${intraTAD_method}'/g' $plotPath/template_intraTAD_tmp1.tex > $plotPath/template_intraTAD_tmp2.tex
+                        sed 's/NORM_METHOD/'${norm_method}'/g' $plotPath/template_intraTAD_tmp2.tex > $plotPath/template_intraTAD_tmp3.tex
+                        sed 's PLOT_PATH '${plotPath}' g' $plotPath/template_intraTAD_tmp3.tex > $plotPath/template_intraTAD.tex
+                        rm -f $plotPath/template_intraTAD_tmp*.tex
+                end
+        end
 end
+cd ..
 endif
 
-# CONCATENATE TEMPLATES
-cp ../report-repo/tex-templates/template_standard.tex template_standard_tmp.tex	
-sed 's/REPORT_NAME/'${report}'/g' template_standard_tmp.tex > template_standard_custom.tex
-cp ../report-repo/tex-templates/template_end.tex template_end_tmp1.tex	
-sed 's/REPORT_NAME/'${report}'/g' template_end_tmp1.tex > template_end_tmp2.tex
+
+
+if ("$standard" == "TRUE" || "$activity_bygroup" == "TRUE" || "$activity_bysample" == "TRUE") then
+### CONCATENATE TEMPLATES ###
+cd $report
+cp ../report-repo/tex-templates/template_standard.tex template_standard_custom.tex	
+sed -i 's/REPORT_NAME/'${report}'/g' template_standard_custom.tex
+cp ../report-repo/tex-templates/template_end.tex template_end_custom.tex	
+sed -i 's/REPORT_NAME/'${report}'/g' template_end_custom.tex
+cp ../report-repo/tex-templates/template_intro.tex  template_intro_custom.tex
 
 if ("$aligner" == "bowtie2") then
-	sed 's/ALIGNER_TOOL/bowtie2/g' template_end_tmp2.tex > template_end_tmp3.tex
-	sed "s/ALIGNMENT_FILTER_PARAMS/--very-sensitive-local --local; mapq="$mapq"; --min-dist "$mindist" --max-offset 500./g" template_end_tmp3.tex > template_end_custom.tex 
+	sed -i 's/ALIGNER_TOOL/bowtie2/g' template_end_custom.tex
+	sed -i "s/ALIGNMENT_FILTER_PARAMS/--very-sensitive-local --local; mapq="$mapq"; --min-dist "$mindist" --max-offset 500./g" template_end_custom.tex
 else
-	sed 's/ALIGNER_TOOL/bwa/g' template_end_tmp2.tex > template_end_tmp3.tex 
-	sed "s/ALIGNMENT_FILTER_PARAMS/-A1 -B4 -E50 -L0; mapq="$mapq"; --min-dist "$mindist" --max-offset 500./g" template_end_tmp3.tex > template_end_custom.tex
+	sed -i 's/ALIGNER_TOOL/bwa/g' template_end_custom.tex
+	sed -i "s/ALIGNMENT_FILTER_PARAMS/-A1 -B4 -E50 -L0; mapq="$mapq"; --min-dist "$mindist" --max-offset 500./g" template_end_custom.tex
 endif
 
-if ("$by_sample" == "TRUE" || "$by_group" == "TRUE") then
-	cat template_standard_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom_tmp1.tex
-else
-	cat template_standard_custom.tex template_end_custom.tex > full_template_custom_tmp1.tex
+if ("$standard" == "TRUE" && ("$activity_bygroup" == "TRUE" || "$activity_bysample" == "TRUE")) then
+echo "first
+	cat template_intro_custom.tex template_standard_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom.tex
+else if ("$standard" == "TRUE" && "$activity_bygroup" == "FALSE" && "$activity_bysample" == "FALSE") then
+echo "second"
+	cat template_intro_custom.tex template_standard_custom.tex template_end_custom.tex > full_template_custom.tex
+else if ("$standard" == "FALSE" && ("$activity_bygroup" == "TRUE" || "$activity_bysample" == "TRUE")) then
+echo "third"
+    	cat template_intro_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom.tex
 endif
 
-sed 's/dist_norm)/distnorm)/g' full_template_custom_tmp1.tex > full_template_custom_tmp2.tex
-sed 's/GENOME_BUILD/'${genome}'/g' full_template_custom_tmp2.tex > full_template_custom_tmp3.tex
-sed 's/COMP_BINSIZE/'${compBinSize}'/g' full_template_custom_tmp3.tex > full_template_custom_tmp4.tex
-sed 's/RESOLUTION/'${binsize}'/g' full_template_custom_tmp4.tex > full_template_custom.tex
-rm -f template_*_tmp*.tex
+sed -i 's/dist_norm)/distnorm)/g' full_template_custom.tex
+sed -i 's/GENOME_BUILD/'${genome}'/g' full_template_custom.tex
+sed -i 's/COMP_BINSIZE/'${compBinSize}'/g' full_template_custom.tex
+sed -i 's/RESOLUTION/'${binsize}'/g' full_template_custom.tex
+rm -f template_intro_custom.tex template_standard_custom.tex template_end_custom.tex
 
 #### MAKE REPORT/PRESENTATION ####
 cd ..
@@ -231,19 +267,16 @@ mv report.pdf $report/
 cp -r $report/domains-diff/* $report/report-figures/domains-diff/
 rm -f $report/report-figures/domains-diff/*/*/*/*.tsv $report/report-figures/domains-diff/*/*/*/*.bed
 rm -f $report/domains-diff//*/*/*/*pdf $report/domains-diff//*/*/*/*png $report/domains-diff/*/*/*/template_intraTAD.tex
+
+if ("$standard" == "TRUE") then
 mkdir $report/report-figures/compartments-densityPlots-by-sample $report/report-figures/compartments-hexbinPlots-by-sample
 mkdir $report/report-figures/compartments-densityPlots-by-group  $report/report-figures/compartments-hexbinPlots-by-group 
 cp $report/compartments-stats-by-sample/density_plots/* $report/report-figures/compartments-densityPlots-by-sample/
 cp $report/compartments-stats-by-group/density_plots/* $report/report-figures/compartments-densityPlots-by-group/
 cp $report/compartments-stats-by-sample/hexbin_plots/* $report/report-figures/compartments-hexbinPlots-by-sample/
 cp $report/compartments-stats-by-group/hexbin_plots/* $report/report-figures/compartments-hexbinPlots-by-group/
-
 endif
 
-if ("$standard" == "TRUE") then
-	echo "standard == TRUE"
-else
-	cd ..
 endif
 
 #########################################################################################
@@ -264,6 +297,7 @@ if ($transferExternal == "TRUE") then
 echo "Transfering report data to: /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report""
 	module unload r
         module load rclone
-        rclone copy -P -L --exclude-from report-repo/exclude_files_hic.txt $report /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report"
+        rclone copy -P -L --exclude-from report-repo/exclude_files.txt $report /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report"
         module unload rclone
+chmod -R 775 /gpfs/data/sequence/results/external/NYU/ABL-HiC-reports/"$user"/"$report"
 endif
