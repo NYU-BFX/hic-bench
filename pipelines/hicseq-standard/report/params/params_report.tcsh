@@ -2,20 +2,26 @@
 
 module load latex/2019
 
-### REQUIRED PARAMETERS ###
-set report = hicseq-standard-report # report name
-set standard = "TRUE"	# creates standard report
+### REQUIRED PARAMETERS ###  (set TRUE or FALSE to include/exclude info from the report/compilation. Fill with the requested parameters info)
+
+# set report name
+set report = hicseq-standard-report 		
+
+# set standard report parameters
+set standard = "TRUE"			# creates standard report
+set standard_bysample = "TRUE"		
+set standard_bygroup = "TRUE"		
 
 # set alignment & filtering parameters (you can find this info in the respective step's 'params' files)
-set aligner = bowtie2	# e.g. bowtie2, bwa
-set mapq = 20	
-set mindist = 25000
+set aligner = bowtie2			# e.g. bowtie2, bwa. hicbench default = bowtie
+set mapq = 20				# hicbench default = 20
+set mindist = 25000			# hicbench defaulst = 25000
 
 # set matrix parameters
-set binsize = 40 	# matrix resolution (kb)
-set matrix = ic		# (e.g. ic, dist_norm)
-set caller = hicratio 	# (e.g. hicratio, crane, topdom)
-set compBinSize = 100  	# compartments resolution (kb)
+set binsize = 40 			# matrix resolution (kb)
+set matrix = ic				# (e.g. ic, dist_norm)
+set caller = hicratio 			# (e.g. hicratio, crane, topdom)
+set compBinSize = 100  			# compartments resolution (kb)
 
 # set tracks parameters
 set tracks_bysample = "FALSE"

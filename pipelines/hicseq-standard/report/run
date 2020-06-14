@@ -241,11 +241,25 @@ echo "third"
     	cat template_intro_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom.tex
 endif
 
+
+# filter standard report by sample/group (if required)
+if ("$standard_bysample" == "FALSE") then
+	cat full_template_custom.tex | fgrep -v "%isSAMPLE" > p.tex
+	rm full_template_custom.tex
+	mv p.tex full_template_custom.tex
+endif
+
+if ("$standard_bygroup" == "FALSE") then
+	cat full_template_custom.tex | fgrep -v	"%isGROUP" > p.tex
+	rm full_template_custom.tex
+	mv p.tex full_template_custom.tex
+endif
+
+# fill reference info
 sed -i 's/dist_norm)/distnorm)/g' full_template_custom.tex
 sed -i 's/GENOME_BUILD/'${genome}'/g' full_template_custom.tex
 sed -i 's/COMP_BINSIZE/'${compBinSize}'/g' full_template_custom.tex
 sed -i 's/RESOLUTION/'${binsize}'/g' full_template_custom.tex
-rm -f template_intro_custom.tex template_standard_custom.tex template_end_custom.tex
 
 #### MAKE REPORT/PRESENTATION ####
 cd ..
