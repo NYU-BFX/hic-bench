@@ -432,13 +432,29 @@ df.common$loop.strength[abs(df.common$lfc.contacts) < common.lfc]="stable"
 df.common=df.common[order(df.common$C1,decreasing = T),]
 df.common$rank=nrow(df.common):1
 
+common.stable.out=df.common[df.common$loop.strength=="stable",c(1:4,6:8,10:11,13)]
+common.up.out=df.common[df.common$loop.strength=="increased",c(1:4,6:8,10:11,13)]
+common.down.out=df.common[df.common$loop.strength=="decreased",c(1:4,6:8,10:11,13)]
+common.stable.out$q.value=1
+common.up.out$q.value=1
+common.down.out$q.value=1
+
+colnames(common.stable.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+colnames(common.up.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+colnames(common.down.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+
+common.stable.out=common.stable.out[,c(1:5,11,6,8:9,7,10)]
+common.up.out=common.up.out[,c(1:5,11,6,8:9,7,10)]
+common.down.out=common.down.out[,c(1:5,11,6,8:9,7,10)]
+
+write.table(common.up.out,paste0(outdir,"/common.loops_increased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(common.down.out,paste0(outdir,"/common.loops_decreased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(common.stable.out,paste0(outdir,"/common.loops_stable.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(df.common,paste0(outdir,"/common.loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+
 common.stable=df.common[df.common$loop.strength=="stable",c(1:4,7,10:11,13)]
 common.up=df.common[df.common$loop.strength=="increased",c(1:4,7,10:11,13)]
 common.down=df.common[df.common$loop.strength=="decreased",c(1:4,7,10:11,13)]
-write.table(common.up,paste0(outdir,"/common.loops_increased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(common.down,paste0(outdir,"/common.loops_decreased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(common.stable,paste0(outdir,"/common.loops_stable.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(df.common,paste0(outdir,"/common.loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
 #distance
 df.distance.count=data.frame(distance=unique(df.gg$distance),count.C1=NA,count.C2=NA,count.common=NA,stringsAsFactors = F)
