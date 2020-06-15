@@ -101,7 +101,6 @@ for (method in methods){
     print(score)
     mats=all.files
     mth=paste0("^",method,".txt")
-    for (bedpe in bedpes){
       
     #APA plots
     mats=list.files(pattern=mth,recursive = T)
@@ -130,7 +129,6 @@ for (method in methods){
     grid.arrange(arrangeGrob(hmap.c1,hmap.c2,nrow=2,ncol=1),
                  p1.merge,nrow=1,ncol=2,top="APA analysis")
     dev.off()
-    }
   }
 }
 
