@@ -192,7 +192,8 @@ classifyPc1Bins=function(mat,delta.cut){
       if(y>x){
         df.mat=mat[,c(names(mat)[x],names(mat)[y])]
         df.mat$pc1.diff=df.mat[,2]-df.mat[,1]
-        df.mat$delta=(df.mat[,2]-df.mat[,1])/abs(df.mat[,2])
+        df.mat$delta=abs((df.mat[,2]-df.mat[,1])/abs(df.mat[,2]))
+	df.mat$delta[df.mat[,2] < df.mat[,1]]=(df.mat$delta[df.mat[,2] < df.mat[,1]])*-1
         df.mat$switch=NA
         df.mat$switch[df.mat[,1] > 0 & df.mat[,2,] > 0]="AA"
         df.mat$switch[df.mat[,1] < 0 & df.mat[,2,] < 0]="BB"
