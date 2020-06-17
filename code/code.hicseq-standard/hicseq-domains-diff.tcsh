@@ -55,7 +55,7 @@ if ($perform_analysis == TRUE) then
 	
 	# Create boxplot with differentially active TADs
 	R --no-save $outdir/final_results.tsv $gene_tss FALSE FALSE \
-		$object2 $object1 $bin_size $min_tad_size $outdir/final_results < $codedir/differential_tad_activity_expression.r
+		$object2 $object1 $bin_size $min_tad_size $activity_lfc_cutoff $activity_fdr_cutoff $activity_mdiff_cutoff $outdir/final_results < $codedir/differential_tad_activity_expression.r
 endif
 
 # Integrate RNA-Seq data

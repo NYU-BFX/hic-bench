@@ -12,15 +12,18 @@ case_right <- args[7] #object1 -> S2
 case_left <- args[8] #object2 -> S1 -> fold-change is S2/S1
 bin.size <-  as.numeric(args[9])
 min.TAD.size <- as.numeric(args[10])
-out_prefix <- args[11]
+logFC_threshold <- as.numeric(args[11])
+fdr_threshold <- as.numeric(args[12])
+meanDiff_threshold <- as.numeric(args[12])
+out_prefix <- args[13]
 
 # In communicating the tad_activity data.frame to text output, the scientific notation does not help.
 options(scipen=999)
 
 # cutoffs
-logFC_threshold = 0.2
-fdr_threshold = 0.1
-meanDiff_threshold = 0.1
+#logFC_threshold = 0.2
+#fdr_threshold = 0.1
+#meanDiff_threshold = 0.1
 
 tad_activity=read.csv(file=tad_activity_file,header=TRUE,sep="\t")
 names(tad_activity)[6:7]=c("sample_2_mean","sample_1_mean") 

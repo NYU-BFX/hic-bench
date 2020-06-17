@@ -14,6 +14,9 @@ set max_range = 2000000
 set min_tad_size = 400000
 set max_tad_size = 2e6
 set max_boundary_size = 10 # max boundary length in bins.
+set activity_lfc_cutoff = 0.25
+set activity_fdr_cutoff	= 0.1
+set activity_mdiff_cutoff = 0.1
 
 # determine TAD branch
 set branch_short = `echo $branch | sed 's/.*results\///'`
