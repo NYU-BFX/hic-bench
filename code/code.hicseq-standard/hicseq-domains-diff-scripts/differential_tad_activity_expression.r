@@ -14,8 +14,8 @@ bin.size <-  as.numeric(args[9])
 min.TAD.size <- as.numeric(args[10])
 logFC_threshold <- as.numeric(args[11])
 fdr_threshold <- as.numeric(args[12])
-meanDiff_threshold <- as.numeric(args[12])
-out_prefix <- args[13]
+meanDiff_threshold <- as.numeric(args[13])
+out_prefix <- args[14]
 
 # In communicating the tad_activity data.frame to text output, the scientific notation does not help.
 options(scipen=999)
