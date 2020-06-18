@@ -21,10 +21,6 @@ out_prefix <- args[14]
 options(scipen=999)
 
 # cutoffs
-#logFC_threshold = 0.2
-#fdr_threshold = 0.1
-#meanDiff_threshold = 0.1
-
 tad_activity=read.csv(file=tad_activity_file,header=TRUE,sep="\t")
 names(tad_activity)[6:7]=c("sample_2_mean","sample_1_mean") 
 write.table(tad_activity,paste0(out_prefix,".tsv"),col.names = T,row.names = F,quote = F,sep="\t")
@@ -35,13 +31,13 @@ gene_tss=gene_tss[,1:4]
 names(gene_tss)=c("chr","start","end","geneID")
 
 tad_activity$mean_overall <- apply(tad_activity[,c("sample_1_mean","sample_2_mean")],1,mean)
-tad_activity_up <- (tad_activity[tad_activity$FDR <= fdr_threshold & tad_activity$logFC >= logFC_threshold & abs(tad_activity$mean_diff) >= 0.1,])
-tad_activity_down <- (tad_activity[tad_activity$FDR <= fdr_threshold & tad_activity$logFC <= -logFC_threshold & abs(tad_activity$mean_diff) >= 0.1,])
-tad_activity_unchanged <- (tad_activity[abs(tad_activity$mean_diff) < 0.1 | abs(tad_activity$logFC) < logFC_threshold |  tad_activity$FDR > fdr_threshold,])
+tad_activity_up <- (tad_activity[tad_activity$FDR <= fdr_threshold & tad_activity$logFC >= logFC_threshold & abs(tad_activity$mean_diff) >= meanDiff_threshold,])
+tad_activity_down <- (tad_activity[tad_activity$FDR <= fdr_threshold & tad_activity$logFC <= -logFC_threshold & abs(tad_activity$mean_diff) >= meanDiff_threshold,])
+tad_activity_unchanged <- (tad_activity[abs(tad_activity$mean_diff) < meanDiff_threshold | abs(tad_activity$logFC) < logFC_threshold |  tad_activity$FDR > fdr_threshold,])
 tad_activity_unchanged_50 <- quantile(tad_activity$mean_overall, prob=0.5,na.rm=TRUE)
-tad_activity_unchanged_low <- (tad_activity[abs(tad_activity$mean_diff) < 0.1 | abs(tad_activity$logFC) < logFC_threshold |  tad_activity$FDR > fdr_threshold &
+tad_activity_unchanged_low <- (tad_activity[abs(tad_activity$mean_diff) < meanDiff_threshold | abs(tad_activity$logFC) < logFC_threshold |  tad_activity$FDR > fdr_threshold &
                                               tad_activity$mean_overall < tad_activity_unchanged_50,])
-tad_activity_unchanged_high <- tad_activity[abs(tad_activity$mean_diff) < 0.1 | abs(tad_activity$logFC) < logFC_threshold  |  tad_activity$FDR > fdr_threshold &
+tad_activity_unchanged_high <- tad_activity[abs(tad_activity$mean_diff) < meanDiff_threshold | abs(tad_activity$logFC) < logFC_threshold  |  tad_activity$FDR > fdr_threshold &
                                               tad_activity$mean_overall >= tad_activity_unchanged_50,]
 
 write.table(file=paste(out_prefix,"_active-TADs.bed",sep=""),tad_activity_up[,c(1,3,5)],sep="\t",quote=FALSE,row.names=FALSE,col.names=FALSE)
