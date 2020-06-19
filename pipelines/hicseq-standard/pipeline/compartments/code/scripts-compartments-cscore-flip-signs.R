@@ -24,7 +24,6 @@ chr.bedgraph.header = fread(bedgraph.input, sep="\n", nrows=1, header=F)
 chr.bedgraph.nr = fread(cmd=paste0("wc -l ", bedgraph.input))$V1
 if (chr.bedgraph.nr == 1) {
   message("Because of lack of data, no part of sign-changing script was run. This happened probably because it was chrX, Y, or M.")
-  return(0)
 } else {
   chr.bedgraph = fread(bedgraph.input, skip=1, header=F)
   chr.bedgraph.gr = GRanges(chr.bedgraph$V1, IRanges(chr.bedgraph$V2 + 1, chr.bedgraph$V3), strand="*")
@@ -41,7 +40,6 @@ if (chr.bedgraph.nr == 1) {
 
   if (subsetbyoverlaps.gr.length == 0) {
     message("Intersection with housekeeping gene resulted in zero regions. No use of KS test here.")
-    return(0)
   } else {
     ks.test.result.correct = ks.test(chr.bedgraph.gr$score, chr.subsetbyoverlaps.bedgraph.gr$score, alternative="greater")
     ks.test.result.reverse = ks.test(chr.bedgraph.gr$score, chr.subsetbyoverlaps.bedgraph.gr$score, alternative="less")
