@@ -74,11 +74,11 @@ foreach chr ($CHR)
     scripts-create-path $jpref
     set Rcmd = "Rscript ./code/virtual4C.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object/matrix.$chr.mtx"
     echo $Rcmd | scripts-send2err
-	if ($DEBUG == true) then
-	  $Rcmd
-	else
+    if ($DEBUG == true) then
+      $Rcmd
+    else
       set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
-	endif
+    endif
   endif
 end
 
@@ -98,10 +98,10 @@ scripts-send2err "Organizing virtual 4Cs into a single directory..."
 foreach chr ($CHR)
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
     mv $outdir/$chr/*.bedgraph $outdir
-    gzip $outdir/*.bedgraph
   endif
   rm -rf $outdir/$chr
 end
+(cd $outdir; tar cvzf bedgraphs.tgz *.bedgraph; rm -f *.bedgraph)
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
