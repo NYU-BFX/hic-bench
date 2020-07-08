@@ -81,12 +81,12 @@ foreach chr ($chrs)
   scripts-send2err "requested memory = $mem"
 
   # run ScoreTool inside
-  set jpref = $outdir/__jdata/job.`echo $chr | sed 's/\.[^.]\+$//'`
+  set jpref = $outdir/job.`echo $chr | sed 's/\.[^.]\+$//'`
   # echo $jpref
   # scripts-create-path $jpref
   mkdir $cwd/$jpref
   # echo "whgusdn $chr" > $jpref/$chr.txt
-  set jid = ($jid `scripts-qsub-run $jpref 1 $mem $cwd/code/CscoreTool1.1 $cwd/$outdir/$genome.tiled.$resolution.bed $cwd/$outdir/filtered.bed $cwd/$outdir/__jdata/job.${chr}/${chr} 10 $mindist $chr`)
+  set jid = ($jid `scripts-qsub-run $jpref 1 $mem $cwd/code/CscoreTool1.1 $cwd/$outdir/$genome.tiled.$resolution.bed $cwd/$outdir/filtered.bed $cwd/$outdir/job.${chr}/${chr} 10 $mindist $chr`)
 
 end
 
@@ -100,12 +100,12 @@ scripts-send2err "Sign flipping step here."
 foreach chr ($chrs)
   ## Fix sign ##
   # Invoke R code here!!
-  Rscript $main_dir/code/scripts-compartments-cscore-flip-signs.R $outdir/__jdata/job.${chr}/${chr}_cscore.bedgraph $hkgene_path
+  Rscript $main_dir/code/scripts-compartments-cscore-flip-signs.R $outdir/job.${chr}/${chr}_cscore.bedgraph $hkgene_path
   ## Fix sign ## end
 end
 
 # Aggregate all *cscore.bedgraph files.
-cat `ls $outdir/__jdata/*/*_cscore.bedgraph` > $outdir/CscoreTool.scores.temp.bedGraph
+cat `ls $outdir/*/*_cscore.bedgraph` > $outdir/CscoreTool.scores.temp.bedGraph
 
 # Need only one "track type bedGraph" at the top. Only once.
 echo 'track type="bedGraph"' > $outdir/compartments.scores.bedGraph
