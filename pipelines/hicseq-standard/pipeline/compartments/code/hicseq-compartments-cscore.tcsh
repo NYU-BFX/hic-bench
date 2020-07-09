@@ -81,12 +81,12 @@ foreach chr ($chrs)
   scripts-send2err "requested memory = $mem"
 
   # run ScoreTool inside
-  set jpref = $outdir/job.`echo $chr | sed 's/\.[^.]\+$//'`
+  set jpref = $outdir/each.`echo $chr | sed 's/\.[^.]\+$//'`
   # echo $jpref
   # scripts-create-path $jpref
   mkdir $cwd/$jpref
   # echo "whgusdn $chr" > $jpref/$chr.txt
-  set jid = ($jid `scripts-qsub-run $jpref 1 $mem $cwd/code/CscoreTool1.1 $cwd/$outdir/$genome.tiled.$resolution.bed $cwd/$outdir/filtered.bed $cwd/$outdir/job.${chr}/${chr} 10 $mindist $chr`)
+  set jid = ($jid `scripts-qsub-run $jpref 1 $mem $cwd/code/CscoreTool1.1 $cwd/$outdir/$genome.tiled.$resolution.bed $cwd/$outdir/filtered.bed $cwd/$outdir/each.${chr}/${chr} 10 $mindist $chr`)
 
 end
 
@@ -100,7 +100,7 @@ scripts-send2err "Sign flipping step here."
 foreach chr ($chrs)
   ## Fix sign ##
   # Invoke R code here!!
-  Rscript $main_dir/code/scripts-compartments-cscore-flip-signs.R $outdir/job.${chr}/${chr}_cscore.bedgraph $hkgene_path
+  Rscript $main_dir/code/scripts-compartments-cscore-flip-signs.R $outdir/each.${chr}/${chr}_cscore.bedgraph $hkgene_path
   ## Fix sign ## end
 end
 
@@ -111,7 +111,7 @@ cat `ls $outdir/*/*_cscore.bedgraph` > $outdir/CscoreTool.scores.temp.bedGraph
 echo 'track type="bedGraph"' > $outdir/compartments.scores.bedGraph
 grep -v "^track" $outdir/CscoreTool.scores.temp.bedGraph >> $outdir/compartments.scores.bedGraph
 
-# track type="bedGraph" name="/gpfs/data/abl/home/choh09/Work/05_May/Effie_visualize/pipelines/hicseq-standard/pipeline/compartments/results/compartments.by_sample.cscore.res_100kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/MEF-untreated-Arima-rep2/__jdata/job.chr1/chr1_cscore.bedgraph"
+# track type="bedGraph" name="/gpfs/data/abl/home/choh09/Work/05_May/Effie_visualize/pipelines/hicseq-standard/pipeline/compartments/results/compartments.by_sample.cscore.res_100kb/filter.by_sample.mapq_20/align.by_sample.bowtie2/MEF-untreated-Arima-rep2/__jdata/each.chr1/chr1_cscore.bedgraph"
 
 ## Find HiC compartments ##
 # findHiCCompartments.pl pca_HKgenesFix.PC1.txt >! pca_HKgenesFix_Acompartments.txt

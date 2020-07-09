@@ -1,6 +1,6 @@
 ### USAGE ###
 # EXAMPLE:
-# Rscript ./code/scripts-compartments-cscore-flip-signs.R $outdir/__jdata/job.${chr}/${chr}_cscore.bedgraph /gpfs/data/tsirigoslab/hicbench-repository/data-repo/genomes/mm10/HK_genes.bed
+# Rscript ./code/scripts-compartments-cscore-flip-signs.R $outdir/__jdata/each.${chr}/${chr}_cscore.bedgraph /gpfs/data/tsirigoslab/hicbench-repository/data-repo/genomes/mm10/HK_genes.bed
 
 args = commandArgs(trailingOnly=T)
 bedgraph.input = args[1]
