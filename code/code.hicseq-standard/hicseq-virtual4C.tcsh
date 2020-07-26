@@ -93,15 +93,32 @@ foreach v5C_file ($v5C_files)
   cat $v5C_file | scripts-skipn 1 >> $outdir/virtual-5C.csv
 end
 
+# combine distribution data files
+cat $outdir/chr*/distribution* | sort -n -k1,3 -s > $outdir/distribution.tsv
+
 # organize virtual 4Cs into a single directory
 scripts-send2err "Organizing virtual 4Cs into a single directory..."
 foreach chr ($CHR)
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
+<<<<<<< HEAD
+    mv $outdir/$chr/*.bedgraph $outdir 
+    gzip $outdir/*.bedgraph
+=======
     mv $outdir/$chr/*.bedgraph $outdir
+>>>>>>> 9a6ffafdee1b824aa2dd6b2be01cc2cb04499ff4
   endif
   rm -rf $outdir/$chr
 end
 (cd $outdir; tar cvzf bedgraphs.tgz *.bedgraph; rm -f *.bedgraph)
+
+mkdir $outdir/bedgraph
+mv $outdir/*bedgraph.gz $outdir/bedgraph/
+
+# binomial test
+set distribution_file = "$outdir/distribution.tsv"
+set v5c_file = "$outdir/virtual-5C.csv"
+
+Rscript ./code/scripts-virtual4c-binomialTest.r $distribution_file $v5c_file $unit $fdr_cut $p_cut $outdir 
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
@@ -112,5 +129,3 @@ source ./code/code.main/scripts-save-job-vars
 
 # done
 scripts-send2err "Done."
-
-

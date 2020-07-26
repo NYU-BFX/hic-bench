@@ -34,6 +34,10 @@ U = as.integer(opt$"unit")                # maximum resolution (bp)
 d = as.integer(opt$"maxdist")             # maximum distance from viewpoint
 r = as.integer(opt$"radius")              # radius around viewpoint
 minvalue = as.numeric(opt$"minvalue")     # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results
+null = "global"                           # options: global / local
+min.d.DB = 20000
+max.d.DB = 1000000
+bin.DB = 500
 
 # input matrices
 mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
@@ -46,6 +50,9 @@ suppressPackageStartupMessages(library(zoo))
 R = r %/% U
 D = d %/% U
 W = 2*R + 1
+
+# adjust maximum distance (for consistency)
+D = D + R*2
 
 # divide by this constant below to obtain CPK2B values (counts per kilobase^2 per billion read pairs)
 CPK2B = (W*U/1000)^2*(n_reads/1000000000)
@@ -97,16 +104,21 @@ n_anchor = length(anchor_list)
 file_v5C = paste0(outdir,'/virtual-5C.csv')
 write(file=file_v5C, 
       paste(
-	     "Source anchor label", 
-		 "Target anchor label", 
-		 "Chromosome", 
-		 "Source anchor position", 
-		 "Target anchor position", 
-		 "Anchor distance", 
-		 "Count", 
-		 "CPK2B", 
-		 sep=',' 
-		))
+        "Source anchor label", 
+        "Target anchor label", 
+        "Chromosome", 
+        "Source anchor position", 
+        "Target anchor position", 
+        "Anchor distance", 
+        "Count", 
+        "CPK2B",
+        "VP total count",
+        "Count sum",
+        sep=',' 
+      ))
+
+# create distribution table (will be used later for statistical analysis)
+distribution=data.frame(distance=seq(min.d.DB,max.d.DB,bin.DB),counts=0,stringsAsFactors = F)
 
 # Process each viewpoint separately
 write(paste("Testing",length(vp_list),"viewpoints..."),stderr())
@@ -114,11 +126,44 @@ options(scipen=999)                                                       # disa
 for (k in 1:n_vp) 
 {
   write(paste0(chrname," ",round(100*k/n_vp,2),"%"),stderr())
-
+  
   # generate raw virtual 4Cs
   VP = vp_list[k]
   x0 = v4C(X,VP,R,D,W)                                                    # raw counts
   x = round(x0/CPK2B,3)                                                   # normalized counts
+  
+  # generate virtual 5C data (1)
+  vp_offset = VP - max(VP-D,1) + 1                                         # position of viewpoint (VP) in v4C vector
+  delta = anchor_list - VP                                                 # distances of all anchors from viewpoint
+  J = abs(delta)<=D                                                        # indexes of anchors that are within distance D from VP
+  anchor_labels = as.character(anchor_table$label[J])                      # labels of these anchors
+  anchor_offsets = vp_offset + delta[J]                                    # positions of these anchors in v4C vector
+  h = cbind(anchor_offsets - R,anchor_offsets + R)                         # anchors start & end positions in v4C vector (+-R)
+  h[h[,1]<0,1]=1
+  g = unlist(apply(h,1,function(v) { (v[1]:v[2]) } ))                      # all the positions of the anchor regions (+-R)
+  g = g[order(g)]
+  
+  # get distance
+  if(null=="BG"){ a=x[!x %in% g] } else { a=x } # if null == "BG" -> remove target-anchor regions from the null distribution
+  d2VP=abs(as.numeric(names(a))-(VP*100))
+  d2VP.df=data.frame(d2VP,a)
+  names(d2VP.df)=c("distance","counts")
+  d2VP.df=d2VP.df[!is.na(d2VP.df$counts),]
+  
+  df.k=data.frame(distance=seq(min.d.DB,max.d.DB,bin.DB),counts=0,stringsAsFactors = F)
+  df.k$start=df.k$distance-r+1
+  df.k$end=df.k$distance+r
+  
+  # get binned count frequency (for statistical analysis)
+  i=1
+  for (i in 1:nrow(df.k)){ 
+    xi=sum(d2VP.df$counts[d2VP.df$distance >= df.k$start[i] & d2VP.df$distance <= df.k$end[i]])
+    if (!is.na(xi)){
+      df.k$counts[i]=xi
+    } else { df.k$counts[i]=0 }
+  }
+  vp.counts=sum(df.k$counts)                                      # store total viewpoint contacts
+  distribution$counts=distribution$counts+df.k$counts             # aggregate distance/counts in master table 
   
   # generate coordinates
   coord_start = as.numeric(names(x))
@@ -132,32 +177,33 @@ for (k in 1:n_vp)
   cat(paste("track type=bedGraph name=",vp_table$label[k],"-",chrname,"\n",sep=""),file=filename)
   write.table(file=filename,x_out,append=T,quote=F,col.names=F,row.names=F,sep='\t') 
   
-  # generate virtual 5C data
-  vp_offset = VP - max(VP-D,1) + 1                                         # position of viewpoint (VP) in v4C vector
-  delta = anchor_list - VP                                                 # distances of all anchors from viewpoint
-  J = abs(delta)<=D                                                        # indexes of anchors that are within distance D from VP
-  anchor_labels = as.character(anchor_table$label[J])                      # labels of these anchors
-  anchor_offsets = vp_offset + delta[J]                                    # positions of these anchors in v4C vector
-  K = x[anchor_offsets]>=minvalue                                          # find anchors with enough counts
+  # generate virtual 5C data (2)
+  offsets_sum = as.numeric(apply(h,1,function(v) { sum(x[v[1]:v[2]]) } ))      # sum all the anchor v4c scores in radius  
+  K = x[anchor_offsets]>=minvalue                                              # find anchors with enough counts
   K[is.na(K)] = FALSE
   if (sum(K)>0) {
     anchor_data =
       cbind(as.character(vp_table$label[k]),
-		    anchor_labels,
-	        chrname,
-		    coord_start[vp_offset],
-		    coord_start[anchor_offsets],
-		    coord_start[anchor_offsets]-coord_start[vp_offset],
-		    x0[anchor_offsets],
-		    x[anchor_offsets]
-		)
+            anchor_labels,
+            chrname,
+            coord_start[vp_offset],
+            coord_start[anchor_offsets],
+            coord_start[anchor_offsets]-coord_start[vp_offset],
+            x0[anchor_offsets],
+            x[anchor_offsets],
+            vp.counts,
+            offsets_sum
+      )
     anchor_data = anchor_data[K,,drop=FALSE]
     write.table(file=file_v5C, append=TRUE, sep=',', quote=F, row.names=F, col.names=F, anchor_data)
   }
- 
+  
 }
+
+distribution$chr=chrname
+file_distri = paste0(outdir,'/distribution_',chrname,'.tsv')
+write.table(x = distribution,file=file_distri, sep='\t', quote=F, row.names=F, col.names=F)
 
 write("Done.",stderr())
 
 quit(save='no')
-
