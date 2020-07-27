@@ -100,17 +100,14 @@ cat $outdir/chr*/distribution* | sort -n -k1,3 -s > $outdir/distribution.tsv
 scripts-send2err "Organizing virtual 4Cs into a single directory..."
 foreach chr ($CHR)
   if (`cat $outdir/$chr/vp.bed | wc -l`>0) then 
-<<<<<<< HEAD
     mv $outdir/$chr/*.bedgraph $outdir 
     gzip $outdir/*.bedgraph
-=======
     mv $outdir/$chr/*.bedgraph $outdir
->>>>>>> 9a6ffafdee1b824aa2dd6b2be01cc2cb04499ff4
   endif
   rm -rf $outdir/$chr
 end
-(cd $outdir; tar cvzf bedgraphs.tgz *.bedgraph; rm -f *.bedgraph)
 
+cd $outdir; tar cvzf bedgraphs.tgz *.bedgraph; rm -f *.bedgraph
 mkdir $outdir/bedgraph
 mv $outdir/*bedgraph.gz $outdir/bedgraph/
 
