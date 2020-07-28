@@ -50,8 +50,8 @@ echo "Computing APA scores on the loop-subsets..." | scripts-send2err
 mkdir $outdir/APA
 mkdir $outdir/APA/diff
 
-set jid1 = `sbatch --array=1-$nbed --output="$job_dir/job.%a.out" --error="$job_dir/job.%a.err" ./code/APA.sh $hicfile1 "$bedpes" $APA_resolution $outdir $object1 $main_dir diff`
-set jid2 = `sbatch --array=1-$nbed --output="$job_dir/job.%a.out" --error="$job_dir/job.%a.err" ./code/APA.sh $hicfile2 "$bedpes" $APA_resolution $outdir $object2 $main_dir diff`
+set jid1 = `sbatch --array=1-$nbed --output="$job_dir/job.%a.out" --error="$job_dir/job.%a.err" ./code/APA.sh $hicfile1 "$bedpes" $APA_resolution $outdir $object1 $main_dir diff $fmin_distance`
+set jid2 = `sbatch --array=1-$nbed --output="$job_dir/job.%a.out" --error="$job_dir/job.%a.err" ./code/APA.sh $hicfile2 "$bedpes" $APA_resolution $outdir $object2 $main_dir diff $fmin_distance`
 
 set jid1 = `echo $jid1 | sed 's/.* //'`
 set jid2 = `echo $jid2 | sed 's/.* //'`
