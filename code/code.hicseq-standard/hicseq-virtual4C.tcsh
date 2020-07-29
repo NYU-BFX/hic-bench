@@ -96,6 +96,7 @@ end
 # combine distribution data files
 cat $outdir/chr*/distribution* | sort -n -k1,3 -s > $outdir/distribution.tsv
 
+if ($v4c_bdg == TRUE) then
 # organize virtual 4Cs into a single directory
 scripts-send2err "Organizing virtual 4Cs into a single directory..."
 foreach chr ($CHR)
@@ -106,6 +107,7 @@ foreach chr ($CHR)
   endif
   rm -rf $outdir/$chr
 end
+endif
 
 (cd $outdir; tar cvzf bedgraphs.tgz *.bedgraph; rm -f *.bedgraph)
 

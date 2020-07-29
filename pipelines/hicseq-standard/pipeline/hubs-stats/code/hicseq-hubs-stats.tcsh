@@ -40,7 +40,7 @@ scripts-create-path $outdir/
 
 #cat $branch/$object/virtual-5C.csv | tr ',' '\t' | scripts-skipn 1 | sort | awk -v L=$min_loopscore '$8>=L' | awk -v D=$min_anchordist '$6>=D || $6<=-D' >! $outdir/virtual-5C.tsv
 #cat $branch/$object/virtual-5C.csv | tr ',' '\t' | scripts-skipn 1 | awk -v D=$min_anchordist '$6>=D || $6<=-D' | sort -k8,8rg | head -$ntop_loops | sort >! $outdir/virtual-5C.tsv
-cat $branch/$object/virtual-5C.csv | tr ',' '\t' | scripts-skipn 1 | awk -v D=$min_anchordist '$6>=D || $6<=-D' | sort -k8,8rg | awk -v Q="$min_qvalue" '$12 < Q' | sort >! $outdir/virtual-5C.tsv   # loop qvalue filtering
+cat $branch/$object/virtual-5C.csv | tr ',' '\t' | scripts-skipn 1 | awk -v D=$min_anchordist '$6>=D || $6<=-D' | sort -k8,8rg | awk -v Q="$min_qvalue" -v PO="$min_pobserved" '$12 < Q && $14 > PO' | sort >! $outdir/virtual-5C.tsv   # loop qvalue filtering
 
 set main_dir = `echo ${cwd}`
 cd $outdir
