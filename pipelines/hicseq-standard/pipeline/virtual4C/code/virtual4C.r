@@ -24,20 +24,21 @@ option_list <- list(
 arguments = parse_args(args=commandArgs(trailingOnly=T), OptionParser(usage=usage,option_list=option_list), positional_arguments=c(0,Inf))
 opt = arguments$options
 inputs = arguments$args
-if (length(inputs) != 3) { write("Error: wrong number of inputs! Use --help to see help information", stderr()); quit(save='no') }
+if (length(inputs) != 5) { write("Error: wrong number of inputs! Use --help to see help information", stderr()); quit(save='no') }
 
 # input parameters
 outdir = inputs[1]
 chrname = inputs[2]
+nullRmvAnchors = inputs[4]                # TRUE: remove anchors from the null distribution
+v4c_bdg = inputs[5]                       # TRUE/FALSE: produce v4c bedgraphs
 n_reads = as.integer(opt$"nreads")        # number of sequenced read pairs in sample 1
 U = as.integer(opt$"unit")                # maximum resolution (bp)
 d = as.integer(opt$"maxdist")             # maximum distance from viewpoint
 r = as.integer(opt$"radius")              # radius around viewpoint
-minvalue = as.numeric(opt$"minvalue")     # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results
-null = "global"                           # options: global / local
-min.d.DB = 20000
-max.d.DB = 1000000
-bin.DB = 500
+minvalue = as.numeric(opt$"minvalue")     # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results		
+min.d.DB = 20000			  # minimum distance computed in the null distribution
+max.d.DB = 1000000			  # maximum distance computed in the null distribution
+bin.DB = 5000				  # bin size used to compute the null distribution
 
 # input matrices
 mat1 = inputs[3]         # e.g. DP/matrix.chr8.mtx
@@ -133,18 +134,18 @@ for (k in 1:n_vp)
   x = round(x0/CPK2B,3)                                                   # normalized counts
   
   # generate virtual 5C data (1)
-  vp_offset = VP - max(VP-D,1) + 1                                         # position of viewpoint (VP) in v4C vector
-  delta = anchor_list - VP                                                 # distances of all anchors from viewpoint
-  J = abs(delta)<=D                                                        # indexes of anchors that are within distance D from VP
-  anchor_labels = as.character(anchor_table$label[J])                      # labels of these anchors
-  anchor_offsets = vp_offset + delta[J]                                    # positions of these anchors in v4C vector
-  h = cbind(anchor_offsets - R,anchor_offsets + R)                         # anchors start & end positions in v4C vector (+-R)
+  vp_offset = VP - max(VP-D,1) + 1                                        # position of viewpoint (VP) in v4C vector
+  delta = anchor_list - VP                                                # distances of all anchors from viewpoint
+  J = abs(delta)<=D                                                       # indexes of anchors that are within distance D from VP
+  anchor_labels = as.character(anchor_table$label[J])                     # labels of these anchors
+  anchor_offsets = vp_offset + delta[J]                                   # positions of these anchors in v4C vector
+  h = cbind(anchor_offsets - R,anchor_offsets + R)                        # anchors start & end positions in v4C vector (+-R)
   h[h[,1]<0,1]=1
-  g = unlist(apply(h,1,function(v) { (v[1]:v[2]) } ))                      # all the positions of the anchor regions (+-R)
+  g = unlist(apply(h,1,function(v) { (v[1]:v[2]) } ))                     # all the positions of the anchor regions (+-R)
   g = g[order(g)]
   
   # get distance
-  if(null=="BG"){ a=x[!x %in% g] } else { a=x } # if null == "BG" -> remove target-anchor regions from the null distribution
+  if(nullRmvAnchors){ a=x[!x %in% g] } else { a=x } 			  # remove target-anchor regions from the null distribution
   d2VP=abs(as.numeric(names(a))-(VP*100))
   d2VP.df=data.frame(d2VP,a)
   names(d2VP.df)=c("distance","counts")
@@ -169,14 +170,16 @@ for (k in 1:n_vp)
   coord_start = as.numeric(names(x))
   coord_end = coord_start + U
   
-  # generate virtual 4C bedgraph files
-  x_out = cbind(coord_start,coord_end,x)  
-  x_out = x_out[!is.na(x_out[,3]),]
-  x_out = cbind(chrname,x_out)
-  filename = paste(outdir,'/',vp_table$label[k],'-',chrname,'-v4C.bedgraph',sep='') 
-  cat(paste("track type=bedGraph name=",vp_table$label[k],"-",chrname,"\n",sep=""),file=filename)
-  write.table(file=filename,x_out,append=T,quote=F,col.names=F,row.names=F,sep='\t') 
-  
+  if (v4c_bdg){
+  	# generate virtual 4C bedgraph files
+  	x_out = cbind(coord_start,coord_end,x)  
+  	x_out = x_out[!is.na(x_out[,3]),]
+  	x_out = cbind(chrname,x_out)
+  	filename = paste(outdir,'/',vp_table$label[k],'-',chrname,'-v4C.bedgraph',sep='') 
+  	cat(paste("track type=bedGraph name=",vp_table$label[k],"-",chrname,"\n",sep=""),file=filename)
+  	write.table(file=filename,x_out,append=T,quote=F,col.names=F,row.names=F,sep='\t') 
+  }
+
   # generate virtual 5C data (2)
   offsets_sum = as.numeric(apply(h,1,function(v) { sum(x[v[1]:v[2]]) } ))      # sum all the anchor v4c scores in radius  
   K = x[anchor_offsets]>=minvalue                                              # find anchors with enough counts

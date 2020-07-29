@@ -6,18 +6,8 @@ fdr.cut = argv[4L]
 p.cut = argv[5L]
 outdir = argv[6L]
 
-print(sparse_res)
-print(fdr.cut)
-print(p.cut)
-print(outdir)
-
 library(ggplot2)
 # parameters
-#distribution_file = "/Users/javrodher/Work/RStudio-PRJs/leukemia-TALL/data/v4c_distribution_jul21/distribution.tsv"
-#v5c_file = "/Users/javrodher/Work/RStudio-PRJs/leukemia-TALL/data/v4c_distribution_jul21//virtual-5C.csv"
-#fdr.cut = 0.01        # significance vp-anchor qvalue cutoff      
-#p.cut = 0.01          # minimum observed probability cutoff for vp-anchor pairs
-#outdir = "/Users/javrodher/Work/RStudio-PRJs/leukemia-TALL/"
 exclude_chr = c("chrX","chrY")
 options(scipen = 900)
 cols = c("chr","start","end")
@@ -79,5 +69,4 @@ names(v5c_data)[14]="p.observed"
 v5c_data=v5c_data[,c(1:11,13,12,14)]
 
 # save
-write.table(v5c_data,paste0(outdir,"/virtual-5C.csv"), sep=',', quote=F, row.names=F, col.names=F,)
-
+write.table(v5c_data,paste0(outdir,"/virtual-5C.csv"), sep=',', quote=F, row.names=F, col.names=T)
