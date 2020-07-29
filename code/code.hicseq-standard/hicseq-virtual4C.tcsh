@@ -118,7 +118,7 @@ mv $outdir/*bedgraph.gz $outdir/bedgraph/
 set distribution_file = "$outdir/distribution.tsv"
 set v5c_file = "$outdir/virtual-5C.csv"
 
-Rscript ./code/scripts-virtual4c-binomialTest.r $distribution_file $v5c_file $unit $fdr_cut $p_cut $outdir 
+Rscript ./code/scripts-virtual4c-binomialTest.r $distribution_file $v5c_file $unit $outdir 
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------

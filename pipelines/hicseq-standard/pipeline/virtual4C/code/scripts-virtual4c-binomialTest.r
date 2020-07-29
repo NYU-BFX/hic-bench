@@ -2,9 +2,7 @@ argv = commandArgs(trailingOnly = T)
 distribution_file = argv[1L]
 v5c_file = argv[2L]
 sparse_res = argv[3L]
-fdr.cut = argv[4L]
-p.cut = argv[5L]
-outdir = argv[6L]
+outdir = argv[4L]
 
 library(ggplot2)
 # parameters
@@ -15,7 +13,6 @@ cols = c("chr","start","end")
 # load data
 null_data=read.table(distribution_file,stringsAsFactors = F)
 v5c_data=read.csv(v5c_file,stringsAsFactors = F)
-head(v5c_data)
 names(null_data)=c("distance","counts.sum","chr")
 
 # frequency -> probability
