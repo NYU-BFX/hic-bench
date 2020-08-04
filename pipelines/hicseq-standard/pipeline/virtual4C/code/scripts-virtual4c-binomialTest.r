@@ -1,8 +1,10 @@
 argv = commandArgs(trailingOnly = T)
-distribution_file = argv[1L]
-v5c_file = argv[2L]
-sparse_res = argv[3L]
-outdir = argv[4L]
+distribution_file = argv[1L]			# null distribution data
+v5c_file = argv[2L]				# V5C data
+sparse_res = argv[3L]				# sparse matrix resolution
+outdir = argv[4L]				# output directory
+ntests = as.numeric(argv[5L])			# total number of test for multiple testing correction
+min.distance = as.numeric(argv[6L])		# minimum vp/anchor distance filter
 
 library(ggplot2)
 # parameters
@@ -14,6 +16,7 @@ cols = c("chr","start","end")
 null_data=read.table(distribution_file,stringsAsFactors = F)
 v5c_data=read.csv(v5c_file,stringsAsFactors = F)
 names(null_data)=c("distance","counts.sum","chr")
+v5c_data=v5c_data[v5c_data$Anchor.distance > min.distance,]
 
 # frequency -> probability
 null_data=null_data[!null_data$chr %in% exclude_chr,]
@@ -37,6 +40,7 @@ v5c_data$pvalue=NA
 v5c_data$p.expected=NA
 
 for (i in 1:nrow(v5c_data)){
+  write(paste0(round(100*i/nrow(v5c_data),2),"%"),stderr())
   trials=round(v5c_data$VP.total.count[i])
   d=abs(v5c_data$Anchor.distance[i])
   successes=round(v5c_data$Count.sum[i])
@@ -49,7 +53,7 @@ for (i in 1:nrow(v5c_data)){
   } else { v5c_data$pvalue[i]=1 }
   v5c_data$p.expected[i]=p.null
 }
-v5c_data$fdr=p.adjust(v5c_data$pvalue,n = nrow(v5c_data),method = "fdr")
+v5c_data$fdr=p.adjust(v5c_data$pvalue,n = ntests,method = "fdr")
 v5c_data$p=v5c_data$Count.sum/v5c_data$VP.total.count
 
 # plots

@@ -105,7 +105,6 @@ foreach chr ($CHR)
     gzip $outdir/*.bedgraph
     mv $outdir/$chr/*.bedgraph $outdir
   endif
-  rm -rf $outdir/$chr
 end
 endif
 
@@ -114,11 +113,40 @@ endif
 mkdir $outdir/bedgraph
 mv $outdir/*bedgraph.gz $outdir/bedgraph/
 
-# binomial test
+### binomial test ###
+scripts-send2err "Performing a binomial test for each VP/anchor connection..."
 set distribution_file = "$outdir/distribution.tsv"
-set v5c_file = "$outdir/virtual-5C.csv"
+set n = `cat $outdir/chr*/virtual-5C.csv | fgrep -v "Count" | sed 's/,/\t/g' | awk -v d=$mindist '$6 > d' | wc -l`  # total number of tests: used for qvalue computation 
 
-Rscript ./code/scripts-virtual4c-binomialTest.r $distribution_file $v5c_file $unit $outdir 
+# Process each chromosome separately
+set jid =
+set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
+foreach chr ($CHR)
+    if (`cat $outdir/$chr/virtual-5C.csv | wc -l`>0) then 
+    echo "Chromosome $chr..." | scripts-send2err
+    set jpref = $outdir/__jdata/job.binom.$chr
+    set mem = 10G
+    scripts-create-path $jpref
+    set v5c_file = "$outdir/$chr/virtual-5C.csv"
+    set Rcmd = "Rscript ./code/scripts-virtual4c-binomialTest.r $distribution_file $v5c_file $unit $outdir/$chr $n $mindist"
+    echo $Rcmd | scripts-send2err
+    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
+  endif
+end
+
+# wait until all jobs are completed
+scripts-send2err "Waiting until all jobs are completed..."
+scripts-qsub-wait "$jid"
+
+# combine results
+head -n 1 $outdir/chr1/virtual-5C.csv >> $outdir/virtual-5C.csv
+cat $outdir/chr*/virtual-5C.csv | fgrep -v "Counts" >> $outdir/virtual-5C.csv
+
+# produce significant loops file
+awk -F, -v q="$qval_cut" '{if (NR==1 || $12 < q) print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12"\t"$13"\t"$14}' $outdir/virtual-5C.csv | sort -n -r -k8 > $outdir/virtual-5C_significant.tsv
+
+# clean up
+#rm -rf $outdir/chr*
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
