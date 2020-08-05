@@ -166,7 +166,7 @@ foreach intraTAD_method ($intraTAD_methods)
                 end
         end
 end
-cd..
+cd ..
 endif
 
 
@@ -231,13 +231,10 @@ else
 endif
 
 if ("$standard" == "TRUE" && ("$activity_bygroup" == "TRUE" || "$activity_bysample" == "TRUE")) then
-echo "first
 	cat template_intro_custom.tex template_standard_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom.tex
 else if ("$standard" == "TRUE" && "$activity_bygroup" == "FALSE" && "$activity_bysample" == "FALSE") then
-echo "second"
 	cat template_intro_custom.tex template_standard_custom.tex template_end_custom.tex > full_template_custom.tex
 else if ("$standard" == "FALSE" && ("$activity_bygroup" == "TRUE" || "$activity_bysample" == "TRUE")) then
-echo "third"
     	cat template_intro_custom.tex domains-diff/*/*/*/template_intraTAD.tex template_end_custom.tex > full_template_custom.tex
 endif
 
