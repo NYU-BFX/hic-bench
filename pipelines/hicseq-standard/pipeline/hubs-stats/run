@@ -30,6 +30,3 @@ Rscript ./code/code.main/pipeline-master-explorer.r -v -F "$filter" "$cmd" $resu
 
 # run and wait until done!
 if ("$opt" != "--dry-run") scripts-submit-jobs ./$results/.db/run $pipeline_max_jobs
-
-
-

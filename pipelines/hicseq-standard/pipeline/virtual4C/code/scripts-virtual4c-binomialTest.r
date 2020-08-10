@@ -70,4 +70,7 @@ names(v5c_data)[14]="p.observed"
 v5c_data=v5c_data[,c(1:11,13,12,14)]
 
 # save
-write.table(v5c_data,paste0(outdir,"/virtual-5C.csv"), sep=',', quote=F, row.names=F, col.names=T)
+if (nrow(v5c_data) > 0){ 
+	v5c_data[,11:14]=apply(v5c_data[,11:14],2,function(x) formatC(x,format = "e", digits = 2))
+	write.table(v5c_data,paste0(outdir,"/virtual-5C_binom.csv"), sep=',', quote=F, row.names=F, col.names=T) 
+}

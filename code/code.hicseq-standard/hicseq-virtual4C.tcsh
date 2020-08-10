@@ -86,13 +86,6 @@ end
 scripts-send2err "Waiting until all jobs are completed..."
 scripts-qsub-wait "$jid"
 
-# combine virtual 5C results from all chromosomes
-set v5C_files = $outdir/*/virtual-5C.csv
-head -1 $v5C_files[1] >! $outdir/virtual-5C.csv
-foreach v5C_file ($v5C_files)
-  cat $v5C_file | scripts-skipn 1 >> $outdir/virtual-5C.csv
-end
-
 # combine distribution data files
 cat $outdir/chr*/distribution* | sort -n -k1,3 -s > $outdir/distribution.tsv
 
@@ -119,7 +112,7 @@ set distribution_file = "$outdir/distribution.tsv"
 set n = `cat $outdir/chr*/virtual-5C.csv | fgrep -v "Count" | sed 's/,/\t/g' | awk -v d=$mindist '$6 > d' | wc -l`  # total number of tests: used for qvalue computation 
 
 # Process each chromosome separately
-set jid =
+set jid2 =
 set CHR = `cat $genome_dir/genome.bed | cut -f1 | grep -wvE "$chrom_excluded"`
 foreach chr ($CHR)
     if (`cat $outdir/$chr/virtual-5C.csv | wc -l`>0) then 
@@ -130,20 +123,21 @@ foreach chr ($CHR)
     set v5c_file = "$outdir/$chr/virtual-5C.csv"
     set Rcmd = "Rscript ./code/scripts-virtual4c-binomialTest.r $distribution_file $v5c_file $unit $outdir/$chr $n $mindist"
     echo $Rcmd | scripts-send2err
-    set jid = ($jid `scripts-qsub-run $jpref 1 $mem $Rcmd`)
+    set jid2 = ($jid2 `scripts-qsub-run $jpref 1 $mem $Rcmd`)
   endif
 end
 
 # wait until all jobs are completed
 scripts-send2err "Waiting until all jobs are completed..."
-scripts-qsub-wait "$jid"
+scripts-qsub-wait "$jid2"
 
 # combine results
-head -n 1 $outdir/chr1/virtual-5C.csv >> $outdir/virtual-5C.csv
-cat $outdir/chr*/virtual-5C.csv | fgrep -v "Counts" >> $outdir/virtual-5C.csv
+head -n 1 $outdir/chr1/virtual-5C_binom.csv >> $outdir/virtual-5C.csv
+cat $outdir/chr*/virtual-5C_binom.csv | fgrep -v "Counts" >> $outdir/virtual-5C.csv
+mv $outdir/chr1/spline_null_distribution.pdf $outdir
 
 # produce significant loops file
-awk -F, -v q="$qval_cut" '{if (NR==1 || $12 < q) print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12"\t"$13"\t"$14}' $outdir/virtual-5C.csv | sort -n -r -k8 > $outdir/virtual-5C_significant.tsv
+awk -F, -v q="$qval_cut" '{if (NR==1 || $12 < q) print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12"\t"$13"\t"$14}' $outdir/virtual-5C.csv > $outdir/virtual-5C_significant.tsv
 
 # clean up
 #rm -rf $outdir/chr*
