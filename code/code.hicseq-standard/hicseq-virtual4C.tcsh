@@ -140,7 +140,7 @@ mv $outdir/chr1/spline_null_distribution.pdf $outdir
 awk -F, -v q="$qval_cut" '{if (NR==1 || $12 < q) print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10"\t"$11"\t"$12"\t"$13"\t"$14}' $outdir/virtual-5C.csv > $outdir/virtual-5C_significant.tsv
 
 # clean up
-#rm -rf $outdir/chr*
+rm -rf $outdir/chr*
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
