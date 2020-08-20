@@ -40,7 +40,7 @@ if (-e $branch/$objects[1]/alignments.bam) then
     samtools merge - $aligned_reads | samtools view - | gtools-hic filter -v -E $genome_dir/$enzyme.fragments.bed --stats $outdir/stats_with_dups.tsv $filter_params | sort -t'	' -k2 >! $outdir/filtered_with_dups.reg
   endif
 
-else if (-e $branch/$objects[1]/R1.sam) then
+else if (-e $branch/$objects[1]/R1.bam) then
 #------------------------------------------------------------------------
 # Case 2: separate R1/R2 bam files are available
 #------------------------------------------------------------------------
