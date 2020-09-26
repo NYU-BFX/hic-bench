@@ -109,19 +109,19 @@ awk -v var="$intra_reads" '{                                                    
 
 # filtered loops (bias)
 cat chr*/loops_filtered_bias_raw.tsv >! temp.tsv
-awk -v min="$mindist" -v max="$maxdist" 'NR == 1 || \!/fragment/ && ($4+1-$2) < max && ($4+1-$2) > min' temp.tsv >! loops_filtered_bias_raw.tsv
-awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2+1-var/2)"\t"($2+var/2)"\t"$3"\t"($4+1-var/2)"\t"($4+var/2)"\t"$5}' loops_filtered_bias_raw.tsv >! loops_filtered_bias_raw.bedpe
+awk -v min="$mindist" -v max="$maxdist" 'NR == 1 || \!/fragment/ && ($4-$2) < max && ($4-$2) > min' temp.tsv >! loops_filtered_bias_raw.tsv
+awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' loops_filtered_bias_raw.tsv >! loops_filtered_bias_raw.bedpe
 rm -f temp.tsv
 
 # filtered loops (no bias)
 cat chr*/loops_filtered_nobias_raw.tsv >! temp.tsv
-awk -v min="$mindist" -v max="$maxdist" 'NR == 1 || \!/fragment/ && ($4+1-$2) < max && ($4+1-$2) > min' temp.tsv >! loops_filtered_nobias_raw.tsv
-awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2+1-var/2)"\t"($2+var/2)"\t"$3"\t"($4+1-var/2)"\t"($4+var/2)"\t"$5}' loops_filtered_nobias_raw.tsv >! loops_filtered_nobias_raw.bedpe
+awk -v min="$mindist" -v max="$maxdist" 'NR == 1 || \!/fragment/ && ($4-$2) < max && ($4-$2) > min' temp.tsv >! loops_filtered_nobias_raw.tsv
+awk -v var="$winsize" '{ if ((NR>1)) print $1"\t"($2-var/2)"\t"($2+var/2)"\t"$3"\t"($4-var/2)"\t"($4+var/2)"\t"$5}' loops_filtered_nobias_raw.tsv >! loops_filtered_nobias_raw.bedpe
 rm -f temp.tsv
 
 # create IGV junction format (loops-like)
-#awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_bias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_bias.igv.bed
-#awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_nobias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_nobias.igv.bed
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_bias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_bias.igv.bed
+awk '{if(NR>1) print $1"\t"$2"\t"$4"\t\.\t1\.0"}' loops_filtered_nobias_raw.tsv | sed -e '1itrack graphType=junctions' | sort -k2 -n >! loops_filtered_nobias.igv.bed
 
 # Create CPM normalized filtered loops files (bias)
 awk -v var="$intra_reads" '{                                                              \

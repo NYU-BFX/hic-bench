@@ -55,7 +55,7 @@ tad_activity$activity.group=as.factor(tad_activity$activity.group)
 tad_activity$activity.group=factor(tad_activity$activity.group,levels(tad_activity$activity.group))
 ins.stat=unique(as.character(tad_activity$activity.group))
 tad_activity$activity.group=factor(tad_activity$activity.group,c("stable TADs",ins.stat[ins.stat != "stable TADs"]))
-tad_activity=tad_activity[order(tad_activity$activity.group),]
+tad_activity=tad_activity[order(tad_activity$chr,tad_activity$TAD_start),]
 
 # annotate gene-TADs
 tad_activity$geneIDs=NA
@@ -83,6 +83,7 @@ for (tad.num in 1:nrow(tad_activity)) {
   gene_hits=subsetByOverlaps(gene_tss.gr,tad_activity.gr[tad.num])
   tad_activity$geneIDs[tad.num]=paste(gene_hits$geneID,collapse = ",")
 }
+tad_activity=tad_activity[order(tad_activity$activity.group),]
 write.table(file=paste(out_prefix,"_annotated.tsv",sep=""),tad_activity,sep="\t",quote=FALSE,row.names=FALSE)
 
 # Same output in .bed format, with the fold change as 5th column
