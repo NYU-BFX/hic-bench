@@ -49,11 +49,18 @@ awk ' BEGIN { OFS="\t"; strand["-"]="1"; strand["+"]="0" } {                    
 echo 'Generating .hic file...' | scripts-send2err
 module unload r       
 module load juicer/1.5
-java -Xms512m -Xmx20480m -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar pre $outdir/filtered.bed $outdir/filtered.hic "$genome" -r $resolution
+java -Xms512m -Xmx20480m -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar pre $outdir/filtered.bed $outdir/filtered.hic "$genome" -r $resolution -n
+module unload juicer/1.5
+
+# Normalize .hic file (KR)
+echo 'Normalizing .hic file...' | scripts-send2err
+module unload r
+module load juicer/1.5
+java -Xms512m -Xmx20480m -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar addNorm -k KR $outdir/filtered.hic
 module unload juicer/1.5
 
 # Generate .cool and .h5 files (had to separate this step in a second bash script because the conda module doesn't work well on tcsh)
-if ($format == cool || $format == h5 || $format == homer) then
+if ($format == cool || $format == h5 || $format == homer || $format == ginteractions) then
 	echo 'Running hicConvertFormat...' | scripts-send2err
 	set job_dir = $outdir/__jdata
 	mkdir -p $job_dir
