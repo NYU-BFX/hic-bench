@@ -2,9 +2,9 @@
 
 source ./inputs/params/params.tcsh
 set tool = fithic
-set k27ac = ./params/k27ac_esc_wSignal.bed
-set tss = ./params/3tss_relabeled.bed
-set atac = ./params/atac_esc.bed
+set k27ac = ./params/LOUCY_H3K27ac_peaks_wSignal.bed
+set tss = ./params/tss_w_nmre_sorted.bed
+set atac = "FALSE"
 
 set accessible_only = "FALSE"
 set tss_extension = 5000

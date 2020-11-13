@@ -140,7 +140,7 @@ cat EP_master.tsv | sort -u -k1,1 > EP_master_uniq.tsv
 rm -f tmp* EX.tsv EC.tsv C M CM.txt
 
 # add more metrics
-$main_dir/code/calcMoreMetrics.sh $main_dir $k27ac $tss
+$main_dir/code/calcMoreMetrics.sh $main_dir $k27ac $tss $atac
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
