@@ -218,9 +218,20 @@ awk -v OFS="\t" '{print $2,$1,$16}' temp6.txt | grep '^TSS_' | grep 'ENH_' | cut
 awk '{print ($35+$36)/2}' temp6.txt > mean.enh.atac_activity.txt                # mean.enh.atac_activity
 paste temp6.txt mean.enh.atac_activity.txt > t; mv t temp6.txt
 
-awk -v OFS="\t" '{print $1,$2,$3,$37*$24}' temp6.txt > abc.tsv                  # abc value (TO BE ADDED)
-cut -f2,3,4 abc.tsv | grep '^TSS_' | grep 'ENH_' | cut -f1,3 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 > sum.p.abc.tsv         # sum.p.abc value (TO BE ADDED)
-cut -f 3,4 abc.tsv | sort -k1b,1 > t; mv t abc.tsv				     # abc value clean	
+awk -v OFS="\t" '{print $1,$2,$3,$37*$24}' temp6.txt > abc.tsv                  # abc value
+cut -f2,3,4 abc.tsv | grep '^TSS_' | grep 'ENH_' | cut -f1,3 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 > sum.p.abc.tsv         # sum.p.abc value 
+
+# compute enhancer centric ABC metrics
+cut -f2,4 abc.tsv | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 > e.sum.abc.tsv
+cut -f2,4 abc.tsv | sort | tools-mergeuniq -merge | tools-vectors m -n 3 > e.mean.abc.tsv
+cut -f2,4 abc.tsv | sort | tools-mergeuniq -merge | tools-vectors max -n 3 > e.max.abc.tsv
+cut -f 3,4 abc.tsv | sort -k1b,1 > t; mv t abc.tsv                                   # abc value clean
+join e.sum.abc.tsv e.mean.abc.tsv | join - e.max.abc.tsv | tr ' ' '\t' | sort -r -n -k2,2 >> e.abc_metrics.tsv
+
+# gene annotation of enhancer centric ABC metrics
+echo "enhancer.id e.sum.abc e.mean.abc e.max.abc gene.id EP.id" | tr ' ' '\t' >> e.abc_metrics_geneAnnot.tsv
+cut -f 1-3 temp6.txt | sort -k3,3b | tr '\t' ' ' |  tools-cols 1 0 2 | sort -k1,1b > EP.tsv
+awk 'NR>1' e.abc_metrics.tsv | sort -k1,1b | join - EP.tsv | sort -r -n -k2,2 | tr ' ' '\t' >> e.abc_metrics_geneAnnot.tsv	
 
 ### 37 columns until here (temp6) ###
 
@@ -233,20 +244,31 @@ then
 	### 40 columns until here (temp6) ###
 
 	join -1 3 -2 1 temp6.txt sum.p.abc.tsv  | join - p.max.EC.tsv | join - p.max.EX.tsv | join - p.max.loop.activity.tsv | join - p.max.enh.activity.tsv | join - p.sum.enh.activity.tsv | join - p.max.e.hub.tsv | join - p.sum.e.hub.tsv | join - p.max.e.impact.tsv | join - p.sum.e.impact.tsv | join - p.mean.e.impact.tsv | join - p.max.e.interactivity.tsv | join - p.sum.e.interactivity.tsv | join - p.max.e.p.interactivity.tsv | join - p.sum.e.p.interactivity.tsv | join - p.max.p.p.interactivity.tsv | join - p.sum.p.p.interactivity.tsv | join - p.max.e.p.hub.tsv | join - p.sum.e.p.hub.tsv | join - max.p.hub.tsv | join - sum.p.hub.tsv | join - max.p.p.hub.tsv | join - sum.p.p.hub.tsv | join - max.p.e.hub.tsv | join - sum.p.e.hub.tsv | tr ' ' '\t' > t; mv t temp6.txt
-	### 65 columns until here (temp6) ###
+	
+	# add abc_score
+	awk '{				
+	if ($41 > 0)			
+		print $38/$41		
+	else				
+		print $41		
+	}' temp6.txt > abc_score.txt
+
+	paste temp6.txt abc_score.txt > t; mv t temp6.txt
+	
+	### 66 columns until here (temp6) ###
 
 	join temp6.txt mean.promoter.enh.activity.tsv | join - max.promoter.enh.activity.tsv | join - sum.promoter.enh.activity.tsv | join - mean.promoter.enh.activity_20.tsv | join - max.promoter.enh.activity_20.tsv | join - sum.promoter.enh.activity_20.tsv | join - mean.promoter.enh.activity_50.tsv | join - max.promoter.enh.activity_50.tsv | join - sum.promoter.enh.activity_50.tsv | join - mean.promoter.accessibility.tsv | join - max.promoter.accessibility.tsv | join - sum.promoter.accessibility.tsv | join - mean.promoter.accessibility_20.tsv | join - max.promoter.accessibility_20.tsv | join - sum.promoter.accessibility_20.tsv | join - mean.promoter.accessibility_50.tsv | join - max.promoter.accessibility_50.tsv | join - sum.promoter.accessibility_50.tsv | tr ' ' '\t' > t; mv t temp6.txt
-	### 83 columns until here (temp6) ###
+	### 84 columns until here (temp6) ###
 
 	# FINAL MATRIX (WITH ATAC)
-	echo "EP.id promoter.id enhancer.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc max.enh.accessibility sum.enh.accessibility sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50 mean.promoter.accessibility max.promoter.accessibility sum.promoter.accessibility mean.promoter.accessibility_20 max.promoter.accessibility_20 sum.promoter.accessibility_20 mean.promoter.accessibility_50 max.promoter.accessibility_50 sum.promoter.accessibility_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
+	echo "EP.id promoter.id enhancer.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc max.enh.accessibility sum.enh.accessibility sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub abc_score mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50 mean.promoter.accessibility max.promoter.accessibility sum.promoter.accessibility mean.promoter.accessibility_20 max.promoter.accessibility_20 sum.promoter.accessibility_20 mean.promoter.accessibility_50 max.promoter.accessibility_50 sum.promoter.accessibility_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
 	
 	awk -v OFS="\t" '{print $3,$1,$2}' temp6.txt > chunk1.tsv
-	cut -f4-83 temp6.txt > chunk2.tsv
+	cut -f4-84 temp6.txt > chunk2.tsv
 	paste chunk1.tsv chunk2.tsv >> EP_metrics_full.tsv
 
 	# make promoter centric table
-	sort -u -k2,2b  EP_metrics_full.tsv | cut -f2,11,14-19,41-83 > p.centric_metrics.tsv
+	sort -u -k2,2b  EP_metrics_full.tsv | cut -f2,11,14-19,41-84 > p.centric_metrics.tsv
 
 
 else	### IF NO ATAC DATA ###
@@ -254,27 +276,45 @@ else	### IF NO ATAC DATA ###
 	### 38 columns until here (temp6) ###
 
 	join -1 3 -2 1 temp6.txt sum.p.abc.tsv  | join - p.max.EC.tsv | join - p.max.EX.tsv | join - p.max.loop.activity.tsv | join - p.max.enh.activity.tsv | join - p.sum.enh.activity.tsv | join - p.max.e.hub.tsv | join - p.sum.e.hub.tsv | join - p.max.e.impact.tsv | join - p.sum.e.impact.tsv | join - p.mean.e.impact.tsv | join - p.max.e.interactivity.tsv | join - p.sum.e.interactivity.tsv | join - p.max.e.p.interactivity.tsv | join - p.sum.e.p.interactivity.tsv | join - p.max.p.p.interactivity.tsv | join - p.sum.p.p.interactivity.tsv | join - p.max.e.p.hub.tsv | join - p.sum.e.p.hub.tsv | join - max.p.hub.tsv | join - sum.p.hub.tsv | join - max.p.p.hub.tsv | join - sum.p.p.hub.tsv | join - max.p.e.hub.tsv | join - sum.p.e.hub.tsv | tr ' ' '\t' > t; mv t temp6.txt
-	### 63 columns until here (temp6) ###
+        
+	# add abc_score
+        awk '{
+	if ($39 > 0)
+                print $38/$39
+        else
+            	print $39
+        }' temp6.txt > abc_score.txt
+	
+        paste temp6.txt abc_score.txt > t; mv t temp6.txt
+
+	### 64 columns until here (temp6) ###
 
 	join temp6.txt mean.promoter.enh.activity.tsv | join - max.promoter.enh.activity.tsv | join - sum.promoter.enh.activity.tsv | join - mean.promoter.enh.activity_20.tsv | join - max.promoter.enh.activity_20.tsv | join - sum.promoter.enh.activity_20.tsv | join - mean.promoter.enh.activity_50.tsv | join - max.promoter.enh.activity_50.tsv | join - sum.promoter.enh.activity_50.tsv | tr ' ' '\t' > t; mv t temp6.txt
 	### 73 columns until here (temp6) ###
 
 	# FINAL MATRIX (NO ATAC)
-	echo "EP.id promoter.id enhancer.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
+	echo "EP.id promoter.id enhancer.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub abc_score mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
 
 	awk -v OFS="\t" '{print $3,$1,$2}' temp6.txt > chunk1.tsv
-	cut -f4-72 temp6.txt > chunk2.tsv
+	cut -f4-73 temp6.txt > chunk2.tsv
 	paste chunk1.tsv chunk2.tsv >> EP_metrics_full.tsv
 
 	# make promoter centric table
-	sort -u -k2,2b  EP_metrics_full.tsv | cut -f2,11,14-19,39-72 > p.centric_metrics.tsv
+	sort -u -k2,2b  EP_metrics_full.tsv | cut -f2,11,14-19,39-73 > p.centric_metrics.tsv
 
 fi
 
 mkdir data
 mv *.tsv data
+mv abc_score.txt data/
 mv data/EP_metrics_full.tsv ./
 mv data/p.centric_metrics.tsv ./
+mv data/e.abc_metrics.tsv ./
+mv data/e.abc_metrics_geneAnnot.tsv ./
+
+mkdir loops
+mv bedpe2V5C/*uniq.bedpe loops/
 
 ## CLEAN UP ##
-rm -f EC_bg.txt EX_bg.txt EC_oe.txt EX_oe.txt temp*.txt tss_sort.bed k27ac_sort.bed chunk* *_in *_out *_in_* *_out_* EP_master_uniq.tsv EP_master.tsv mean.enh.atac_activity.txt
+rm -f EC_bg.txt EX_bg.txt EC_oe.txt EX_oe.txt temp*.txt tss_sort.bed k27ac_sort.bed chunk* *_in *_out *_in_* *_out_* EP_master_uniq.tsv EP_master.tsv mean.enh.atac_activity.txt *EP.tsv
+rm -fr bedpe2V5C

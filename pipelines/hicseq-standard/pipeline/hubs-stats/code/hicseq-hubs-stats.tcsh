@@ -137,6 +137,7 @@ join tmp1 loops.tsv | sort -k2b,2 | awk -v OFS='\t' '{print $1,$2,$3,$4,$5,$6,$7
 echo "EP.id id1 id2 EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity chr start end distance loop.activity" | tr ' ' '\t' >> EP_master_uniq.tsv
 cat EP_master.tsv | sort -u -k1,1 > EP_master_uniq.tsv
 
+# clean up
 rm -f tmp* EX.tsv EC.tsv C M CM.txt
 
 # add more metrics
