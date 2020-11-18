@@ -39,15 +39,21 @@ scripts-create-path $outdir/
 if ($tool == fithic) then
 	# select input bedpe
 	if ($bias_corrected == "TRUE")	then
-        	set bedpe = "loops_filtered_bias_cpm.bedpe"
+        	set inputLoops = "loops_filtered_bias_cpm"
 	else
-        	set bedpe = "loops_filtered_nobias_cpm.bedpe"
+        	set inputLoops = "loops_filtered_nobias_cpm"
 	endif
-	echo "bedpe input file is: $bedpe"
+	echo "bedpe input file is: $inputLoops"
 
-	# annotate bedpe anchors (EE, PP, EP, PE) and generate v5cFormat file
-	set bedpe = "$branch/$object/$bedpe"
-	./code/bedpe2V5C_annot.sh $bedpe $k27ac $tss $atac $accessible_only $tss_extension $promoter_k27ac_only $outdir/bedpe2V5C
+	### annotate bedpe anchors (EE, PP, EP, PE) and generate v5cFormat file ###
+	
+	# filter loops
+	awk 'NR>1' $branch/$object/$inputLoops.tsv | cut -f 7 > ${outdir}/qval.txt
+	paste $branch/$object/$inputLoops.bedpe ${outdir}/qval.txt > ${outdir}/loops_labeled_qval.bedpe
+	awk -v m=${min_anchordist} -v M=${max_anchordist} -v c=${min_activity} -v mqval=${min_qvalue} '($5-$2)>=m && ($5-$2)<=M && $7>=c && $8 <= mqval' ${outdir}/loops_labeled_qval.bedpe | cut -f 1-7 > ${outdir}/loops_labeled.bedpe
+	set bedpe = ${outdir}/loops_labeled.bedpe
+	
+	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${outdir}/bedpe2V5C
 	set inpfile = $outdir/bedpe2V5C/all_loops_wRev_v5cFormat.csv
 else
 	set inpfile = $branch/$object/virtual-5C.csv

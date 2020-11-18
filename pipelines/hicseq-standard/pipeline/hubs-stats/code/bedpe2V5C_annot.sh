@@ -18,7 +18,7 @@ module load bedtools/2.27.1
 rm -fr ${OUTDIR}
 mkdir -p ${OUTDIR}
 
-awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' $BEDPE > ${OUTDIR}/loops_labeled.bedpe
+awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' ${BEDPE} > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
 cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1.bed 
 cut -f 4-6,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a2.bed 
 
@@ -193,17 +193,45 @@ grep -v -x -F -f ${OUTDIR}/XX_loop_ids.txt ${OUTDIR}/all_loop_ids.txt | sort -k1
 join -1 8 ${OUTDIR}/loops_labeled.bedpe ${OUTDIR}/XP_PX_loop_ids.txt | awk -v OFS="\t" '{print $2,$3,$4,$5,$6,$7,$8,$1}' | sort -u -k8,8b > ${OUTDIR}/XP_PX_loops.txt
 
 # get PX and XP loops separately
-cut -f 1-3,7-8 ${OUTDIR}/XP_PX_loops.txt | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1_XP_PX.bed 
-cut -f 4-6,7-8 ${OUTDIR}/XP_PX_loops.txt | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a2_XP_PX.bed 
+# get PX and XP loops
+bedtools intersect -a ${OUTDIR}/a1.bed -b ${TSS} -wa | cut -f 1-3,6 | sort -k4,4b > ${OUTDIR}/a1_tss.txt
+bedtools intersect -a ${OUTDIR}/a2.bed -b ${TSS} -wa | cut -f 1-3,6 | sort -k4,4b > ${OUTDIR}/a2_tss.txt
+bedtools intersect -v -a ${OUTDIR}/a1.bed -b ${TSS} -wa | cut -f 1-3,6 | bedtools intersect -v -a stdin -b ${K27AC} | sort -k4,4b > ${OUTDIR}/a1_no_tss_enh.txt
+bedtools intersect -v -a ${OUTDIR}/a2.bed -b ${TSS} -wa | cut -f 1-3,6 | bedtools intersect -v -a stdin -b ${K27AC} | sort -k4,4b > ${OUTDIR}/a2_no_tss_enh.txt
 
-bedtools intersect -a ${TSS} -b ${OUTDIR}/a1_XP_PX.bed -wo | sort -k12b,12 | awk -v OFS="\t" '{print $7,$8,$9,$1,$2,$3,$11,$4,$10}' | sort -u -k9,9b > ${OUTDIR}/PX_loops_uniq.bedpe
-bedtools intersect -a ${TSS} -b ${OUTDIR}/a2_XP_PX.bed -wo | sort -k12b,12 | awk -v OFS="\t" '{print $1,$2,$3,$7,$8,$9,$11,$10,$4}' | sort -u -k9,9b > ${OUTDIR}/XP_loops_uniq.bedpe
+if [[ $ATAC != "FALSE" ]]
+then
+	bedtools intersect -a ${OUTDIR}/a1_no_tss_enh -b ${ATAC} | sort -k4,4b > ${OUTDIR}/a1_X.txt
+	bedtools intersect -a ${OUTDIR}/a2_no_tss_enh -b ${ATAC} | sort -k4,4b > ${OUTDIR}/a2_X.txt
+else
+	cp ${OUTDIR}/a1_no_tss_enh.txt ${OUTDIR}/a1_X.txt 	
+	cp ${OUTDIR}/a2_no_tss_enh.txt ${OUTDIR}/a2_X.txt 	
+fi
 
-cat ${OUTDIR}/PX_loops_uniq.bedpe ${OUTDIR}/XP_loops_uniq.bedpe > ${OUTDIR}/PX_XP_loops_uniq.bedpe
+join -1 4 -2 4 ${OUTDIR}/a1_tss.txt ${OUTDIR}/a2_X.txt | sort -u -k1,1b | cut -f1 > ${OUTDIR}/PX_ids.txt
+join -1 4 -2 4 ${OUTDIR}/a1_X.txt ${OUTDIR}/a2_tss.txt | sort -u -k1,1b | cut -f1 > ${OUTDIR}/XP_ids.txt
+
+cat ${OUTDIR}/PX_ids.txt ${OUTDIR}/XP_ids.txt | sort -u -k1,1b | cut -d " " -f1 | sort > ${OUTDIR}/PX_XP_ids.txt
+
+sort -k8,8b ${OUTDIR}/loops_labeled.bedpe > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
+join -1 8 -2 1  ${OUTDIR}/loops_labeled.bedpe ${OUTDIR}/PX_XP_ids.txt | tr ' ' '\t' | cut -f 2-8 > ${OUTDIR}/PX_XP_loops_uniq.bedpe
+cut -f 1-3,7 ${OUTDIR}/PX_XP_loops_uniq.bedpe > ${OUTDIR}/PX_XP_a1.txt
+cut -f 4-7 ${OUTDIR}/PX_XP_loops_uniq.bedpe > ${OUTDIR}/PX_XP_a2.txt
+
+bedtools intersect -a ${TSS} -b ${OUTDIR}/PX_XP_a1.txt -wa -wb | cut -f 4,10 > ${OUTDIR}/PX.tsv
+bedtools intersect -a ${TSS} -b ${OUTDIR}/PX_XP_a2.txt -wa -wb | cut -f 4,10 > ${OUTDIR}/XP.tsv
+cat ${OUTDIR}/PX.tsv ${OUTDIR}/XP.tsv > ${OUTDIR}/PX_XP.tsv
+
+cut -f1 ${OUTDIR}/PX_XP.tsv | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' > ${OUTDIR}/p.x.hubness.tsv
+cat ${OUTDIR}/PX_XP.tsv | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 > ${OUTDIR}/p.x.sum.interactivity.tsv
+cat ${OUTDIR}/PX_XP.tsv | sort | tools-mergeuniq -merge | tools-vectors m -n 3 > ${OUTDIR}/p.x.mean.interactivity.tsv
+cat ${OUTDIR}/PX_XP.tsv | sort | tools-mergeuniq -merge | tools-vectors max -n 3 > ${OUTDIR}/p.x.max.interactivity.tsv
+echo "gene.id p.x.hubness p.x.sum.interactivity p.x.mean.interactivity p.x.max.interactivity" | tr ' ' '\t' >> ${OUTDIR}/p.x.metrics.tsv
+join  ${OUTDIR}/p.x.hubness.tsv ${OUTDIR}/p.x.sum.interactivity.tsv | join - ${OUTDIR}/p.x.mean.interactivity.tsv | join - ${OUTDIR}/p.x.max.interactivity.tsv | tr ' ' '\t' >> ${OUTDIR}/p.x.metrics.tsv 
 
 
 # clean up
-rm -f ${OUTDIR}/a1.bed ${OUTDIR}/a2.bed ${OUTDIR}/*_intersect.txt ${OUTDIR}/*_loops.txt ${OUTDIR}/loops_labeled.bedpe K1 K2 T1 T2
+rm -f ${OUTDIR}/a1.bed ${OUTDIR}/a2.bed ${OUTDIR}/*_intersect.txt ${OUTDIR}/*_loops.txt K1 K2 T1 T2
 rm -f ${OUTDIR}/a1_X* ${OUTDIR}/a2_X* ${OUTDIR}/XP_PX_loops.txt ${OUTDIR}/*ids.txt ${OUTDIR}/a1_no_* ${OUTDIR}/a2_no_*
 
 echo "Done."
