@@ -100,6 +100,8 @@ bedtools intersect -a ${K27AC} -b ${OUTDIR}/a1.bed -wo | sort -k10b,10 > ${OUTDI
 bedtools intersect -a ${K27AC} -b ${OUTDIR}/a2.bed -wo | sort -k10b,10 > ${OUTDIR}/k27ac_a2_intersect_all.txt
 
 cat ${OUTDIR}/k27ac_a1_intersect_all.txt  ${OUTDIR}/k27ac_a2_intersect_all.txt | sort -u -k10,10b | cut -f 10 > ${OUTDIR}/loops_with_k27ac_ids.txt
+sort -u -k8,8b ${OUTDIR}/loops_labeled.bedpe > ${OUTDIR}/t; mv ${OUTDIR}/t ${OUTDIR}/loops_labeled.bedpe
+sort -k1,1b ${OUTDIR}/loops_with_k27ac_ids.txt > ${OUTDIR}/t; mv ${OUTDIR}/t ${OUTDIR}/loops_with_k27ac_ids.txt
 join -1 8 ${OUTDIR}/loops_labeled.bedpe ${OUTDIR}/loops_with_k27ac_ids.txt | awk -v OFS="\t" '{print $2,$3,$4,$5,$6,$7,$8,$1}' | sort -u -k8,8b | cut -f 1-7 > ${OUTDIR}/loops_with_k27ac_uniq.bedpe
 
 # get loops with k27ac in both anchors (no filters)
