@@ -183,7 +183,7 @@ fi
 join -1 6 -2 6 ${OUTDIR}/a1_X.txt ${OUTDIR}/a2_X.txt | awk -v OFS="\t" '{print $2,$3,$4,$7,$8,$9,$6,$1,$5,$10}' | sort -u -k8,8b > ${OUTDIR}/XX_loops.txt
 
 # get XX bedpe and XX loop ids
-cut -f 1-7 ${OUTDIR}/XX_loops.txt > ${OUTDIR}/XX_loops.bedpe
+cut -f 1-7 ${OUTDIR}/XX_loops.txt > ${OUTDIR}/XX_loops_uniq.bedpe
 cut -f8 ${OUTDIR}/XX_loops.txt > ${OUTDIR}/XX_loop_ids.txt
 
 # get XP_PX loops (.txt)
