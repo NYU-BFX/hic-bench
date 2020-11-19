@@ -29,6 +29,11 @@ cat $reg | gunzip >! $outdir/filtered.reg
 set hkgene_path = `readlink -f $HK_genes`
 set tss_path = `readlink -f $TSS_genes`
 
+if ($active_mark != FALSE) then
+	echo $active_mark 
+	set hkgene_path = `readlink -f $active_mark`
+endif
+
 set main_dir = `echo ${cwd}`
 cd $outdir
 set sampleName = `basename "$PWD"`
@@ -70,3 +75,4 @@ mv pca_HKgenesFix.PC1.bedGraph compartments.scores.bedGraph
 
 ## Clean up
 rm -fr filtered.temp filtered.reg filtered.bed TAG pca_HKgenesFix_Acompartments.txt pca_HKgenesFix_Bcompartments.txt pca_tssFix.PC1* pca_HKgenesFix.PC1_counts.bed pca_HKgenesFix.PC1.PC2.bedGraph pca_HKgenesFix.PC1.txt
+rm -f pca_HK* pc1_metrics* metrics*

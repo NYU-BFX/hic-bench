@@ -28,6 +28,11 @@ cat $reg | gunzip >! $outdir/filtered.reg
 set hkgene_path = `readlink -f $HK_genes`
 set tss_path = `readlink -f $TSS_genes`
 
+if ($active_mark != FALSE) then
+	echo $active_mark 
+        set hkgene_path = `readlink -f $active_mark`
+endif
+
 # echo $hkgene_path
 # echo $tss_path
 
@@ -122,3 +127,4 @@ grep -v "^track" $outdir/CscoreTool.scores.temp.bedGraph >> $outdir/compartments
 
 # # Clean up
 rm -rf $outdir/filtered.temp $outdir/filtered.reg $outdir/filtered.bed $outdir/$genome.tiled.$resolution.temp.bed $outdir/$genome.tiled.$resolution.bed $outdir/$genome.tiled.$resolution.bed $outdir/CscoreTool.scores.temp.bedGraph
+rm -fr $outdir/each.chr*
