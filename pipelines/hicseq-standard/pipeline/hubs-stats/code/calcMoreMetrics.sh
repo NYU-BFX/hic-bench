@@ -261,14 +261,15 @@ then
 	### 84 columns until here (temp6) ###
 
 	# FINAL MATRIX (WITH ATAC)
-	echo "EP.id promoter.id enhancer.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc max.enh.accessibility sum.enh.accessibility sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub abc_score mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50 mean.promoter.accessibility max.promoter.accessibility sum.promoter.accessibility mean.promoter.accessibility_20 max.promoter.accessibility_20 sum.promoter.accessibility_20 mean.promoter.accessibility_50 max.promoter.accessibility_50 sum.promoter.accessibility_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
+	echo "enhancer.id promoter.id EP.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc max.enh.accessibility sum.enh.accessibility sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub abc_score mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50 mean.promoter.accessibility max.promoter.accessibility sum.promoter.accessibility mean.promoter.accessibility_20 max.promoter.accessibility_20 sum.promoter.accessibility_20 mean.promoter.accessibility_50 max.promoter.accessibility_50 sum.promoter.accessibility_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
 	
 	awk -v OFS="\t" '{print $3,$1,$2}' temp6.txt > chunk1.tsv
 	cut -f4-84 temp6.txt > chunk2.tsv
 	paste chunk1.tsv chunk2.tsv >> EP_metrics_full.tsv
 
 	# make promoter centric table
-	sort -u -k2,2b  EP_metrics_full.tsv | cut -f2,11,14-19,41-84 > p.centric_metrics.tsv
+	cut -f2,11,14-19,41-84 EP_metrics_full.tsv | head -n1 >> p.centric_metrics.tsv
+	awk 'NR>1' EP_metrics_full.tsv | sort -u -k2,2b | cut -f2,11,14-19,41-84 >> p.centric_metrics.tsv
 
 
 else	### IF NO ATAC DATA ###
@@ -293,14 +294,15 @@ else	### IF NO ATAC DATA ###
 	### 73 columns until here (temp6) ###
 
 	# FINAL MATRIX (NO ATAC)
-	echo "EP.id promoter.id enhancer.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub abc_score mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
+	echo "enhancer.id promoter.id EP.id EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity loop.chr loop.start loop.end loop.distance loop.activity EC.bg EX.bg EC.oe EX.oe tss_start tss_end tss_ensembleID tss_strand enh_start enh_end enh_signal mean.enh.accessibility mean.enh.atac.activity abc sum.p.abc p.max.EC p.max.EX p.max.loop.activity p.max.enh.activity p.sum.enh.activity p.max.e.hub p.sum.e.hub p.max.e.impact p.sum.e.impact p.mean.e.impact p.max.e.interactivity p.sum.e.interactivity p.max.e.p.interactivity p.sum.e.p.interactivity p.max.p.p.interactivity p.sum.p.p.interactivity p.max.e.p.hub p.sum.e.p.hub max.p.hub sum.p.hub max.p.p.hub sum.p.p.hub max.p.e.hub sum.p.e.hub abc_score mean.promoter.enh.activity max.promoter.enh.activity sum.promoter.enh.activity mean.promoter.enh.activity_20 max.promoter.enh.activity_20 sum.promoter.enh.activity_20 mean.promoter.enh.activity_50 max.promoter.enh.activity_50 sum.promoter.enh.activity_50" | tr ' ' '\t' >> EP_metrics_full.tsv 
 
 	awk -v OFS="\t" '{print $3,$1,$2}' temp6.txt > chunk1.tsv
 	cut -f4-73 temp6.txt > chunk2.tsv
 	paste chunk1.tsv chunk2.tsv >> EP_metrics_full.tsv
 
 	# make promoter centric table
-	sort -u -k2,2b  EP_metrics_full.tsv | cut -f2,11,14-19,39-73 > p.centric_metrics.tsv
+	cut -f2,11,14-19,39-73 EP_metrics_full.tsv | head -n1 >> p.centric_metrics.tsv
+	awk 'NR>1' EP_metrics_full.tsv | sort -u -k2,2b | cut -f2,11,14-19,39-73 >> p.centric_metrics.tsv
 
 fi
 
