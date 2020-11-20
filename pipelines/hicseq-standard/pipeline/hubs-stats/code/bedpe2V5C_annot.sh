@@ -23,6 +23,7 @@ cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,
 cut -f 4-6,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a2.bed 
 
 # clean k27ac file
+K27AC_original=${K27AC}
 cut -f 1-3,5 ${K27AC} > ${OUTDIR}/k27ac_clean.bed
 K27AC=${OUTDIR}/k27ac_clean.bed 
 
@@ -229,6 +230,11 @@ cat ${OUTDIR}/PX_XP.tsv | sort | tools-mergeuniq -merge | tools-vectors max -n 3
 echo "gene.id p.x.hubness p.x.sum.interactivity p.x.mean.interactivity p.x.max.interactivity" | tr ' ' '\t' >> ${OUTDIR}/p.x.metrics.tsv
 join  ${OUTDIR}/p.x.hubness.tsv ${OUTDIR}/p.x.sum.interactivity.tsv | join - ${OUTDIR}/p.x.mean.interactivity.tsv | join - ${OUTDIR}/p.x.max.interactivity.tsv | tr ' ' '\t' >> ${OUTDIR}/p.x.metrics.tsv 
 
+### ADD k27ac SIGNAL TO LOOPS ###
+
+./code/scripts-hubs-stats-addSignal2Loops.sh loops_with_k27ac_uniq.bedpe ${K27AC_original} ${OUTDIR} loops_with_k27ac_uniq.tsv 
+./code/scripts-hubs-stats-addSignal2Loops.sh EE_loops_noFilters_uniq.bedpe ${K27AC_original} ${OUTDIR} EE_loops_noFilters_uniq.tsv
+./code/scripts-hubs-stats-addSignal2Loops.sh loops_labeled.bedpe ${K27AC_original} ${OUTDIR} loops_labeled_k27ac_signal.tsv
 
 # clean up
 rm -f ${OUTDIR}/a1.bed ${OUTDIR}/a2.bed ${OUTDIR}/*_intersect.txt ${OUTDIR}/*_loops.txt K1 K2 T1 T2

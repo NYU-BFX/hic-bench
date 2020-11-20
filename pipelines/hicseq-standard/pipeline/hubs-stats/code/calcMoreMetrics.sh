@@ -314,7 +314,8 @@ mv data/e.abc_metrics_geneAnnot.tsv ./
 
 mkdir loops
 mv bedpe2V5C/loops_labeled.bedpe loops/
-mv bedpe2V5C/*uniq.bedpe loops/
+mv bedpe2V5C/loops_labeled_k27ac_signal.tsv loops/
+mv bedpe2V5C/*uniq* loops/
 mv bedpe2V5C/p.x.metrics.tsv ./
 
 ## CLEAN UP ##
