@@ -5,7 +5,7 @@ source ./code/code.main/custom-tcshrc     # shell settings
 ## USAGE: hicseq-compartments-stats.tcsh OUTDIR PARAM-SCRIPT BOUNDARY-SCORES-BRANCH [OBJECTS]
 ##
 
-if (($#argv < 3) || ($#argv > 4)) then
+if (($#argv < 1) || ($#argv > 4)) then
   grep '^##' $0
   exit
 endif
@@ -34,7 +34,7 @@ scripts-create-path $outdir/
 
 # Check for number of objects
 if ($#objects < 2) then
-	scripts-send2err "Error: more than one input objects are required."
+	scripts-send2err "WARNING: More than one input objects are required. No output will be produced!"
 	exit 1
 endif 
 

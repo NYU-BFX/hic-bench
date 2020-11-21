@@ -75,4 +75,6 @@ mv pca_HKgenesFix.PC1.bedGraph compartments.scores.bedGraph
 
 ## Clean up
 rm -fr filtered.temp filtered.reg filtered.bed TAG pca_HKgenesFix_Acompartments.txt pca_HKgenesFix_Bcompartments.txt pca_tssFix.PC1* pca_HKgenesFix.PC1_counts.bed pca_HKgenesFix.PC1.PC2.bedGraph pca_HKgenesFix.PC1.txt
-rm -f pca_HK* pc1_metrics* metrics*
+rm -f pca_HK* metrics*
+
+fgrep -v "Error" job.err > temp.txt; mv temp.txt job.err # remove homer's error messages that doesn't seem to be relevant 
