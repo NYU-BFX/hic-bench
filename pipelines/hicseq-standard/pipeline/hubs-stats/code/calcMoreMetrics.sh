@@ -266,11 +266,12 @@ then
 	awk -v OFS="\t" '{print $3,$1,$2}' temp6.txt > chunk1.tsv
 	cut -f4-84 temp6.txt > chunk2.tsv
 	paste chunk1.tsv chunk2.tsv >> EP_metrics_full.tsv
+	cut -f 1-36,38,40,41,46,50,53,61,66,67,69,76,78 EP_metrics_full.tsv > EP_metrics_short.tsv
 
 	# make promoter centric table
 	cut -f2,11,14-19,41-84 EP_metrics_full.tsv | head -n1 >> p.centric_metrics.tsv
 	awk 'NR>1' EP_metrics_full.tsv | sort -u -k2,2b | cut -f2,11,14-19,41-84 >> p.centric_metrics.tsv
-
+	
 
 else	### IF NO ATAC DATA ###
 	join -1 3 -2 1 temp6.txt abc.tsv | tr ' ' '\t' | sort -k3,3b > temp; mv temp temp6.txt
@@ -291,6 +292,7 @@ else	### IF NO ATAC DATA ###
 	### 64 columns until here (temp6) ###
 
 	join temp6.txt mean.promoter.enh.activity.tsv | join - max.promoter.enh.activity.tsv | join - sum.promoter.enh.activity.tsv | join - mean.promoter.enh.activity_20.tsv | join - max.promoter.enh.activity_20.tsv | join - sum.promoter.enh.activity_20.tsv | join - mean.promoter.enh.activity_50.tsv | join - max.promoter.enh.activity_50.tsv | join - sum.promoter.enh.activity_50.tsv | tr ' ' '\t' > t; mv t temp6.txt
+	
 	### 73 columns until here (temp6) ###
 
 	# FINAL MATRIX (NO ATAC)
@@ -299,12 +301,14 @@ else	### IF NO ATAC DATA ###
 	awk -v OFS="\t" '{print $3,$1,$2}' temp6.txt > chunk1.tsv
 	cut -f4-73 temp6.txt > chunk2.tsv
 	paste chunk1.tsv chunk2.tsv >> EP_metrics_full.tsv
+	cut -f 1-35,38,39,44,46,48,51,64,65,67 EP_metrics_full.tsv > EP_metrics_short.tsv
 
 	# make promoter centric table
 	cut -f2,11,14-19,39-73 EP_metrics_full.tsv | head -n1 >> p.centric_metrics.tsv
 	awk 'NR>1' EP_metrics_full.tsv | sort -u -k2,2b | cut -f2,11,14-19,39-73 >> p.centric_metrics.tsv
 
 fi
+
 
 mkdir data
 mv *.tsv data
@@ -324,3 +328,4 @@ mv bedpe2V5C/p.x.metrics.tsv ./
 rm -f EC_bg.txt EX_bg.txt EC_oe.txt EX_oe.txt temp*.txt tss_sort.bed k27ac_sort.bed chunk* *_in *_out *_in_* *_out_* EP_master_uniq.tsv EP_master.tsv mean.enh.atac_activity.txt *EP.tsv loops_labeled.bedpe qval.txt loops_labeled_qval.bedpe
 rm -fr bedpe2V5C
 rm -fr data
+rm -f EP_metrics_full.tsv
