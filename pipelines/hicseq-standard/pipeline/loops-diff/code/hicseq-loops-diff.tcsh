@@ -168,7 +168,9 @@ if ($APA_quantiles == TRUE) then
 
 endif
 
-rm -f $outdir/l*.bedpe $outdir/l*.tsv
+rm -f $outdir/l*.bedpe $outdir/l*.tsv rm -f
+mv $outdir/APA/diff/in-house-analysis/* $outdir/APA/
+rm -fr $outdir/APA/diff
 
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
