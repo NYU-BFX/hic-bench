@@ -314,6 +314,7 @@ mkdir data
 mv *.tsv data
 mv abc_score.txt data/
 mv data/EP_metrics_full.tsv ./
+mv data/EP_metrics_short.tsv ./
 mv data/p.centric_metrics.tsv ./
 mv data/e.abc_metrics.tsv ./
 mv data/e.abc_metrics_geneAnnot.tsv ./

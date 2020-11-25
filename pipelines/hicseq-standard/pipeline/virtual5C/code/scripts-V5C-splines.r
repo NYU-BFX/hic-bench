@@ -105,7 +105,7 @@ print(nchroms)
 # load distribution data
 data1 = read.delim(distCounts,header = F)
 names(data1)=c("distance","counts","chr")
-data1=data1[sample(1:nrow(data1),1000000),]  # for quick testing
+#data1=data1[sample(1:nrow(data1),1000000),]  # for quick testing
 
 # compute raw null distribution
 M = tsize*2*nchroms         # total number of unique locus-pairs tested
@@ -123,6 +123,10 @@ data1$id = 1:nrow(data1)
 
 data2 = data1[data1$counts>0,]
 names(data2)[1:2] = c("Anchor.distance","Count")
+
+# make sure there arent any probability value outside of 0-1 range (spline doesn't care about this)
+spline_raw_sparse$pe[spline_raw_sparse$pe < 0 ] = 0
+spline_raw_sparse$pe[spline_raw_sparse$pe > 1 ] = 1
 
 options(scipen = 1)
 data2 = binomTest(data2,N,spline_raw_sparse)  # binomial test computation
