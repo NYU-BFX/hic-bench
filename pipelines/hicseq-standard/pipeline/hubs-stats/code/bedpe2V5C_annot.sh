@@ -22,6 +22,16 @@ awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' ${BED
 cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1.bed 
 cut -f 4-6,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a2.bed 
 
+# standarize cpm values so the mean cpm value is 1
+mean_cpm=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
+mfc=`echo $mean_cpm | awk '{print 1/$1}'`
+echo 'The original mean cpm value is = '$mean_cpm
+echo 'The correction factor is = '$mfc
+
+awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,f,$8}' ${OUTDIR}/loops_labeled.bedpe | awk '{print $1,$2,$3,$4,$5,$6,$7*$8,$9}' | tr ' ' '\t' > ${OUTDIR}/temp.txt; mv ${OUTDIR}/temp.txt ${OUTDIR}/loops_labeled.bedpe
+mean_scaled=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
+echo 'The mean cpm value after correction is = '$mean_scaled
+
 # clean k27ac file
 K27AC_original=${K27AC}
 cut -f 1-3,5 ${K27AC} > ${OUTDIR}/k27ac_clean.bed
