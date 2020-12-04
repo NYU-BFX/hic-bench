@@ -6,12 +6,8 @@ ATAC=$4
 accessible_only=$5
 tss_extension=$6
 promoter_k27ac_only=$7
-OUTDIR=$8
-
-#BEDPE=/Users/javrodher/Work/RStudio-PRJs/ESC-MEF-Alex/data/RUN-TEST/esc_fithic-loops-10kb_nobias_cpm_md10.bedpe
-#K27AC=/Users/javrodher/Work/RStudio-PRJs/ESC-MEF-Alex/data/RUN-TEST/k27ac_labeled_esc.bed
-#TSS=/Users/javrodher/Work/RStudio-PRJs/ESC-MEF-Alex/data/RUN-TEST/3tss.bed
-#OUTDIR=/Users/javrodher/Work/RStudio-PRJs/ESC-MEF-Alex/data/hubs-stats-sep24-md10/ES-untreated/bedpe2V5C/test
+use_topLoops=$8
+OUTDIR=$9
 
 module load bedtools/2.27.1
 
@@ -21,15 +17,24 @@ mkdir -p ${OUTDIR}
 # add loop identifier column
 awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' ${BEDPE} > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
 
-# standarize cpm values so the mean cpm value is 1
-mean_cpm=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
-mfc=`echo $mean_cpm | awk '{print 1/$1}'`
-echo 'The original mean cpm value is = '$mean_cpm
-echo 'The correction factor is = '$mfc
+if [[ $use_topLoops != "FALSE" ]]
+then
+	sort -r -k 7,7 ${OUTDIR}/loops_labeled.bedpe | head -n $use_topLoops > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
+	echo 'We will only use the top '$use_topLoops' loops'
+fi
 
-awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,f,$8}' ${OUTDIR}/loops_labeled.bedpe | awk '{print $1,$2,$3,$4,$5,$6,$7*$8,$9}' | tr ' ' '\t' > ${OUTDIR}/temp.txt; mv ${OUTDIR}/temp.txt ${OUTDIR}/loops_labeled.bedpe
-mean_scaled=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
-echo 'The mean cpm value after correction is = '$mean_scaled
+if [[ $standarize_cpm = "TRUE" ]]
+then
+	# standarize cpm values so the mean cpm value is 1
+	mean_cpm=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
+	mfc=`echo $mean_cpm | awk '{print 1/$1}'`
+	echo 'The original mean cpm value is = '$mean_cpm
+	echo 'The correction factor is = '$mfc
+
+	awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,f,$8}' ${OUTDIR}/loops_labeled.bedpe | awk '{print $1,$2,$3,$4,$5,$6,$7*$8,$9}' | tr ' ' '\t' > ${OUTDIR}/temp.txt; mv ${OUTDIR}/temp.txt ${OUTDIR}/loops_labeled.bedpe
+	mean_scaled=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
+	echo 'The mean cpm value after correction is = '$mean_scaled
+fi
 
 # separate loop anchors
 cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1.bed
@@ -158,22 +163,6 @@ cat ${OUTDIR}/all_loops_v5cFormat.tsv ${OUTDIR}/all_loops_rev_v5cFormat.tsv | so
 
 
 ### ADD XP, PX and XX loop data ###
-#BEDPE=loops_filtered_nobias_cpm.bedpe
-#K27AC=k27ac_esc_wSignal.bed
-#TSS=3tss_relabeled.bed
-#ATAC=atac_esc_wSignal.bed
-#OUTDIR=results
-
-#module load bedtools
-#module load gtools
-
-#awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' $BEDPE | sort -k8,8b > ${OUTDIR}/loops_labeled.bedpe
-#cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1.bed 
-#cut -f 4-6,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a2.bed 
-
-# clean k27ac file
-#cut -f 1-3,5 ${K27AC} > ${OUTDIR}/k27ac_clean.bed
-#K27AC=${OUTDIR}/k27ac_clean.bed 
 
 # anchors with no k27ac
 bedtools intersect -v -a ${OUTDIR}/a1.bed -b ${OUTDIR}/k27ac_clean.bed -wo | sort -k6b,6 > ${OUTDIR}/a1_no_k27ac.txt

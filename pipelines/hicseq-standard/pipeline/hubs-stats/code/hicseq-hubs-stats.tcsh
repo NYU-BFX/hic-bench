@@ -53,7 +53,7 @@ if ($tool == fithic) then
 	awk -v m=${min_anchordist} -v M=${max_anchordist} -v c=${min_activity} -v mqval=${min_qvalue} '($5-$2)>=m && ($5-$2)<=M && $7>=c && $8 <= mqval' ${outdir}/loops_labeled_qval.bedpe | cut -f 1-7 > ${outdir}/loops_labeled.bedpe
 	set bedpe = ${outdir}/loops_labeled.bedpe
 	
-	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${outdir}/bedpe2V5C
+	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${use_topLoops} ${outdir}/bedpe2V5C
 	set inpfile = $outdir/bedpe2V5C/all_loops_wRev_v5cFormat.csv
 else
 	set inpfile = $branch/$object/virtual-5C_top200k.csv
