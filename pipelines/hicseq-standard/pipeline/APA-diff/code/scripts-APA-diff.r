@@ -89,8 +89,12 @@ files.C1=list.files(paste0(bedpe,"_",C1),pattern=".txt",recursive = T,full.names
 files.C2=list.files(paste0(bedpe,"_",C2),pattern=".txt",recursive = T,full.names = F,include.dirs = F)
 all.files=c(files.C1,files.C2)
 
-methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
-scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
+#methods=c("APA","rankAPA","centerNormedAPA","normedAPA")
+methods=c("APA")
+
+#scores=c("P2M","P2UL","P2UR","P2LL","P2LR","ZscoreLL")
+scores=c("P2LL")
+
 dirs=list.dirs(recursive = F,full.names = F)
 bedpes=dirs[grep(paste0("_",C1),dirs)]
 bedpes=gsub(pattern = paste0("_",C1),replacement = "",bedpes)
