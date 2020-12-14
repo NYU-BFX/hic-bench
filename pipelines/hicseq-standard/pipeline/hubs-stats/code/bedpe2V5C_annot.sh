@@ -6,8 +6,9 @@ ATAC=$4
 accessible_only=$5
 tss_extension=$6
 promoter_k27ac_only=$7
-use_topLoops=$8
-OUTDIR=$9
+standarize_cpm=$8
+use_topLoops=$9
+OUTDIR=${10}
 
 module load bedtools/2.27.1
 
@@ -17,24 +18,18 @@ mkdir -p ${OUTDIR}
 # add loop identifier column
 awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' ${BEDPE} > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
 
-if [[ $use_topLoops != "FALSE" ]]
-then
-	sort -r -k 7,7 ${OUTDIR}/loops_labeled.bedpe | head -n $use_topLoops > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
-	echo 'We will only use the top '$use_topLoops' loops'
-fi
+#if [[ $standarize_cpm = "TRUE" ]]
+#then
+#	# standarize cpm values so the mean cpm value is 1
+#	mean_cpm=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
+#	mfc=`echo $mean_cpm | awk '{print 1/$1}'`
+#	echo 'The original mean cpm value is = '$mean_cpm
+#	echo 'The correction factor is = '$mfc
 
-if [[ $standarize_cpm = "TRUE" ]]
-then
-	# standarize cpm values so the mean cpm value is 1
-	mean_cpm=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
-	mfc=`echo $mean_cpm | awk '{print 1/$1}'`
-	echo 'The original mean cpm value is = '$mean_cpm
-	echo 'The correction factor is = '$mfc
-
-	awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,f,$8}' ${OUTDIR}/loops_labeled.bedpe | awk '{print $1,$2,$3,$4,$5,$6,$7*$8,$9}' | tr ' ' '\t' > ${OUTDIR}/temp.txt; mv ${OUTDIR}/temp.txt ${OUTDIR}/loops_labeled.bedpe
-	mean_scaled=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
-	echo 'The mean cpm value after correction is = '$mean_scaled
-fi
+#	awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,f,$8}' ${OUTDIR}/loops_labeled.bedpe | awk '{print $1,$2,$3,$4,$5,$6,$7*$8,$9}' | tr ' ' '\t' > ${OUTDIR}/temp.txt; mv ${OUTDIR}/temp.txt ${OUTDIR}/loops_labeled.bedpe
+#	mean_scaled=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
+#	echo 'The mean cpm value after correction is = '$mean_scaled
+#fi
 
 # separate loop anchors
 cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1.bed
@@ -88,9 +83,6 @@ bedtools intersect -a ${OUTDIR}/k27ac_flt.bed -b ${OUTDIR}/a1.bed -wo | sort -k1
 bedtools intersect -a ${OUTDIR}/k27ac_flt.bed -b ${OUTDIR}/a2.bed -wo | sort -k10b,10 > ${OUTDIR}/k27ac_a2_intersect.txt
 bedtools intersect -a ${OUTDIR}/tss_flt.bed -b ${OUTDIR}/a1.bed -wo | sort -k12b,12 > ${OUTDIR}/tss_a1_intersect.txt
 bedtools intersect -a ${OUTDIR}/tss_flt.bed -b ${OUTDIR}/a2.bed -wo | sort -k12b,12 > ${OUTDIR}/tss_a2_intersect.txt
-
-wc -l ${OUTDIR}/k27ac_a1_intersect.txt
-wc -l ${OUTDIR}/k27ac_a2_intersect.txt
 
 if [[ $k27ac_in_TSS_anchor = "FALSE" ]]
 then
@@ -146,10 +138,10 @@ awk -v OFS="\t" '{print $1":"$2":"$3":"$4":"$5":"$6,$1,$2,$3,$4,$5,$6,$7,$8,$9}'
 awk -v OFS="\t" '{print $1":"$2":"$3":"$4":"$5":"$6,$1,$2,$3,$4,$5,$6,$7,$8,$9}' ${OUTDIR}/all_loops.bedpe | sort -u -k1,1 | cut -f 2-8 > ${OUTDIR}/all_loops_uniq.bedpe
 
 echo "Total number of unique loops with EE, PP, EP or PE annotation:"
-wc -l ${OUTDIR}/all_loops_uniq.bedpe
+cat ${OUTDIR}/all_loops_uniq.bedpe | wc -l
 
 echo "Total number of unique loops with PP, EP or PE annotation:"
-wc -l ${OUTDIR}/EP_PE_PP_loops_uniq.bedpe
+cat ${OUTDIR}/EP_PE_PP_loops_uniq.bedpe | wc -l
 
 # get loops in virtual5C.csv format
 awk -v OFS="\t" '{print $8":"$9,$8,$9,$1,($2+$3)/2,($5+$6)/2,$5-$2,"-",$7,"-","-","0","0","-","-"}' ${OUTDIR}/all_loops.bedpe | sort -u -k1,1 > ${OUTDIR}/all_loops_v5cFormat.tsv
@@ -161,6 +153,46 @@ awk -v OFS="\t" '{print $3":"$2,$3,$2,$4,$6,$5,$7,$8,$9,$10,$11,$12,$13,$14,$15}
 echo "Source.anchor.label,Target.anchor.label,Chromosome,Source.anchor.position,Target.anchor.position,Anchor.distance,Count,CPK2B,VP.total.count,Count.sum,pvalue,fdr,p.expected,p.observed" >> ${OUTDIR}/all_loops_wRev_v5cFormat.csv
 cat ${OUTDIR}/all_loops_v5cFormat.tsv ${OUTDIR}/all_loops_rev_v5cFormat.tsv | sort -u -k1,1 | cut -f 2-15 | tr '\t' ',' >> ${OUTDIR}/all_loops_wRev_v5cFormat.csv
 
+head ${OUTDIR}/all_loops_wRev_v5cFormat.csv 
+# select top loops
+if [[ $use_topLoops != "FALSE" ]]
+then
+	top=$(( 2*$use_topLoops ))	# this is because for each top loop we have 2 loops in the v5cFoormat file (1 original and 1 reversed)
+	echo 'We will only use the top '$use_topLoops' loops'
+	echo "Source.anchor.label,Target.anchor.label,Chromosome,Source.anchor.position,Target.anchor.position,Anchor.distance,Count,CPK2B,VP.total.count,Count.sum,pvalue,fdr,p.expected,p.observed" >> ${OUTDIR}/all_loops_wRev_v5cFormat_top.csv
+	cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | cut -f 3-5,8 | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5b,5 | sort -r -k4,4 | head -n $top | cut -f 5 > ${OUTDIR}/topLoops_ids.txt
+	cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$3":"$4":"$5}' | sort -r -k15b,15 | grep -F -w -f ${OUTDIR}/topLoops_ids.txt | cut -f 1-14 | tr '\t' ',' >> ${OUTDIR}/all_loops_wRev_v5cFormat_top.csv
+	mv ${OUTDIR}/all_loops_wRev_v5cFormat_top.csv ${OUTDIR}/all_loops_wRev_v5cFormat.csv
+fi
+
+echo "Total loops obtained (with Rev and dups):"
+nld=`wc -l ${OUTDIR}/all_loops_wRev_v5cFormat.csv | awk '{print $1}'`
+echo $nld
+echo "Total unique loops obtained (with Rev):"
+nlu=`cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | cut -f 3-5,8 | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5b,5 | wc -l`    
+echo $nlu
+
+head ${OUTDIR}/all_loops_wRev_v5cFormat.csv
+
+# standarize cpm values so the mean cpm value is 1
+if [[ $standarize_cpm = "TRUE" ]]
+then
+	mean_cpm=`awk 'NR>1' ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t'|  awk '$5>$4' | awk -v OFS="\t" '{print $3":"$4":"$5,$8}' | sort -u -k1b,1 | cut -f2 | awk '{ total += $1 } END { print total/NR }'`
+	mfc=`echo $mean_cpm | awk '{print 1/$1}'`
+	echo 'The original mean cpm value is = '$mean_cpm
+
+	echo 'The correction factor is = '$mfc
+
+	head -n1 ${OUTDIR}/all_loops_wRev_v5cFormat.csv >> ${OUTDIR}/temp.txt
+
+	awk 'NR>1' ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,$8,f,$9,$10,$11,$12,$13,$14}' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8*$9,$10,$11,$12,$13,$14,$15}' | tr '\t' ',' >> ${OUTDIR}/temp.txt
+	mv ${OUTDIR}/temp.txt ${OUTDIR}/all_loops_wRev_v5cFormat.csv
+
+	mean_scaled=`awk 'NR>1' ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | awk '$5>$4' | awk -v OFS="\t" '{print $3":"$4":"$5,$8}' | sort -u -k1b,1 | cut -f2 | awk '{ total += $1 } END { print total/NR }'`	
+	echo 'The mean cpm value after correction is = '$mean_scaled
+fi
+
+head ${OUTDIR}/all_loops_wRev_v5cFormat.csv
 
 ### ADD XP, PX and XX loop data ###
 

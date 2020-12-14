@@ -52,19 +52,16 @@ if ($tool == fithic) then
 	paste $branch/$object/$inputLoops.bedpe ${outdir}/qval.txt > ${outdir}/loops_labeled_qval.bedpe
 	awk -v m=${min_anchordist} -v M=${max_anchordist} -v c=${min_activity} -v mqval=${min_qvalue} '($5-$2)>=m && ($5-$2)<=M && $7>=c && $8 <= mqval' ${outdir}/loops_labeled_qval.bedpe | cut -f 1-7 > ${outdir}/loops_labeled.bedpe
 	set bedpe = ${outdir}/loops_labeled.bedpe
-	
-	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${use_topLoops} ${outdir}/bedpe2V5C
+	set bedpe2V5C_outdir = ${outdir}/bedpe2V5C
+	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${standarize_cpm} ${use_topLoops} ${bedpe2V5C_outdir}
 	set inpfile = $outdir/bedpe2V5C/all_loops_wRev_v5cFormat.csv
 else
 	set inpfile = $branch/$object/virtual-5C_top200k.csv
 endif
 
-echo "num initital loops"
-wc -l $inpfile
-
 cat $inpfile | tr ',' '\t' | code/code.main/scripts-skipn 1 | awk -v D=$min_anchordist '$6>=D || $6<=-D' | sort -k8,8rg | awk -v Q="$min_qvalue" -v C="$min_activity" '$12 < Q && $8 >=C' | sort >! $outdir/loops.tsv   # apply loop filters
 echo "num initital loops"
-wc -l $outdir/loops.tsv
+cat  $outdir/loops.tsv | wc -l
  
 set main_dir = `echo ${cwd}`
 cd $outdir

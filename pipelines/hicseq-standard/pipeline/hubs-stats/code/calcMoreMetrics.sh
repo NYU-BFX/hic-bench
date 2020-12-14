@@ -4,20 +4,8 @@ k27ac=$2
 tss=$3
 atac=$4
 
-echo $main_dir
-echo $k27ac
-echo $tss
-echo $atac
-
 module load gtools
 module load bedtools
-
-#k27ac="./params/LOUCY_H3K27ac_peaks_wSignal.bed"
-#tss="./params/tss_w_nmre_sorted.bed"
-#atac="FALSE"
-#atac="./params/LOUCY_H3K27ac_peaks_wSignal.bed"
-#main_dir="/gpfs/home/rodrij92/LOUCY-HiChIP-aug25/hic-bench/pipelines/hicseq-standard/pipeline/hubs-stats"
-
 	
 ## Compute EC, EX BACKGROUND and OBSERVED/EXPECTED metrics ##
 echo 'EC.bg' >> EC_bg.txt
