@@ -37,4 +37,4 @@ fi
 outname=`echo $bedpe | sed 's/.bedpe//g'`
 outdir=$inpdir/APA/"$analysis"/"$outname"_"$object"
 
-juicer_tools apa -r $res -n 5 -u $hic_file $bedpe_path $outdir
+juicer_tools apa --threads 1 -r $res -n 5 -u $hic_file $bedpe_path $outdir
