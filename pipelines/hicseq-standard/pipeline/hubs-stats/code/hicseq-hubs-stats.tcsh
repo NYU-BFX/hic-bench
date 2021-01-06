@@ -24,7 +24,7 @@ else
 endif
 
 # read variables from input branch
-source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir"
+source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir winsize"
 
 # run parameter script
 source $params
@@ -53,7 +53,7 @@ if ($tool == fithic) then
 	awk -v m=${min_anchordist} -v M=${max_anchordist} -v c=${min_activity} -v mqval=${min_qvalue} '($5-$2)>=m && ($5-$2)<=M && $7>=c && $8 <= mqval' ${outdir}/loops_labeled_qval.bedpe | cut -f 1-7 > ${outdir}/loops_labeled.bedpe
 	set bedpe = ${outdir}/loops_labeled.bedpe
 	set bedpe2V5C_outdir = ${outdir}/bedpe2V5C
-	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${standarize_cpm} ${use_topLoops} ${bedpe2V5C_outdir}
+	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${standarize_cpm} ${use_topLoops} ${winsize} ${bedpe2V5C_outdir}
 	set inpfile = $outdir/bedpe2V5C/all_loops_wRev_v5cFormat.csv
 else
 	set inpfile = $branch/$object/virtual-5C_top200k.csv
@@ -68,20 +68,20 @@ cd $outdir
 cat loops.tsv | grep '^ENH_' | grep 'TSS' | cut -f-2 >! ep.tsv
 
 # calculate enhancer hubness & interactivity & promoter-associated interactivity
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.hubness.tsv
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | grep 'TSS' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.p.hubness.tsv
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.interactivity.tsv
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | grep 'TSS' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.p.interactivity.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.hubness.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | grep 'TSS' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.p.hubness.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.interactivity.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | grep 'TSS' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.p.interactivity.tsv
 
 # calculate overall promoter hubness & interactivity
-cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.hubness.tsv
-cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.interactivity.tsv
+cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.hubness.tsv
+cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.interactivity.tsv
 
 # PP and PE hubness and interactivity
-cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.p.hubness.tsv
-cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.p.interactivity.tsv
-cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.e.hubness.tsv
-cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.e.interactivity.tsv
+cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.p.hubness.tsv
+cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.p.interactivity.tsv
+cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.e.hubness.tsv
+cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.e.interactivity.tsv
 
 # calculate enhancer-promoter contribution & exclusivity
 cat loops.tsv | grep '^ENH_' | grep TSS_ | cut -f1,2,8 | sort -k2 | join -t '	'  -1 2 - p.interactivity.tsv | awk '{print $2,$1,$3/$4}' | tr ' ' '\t' >! ep.contribution.tsv
