@@ -310,8 +310,8 @@ mv data/e.abc_metrics_geneAnnot.tsv ./
 mkdir loops
 mv bedpe2V5C/loops_labeled.bedpe loops/
 mv bedpe2V5C/loops_labeled_k27ac_signal.tsv loops/
-mv bedpe2V5C/*uniq* loops/
 mv bedpe2V5C/p.x.metrics.tsv ./
+mv bedpe2V5C/topLoops.bedpe loops/
 
 ## CLEAN UP ##
 rm -f EC_bg.txt EX_bg.txt EC_oe.txt EX_oe.txt temp*.txt tss_sort.bed k27ac_sort.bed chunk* *_in *_out *_in_* *_out_* EP_master_uniq.tsv EP_master.tsv mean.enh.atac_activity.txt *EP.tsv loops_labeled.bedpe qval.txt loops_labeled_qval.bedpe

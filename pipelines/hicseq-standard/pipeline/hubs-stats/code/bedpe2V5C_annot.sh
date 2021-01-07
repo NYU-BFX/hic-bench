@@ -8,7 +8,8 @@ tss_extension=$6
 promoter_k27ac_only=$7
 standarize_cpm=$8
 use_topLoops=$9
-OUTDIR=${10}
+winsize=${10}
+OUTDIR=${11}
 
 module load bedtools/2.27.1
 
@@ -17,19 +18,6 @@ mkdir -p ${OUTDIR}
 
 # add loop identifier column
 awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$1":"$2":"$3":"$4":"$5":"$6}' ${BEDPE} > ${OUTDIR}/temp; mv ${OUTDIR}/temp ${OUTDIR}/loops_labeled.bedpe
-
-#if [[ $standarize_cpm = "TRUE" ]]
-#then
-#	# standarize cpm values so the mean cpm value is 1
-#	mean_cpm=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
-#	mfc=`echo $mean_cpm | awk '{print 1/$1}'`
-#	echo 'The original mean cpm value is = '$mean_cpm
-#	echo 'The correction factor is = '$mfc
-
-#	awk -v OFS="\t" -v f="$mfc" '{print $1,$2,$3,$4,$5,$6,$7,f,$8}' ${OUTDIR}/loops_labeled.bedpe | awk '{print $1,$2,$3,$4,$5,$6,$7*$8,$9}' | tr ' ' '\t' > ${OUTDIR}/temp.txt; mv ${OUTDIR}/temp.txt ${OUTDIR}/loops_labeled.bedpe
-#	mean_scaled=`cut -f 7 ${OUTDIR}/loops_labeled.bedpe | awk '{ total += $1 } END { print total/NR }'`
-#	echo 'The mean cpm value after correction is = '$mean_scaled
-#fi
 
 # separate loop anchors
 cut -f 1-3,7-8 ${OUTDIR}/loops_labeled.bedpe | awk -v OFS="\t" '{print $1,$2,$3,$1":"$2":"$3,$4,$5}' > ${OUTDIR}/a1.bed
@@ -172,8 +160,6 @@ echo "Total unique loops obtained (with Rev):"
 nlu=`cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | cut -f 3-5,8 | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5b,5 | wc -l`    
 echo $nlu
 
-head ${OUTDIR}/all_loops_wRev_v5cFormat.csv
-
 # standarize cpm values so the mean cpm value is 1
 if [[ $standarize_cpm = "TRUE" ]]
 then
@@ -192,7 +178,18 @@ then
 	echo 'The mean cpm value after correction is = '$mean_scaled
 fi
 
-head ${OUTDIR}/all_loops_wRev_v5cFormat.csv
+# make final loops bedpe
+awk -F"," -v OFS="\t" '{print $3,$4,$5,$8}' ${OUTDIR}/all_loops_wRev_v5cFormat.csv | awk 'NR>1' > ${OUTDIR}/topLoops.tsv
+
+awk ' BEGIN { OFS="\t"} {                             \
+	if ($2 < $3)                                  \
+                print $1,$2,$3,$4;                       \
+        else                                          \
+                print $1,$3,$2,$4;                       \
+}'  ${OUTDIR}/topLoops.tsv | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5,5b | cut -f 1-4 > ${OUTDIR}/topLoops.bed
+
+awk -v OFS="\t" -v ext=$winsize '{print $1,$2-(ext/2),$2+(ext/2),$1,$3-(ext/2),$3+(ext/2),$4}' ${OUTDIR}/topLoops.bed > ${OUTDIR}/topLoops.bedpe
+rm -f ${OUTDIR}/topLoops.tsv ${OUTDIR}/topLoops.bed
 
 ### ADD XP, PX and XX loop data ###
 

@@ -68,20 +68,20 @@ cd $outdir
 cat loops.tsv | grep '^ENH_' | grep 'TSS' | cut -f-2 >! ep.tsv
 
 # calculate enhancer hubness & interactivity & promoter-associated interactivity
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.hubness.tsv
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | grep 'TSS' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.p.hubness.tsv
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.interactivity.tsv
-cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | grep 'TSS' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.p.interactivity.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.hubness.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | grep 'TSS' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' >! e.p.hubness.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.interactivity.tsv
+cat loops.tsv | grep '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | grep 'TSS' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.p.interactivity.tsv
 
 # calculate overall promoter hubness & interactivity
-cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.hubness.tsv
-cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.interactivity.tsv
+cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.hubness.tsv
+cat loops.tsv | grep -v '^ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.interactivity.tsv
 
 # PP and PE hubness and interactivity
-cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.p.hubness.tsv
-cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.p.interactivity.tsv
-cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.e.hubness.tsv
-cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.e.interactivity.tsv
+cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.p.hubness.tsv
+cat loops.tsv | grep '^TSS_' | grep -v 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.p.interactivity.tsv
+cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1 | sort | uniq -c | tools-cols 1 0 | tr ' ' '\t' | sort -k1b,1 >! p.e.hubness.tsv
+cat loops.tsv | grep '^TSS_' | grep 'ENH_' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$1":"$3":"$4":"$5}' | sort -k 15,15 -u | cut -f1,8 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort -k1b,1 >! p.e.interactivity.tsv
 
 # calculate enhancer-promoter contribution & exclusivity
 cat loops.tsv | grep '^ENH_' | grep TSS_ | cut -f1,2,8 | sort -k2 | join -t '	'  -1 2 - p.interactivity.tsv | awk '{print $2,$1,$3/$4}' | tr ' ' '\t' >! ep.contribution.tsv
@@ -91,7 +91,6 @@ cat loops.tsv | grep '^ENH_' | grep TSS_ | cut -f1,2,8 | sort | join -t '	'  - e
 cat ep.contribution.tsv | cut -f1,3 | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 >! e.impact.tsv
 
 # other metrics
-#cat ep.exclusivity.tsv | cut -f2- | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sed 's/TSS_//' | sort | tools-mergeuniq -merge | tools-vectors max -n 3 | sort -k1b,1 >! p.sum_exclusivity.tsv
 cat ep.exclusivity.tsv | cut -f2- | sort | tools-mergeuniq -merge | tools-vectors sum -n 3 | sort | tools-mergeuniq -merge | tools-vectors max -n 3 | sort -k1b,1 >! p.sum_exclusivity.tsv
 
 # combine enhancer metrics and annotate by promoter
@@ -105,50 +104,15 @@ cat e.metrics.tsv | tools-cols -t 4 6 | sed 's/TSS_//' | tools-cols -t 1 0 | sor
 cat e.metrics.tsv | tools-cols -t 5 6 | sed 's/TSS_//' | tools-cols -t 1 0 | sort | tools-mergeuniq -merge | tools-vectors max -n 3 | sort -k2,2rg > ! genes.ranked-by-e-impact.tsv
 cat p.sum_exclusivity.tsv | sed 's/TSS_//' | sort -k2,2rg >! genes.ranked-by-e-exclusivity.tsv
 
-awk -v OFS="\t" '{print $1":"$2,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14}' loops.tsv | sort -k1b,1 > tmp.txt; mv tmp.txt loops.tsv
-
-# generate master EP file
-awk -v OFS="\t" '{print $1":"$2,$3}' ep.contribution.tsv | sort -k1b,1 > EC.tsv
-awk -v OFS="\t" '{print $1":"$2,$3}' ep.exclusivity.tsv | sort -k1b,1 > EX.tsv
-
-#join EC.tsv EX.tsv | tr ' ' '\t' | awk -v OFS="\t" '{print $1,$2,$3,$2+$3,$2-$3}' | tr ':' '\t' | sort -k1b,1 | join - e.hubness.tsv | join - e.interactivity.tsv | join - e.impact.tsv | join - e.p.hubness.tsv | join - e.p.interactivity.tsv | sort -k2b,2 | join -1 2 - p.hubness.tsv | tr ' ' '\t' > tmp
-
-join EC.tsv EX.tsv | tr ' ' '\t' | awk -v OFS="\t" '{print $1,$2,$3,$2+$3,$2-$3}' | tr ':' '\t' | sort -k1b,1 | join - e.hubness.tsv | join - e.interactivity.tsv | join - e.impact.tsv | join - e.p.hubness.tsv | join - e.p.interactivity.tsv | sort -k2b,2 | join -1 2 - p.hubness.tsv | join - p.p.hubness.tsv | join - p.e.hubness.tsv | join - p.p.interactivity.tsv | join - p.e.interactivity.tsv | join - p.interactivity.tsv | join - p.sum_exclusivity.tsv | tr ' ' '\t' > tmp
-
-
-#cat p.interactivity.tsv | sort -k1b,1 > tmp1
-#cat tmp | sort -k1b,1 > tmp2
-#join tmp2 tmp1 | awk -v OFS="\t" '{print $1":"$2,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13}' | sort -k1b,1 > tmp3
-#join tmp2 tmp1 | awk -v OFS="\t" '{print $1":"$2,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17}' | sort -k1b,1 > tmp3
-
-#cat loops.tsv | sort -k1b,1 > tmp4
-#cat tmp3 | sort -k1b,1 > tmp5
-#join tmp5 tmp4 | sort -k2b,2 > C
-
-awk -v OFS="\t" '{print $1":"$2,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18}' tmp | sort -k1b,1 > tmp1
-
-echo "EP.id id1 id2 EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity chr start end distance loop.activity" | tr ' ' '\t' >> EP_master.tsv
-
-join tmp1 loops.tsv | sort -k2b,2 | awk -v OFS='\t' '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$19,$11,$12,$13,$14,$15,$16,$17,$18,$22,$23,$24,$25,$27}' >> EP_master.tsv
-
-#awk '{print "TSS_"$1"\t"$2}' p.sum_exclusivity.tsv | sort -k1b,1 > M
-#join -1 2 C M | awk -v OFS='\t' '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$29,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28}' > CM.txt
-#awk -v OFS='\t' '{print $2,$1,$3,$4,$5,$6,$7,$8,$9,$10,$19,$11,$12,$13,$14,$15,$16,$17,$18,$22,$23,$24,$25,$27}' C > CM.txt
-#cat CM.txt | tr ' ' '\t' | cut -f 1-15,18-21,23 >> EP_master.tsv
-#cat CM.txt | tr ' ' '\t' | cut -f 1-19,22-25,27 >> EP_master.tsv
-
-echo "EP.id id1 id2 EC EX EC.EX_sum EC.EX_diff e.hub e.interactivity e.impact p.EX.sum e.phub e.p.interactivity p.hub pp.hub pe.hub pp.interactivity pe.interactivity p.interactivity chr start end distance loop.activity" | tr ' ' '\t' >> EP_master_uniq.tsv
-cat EP_master.tsv | sort -u -k1,1 > EP_master_uniq.tsv
-
-# clean up
-rm -f tmp* EX.tsv EC.tsv C M CM.txt
-
-# add more metrics
-$main_dir/code/calcMoreMetrics.sh $main_dir $k27ac $tss $atac
-
 # -------------------------------------
 # -----  MAIN CODE ABOVE --------------
 # -------------------------------------
+
+# clean up
+rm -f qval.txt loops_labeled* loops.tsv
+mv bedpe2V5C/topLoops.bedpe finalLoops.bedpe
+
+rm -fr bedpe2V5C
 
 # save variables
 cd $main_dir
