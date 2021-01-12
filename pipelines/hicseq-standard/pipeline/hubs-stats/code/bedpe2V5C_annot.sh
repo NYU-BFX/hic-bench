@@ -188,7 +188,7 @@ awk ' BEGIN { OFS="\t"} {                             \
                 print $1,$3,$2,$4;                       \
 }'  ${OUTDIR}/topLoops.tsv | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5,5b | cut -f 1-4 > ${OUTDIR}/topLoops.bed
 
-awk -v OFS="\t" -v ext=$winsize '{print $1,$2-(ext/2),$2+(ext/2),$1,$3-(ext/2),$3+(ext/2),$4}' ${OUTDIR}/topLoops.bed > ${OUTDIR}/topLoops.bedpe
+awk -v OFS="\t" -v ext=$winsize '{printf "%s\t%d\t%d\t%s\t%d\t%d\t%s\n", $1,$2-(ext/2),$2+(ext/2),$1,$3-(ext/2),$3+(ext/2),$4}' ${OUTDIR}/topLoops.bed > ${OUTDIR}/topLoops.bedpe
 rm -f ${OUTDIR}/topLoops.tsv ${OUTDIR}/topLoops.bed
 
 ### ADD XP, PX and XX loop data ###
