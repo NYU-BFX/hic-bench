@@ -148,7 +148,7 @@ then
 	top=$(( 2*$use_topLoops ))	# this is because for each top loop we have 2 loops in the v5cFoormat file (1 original and 1 reversed)
 	echo 'We will only use the top '$use_topLoops' loops'
 	echo "Source.anchor.label,Target.anchor.label,Chromosome,Source.anchor.position,Target.anchor.position,Anchor.distance,Count,CPK2B,VP.total.count,Count.sum,pvalue,fdr,p.expected,p.observed" >> ${OUTDIR}/all_loops_wRev_v5cFormat_top.csv
-	cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | cut -f 3-5,8 | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5b,5 | sort -r -k4,4 | head -n $top | cut -f 5 > ${OUTDIR}/topLoops_ids.txt
+	cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | cut -f 3-5,8 | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$1":"$2":"$3}' | sort -u -k5b,5 | sort -nr -k4,4 | head -n $top | cut -f 5 > ${OUTDIR}/topLoops_ids.txt
 	cat ${OUTDIR}/all_loops_wRev_v5cFormat.csv | tr ',' '\t' | awk 'NR>1' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$3":"$4":"$5}' | sort -r -k15b,15 | grep -F -w -f ${OUTDIR}/topLoops_ids.txt | cut -f 1-14 | tr '\t' ',' >> ${OUTDIR}/all_loops_wRev_v5cFormat_top.csv
 	mv ${OUTDIR}/all_loops_wRev_v5cFormat_top.csv ${OUTDIR}/all_loops_wRev_v5cFormat.csv
 fi

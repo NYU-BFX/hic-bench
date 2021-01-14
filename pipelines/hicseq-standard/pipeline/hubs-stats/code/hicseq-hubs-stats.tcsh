@@ -38,18 +38,31 @@ scripts-create-path $outdir/
 
 if ($tool == fithic) then
 	# select input bedpe
-	if ($bias_corrected == "TRUE")	then
-        	set inputLoops = "loops_filtered_bias_cpm"
+	if ( $bias_corrected == "TRUE" && $cpm_normalized == "TRUE" ) then
+		set inputLoops = "loops_unfiltered_bias_cpm"
+
+	else if ( $bias_corrected == "FALSE" && $cpm_normalized == "TRUE" ) then
+		set inputLoops = "loops_unfiltered_nobias_cpm"
+		
+	else if ( $bias_corrected == "TRUE" && $cpm_normalized == "FALSE" ) then
+		set inputLoops = "loops_unfiltered_bias_raw"
+	
+	else if ( $bias_corrected == "FALSE" && $cpm_normalized == "FALSE" ) then
+		set inputLoops = "loops_unfiltered_nobias_raw"
 	else
-        	set inputLoops = "loops_filtered_nobias_cpm"
+		set inputLoops = "wrong settings!"
 	endif
 	echo "bedpe input file is: $inputLoops"
 
 	### annotate bedpe anchors (EE, PP, EP, PE) and generate v5cFormat file ###
 	
-	# filter loops
-	awk 'NR>1' $branch/$object/$inputLoops.tsv | cut -f 7 > ${outdir}/qval.txt
-	paste $branch/$object/$inputLoops.bedpe ${outdir}/qval.txt > ${outdir}/loops_labeled_qval.bedpe
+	## filter loops ##
+	# create uncompressed version of unfiltered loops
+	echo "Uncompressing unfiltered loops..." | scripts-send2err
+	cat $branch/$object/$inputLoops.tsv.gz | gunzip >! ${outdir}/$inputLoops.tsv
+	awk 'NR>1' ${outdir}/$inputLoops.tsv | cut -f 7 >! ${outdir}/qval.txt
+	rm -f ${outdir}/$inputLoops.tsv
+	paste $branch/$object/$inputLoops.bedpe ${outdir}/qval.txt >! ${outdir}/loops_labeled_qval.bedpe
 	awk -v m=${min_anchordist} -v M=${max_anchordist} -v c=${min_activity} -v mqval=${min_qvalue} '($5-$2)>=m && ($5-$2)<=M && $7>=c && $8 <= mqval' ${outdir}/loops_labeled_qval.bedpe | cut -f 1-7 > ${outdir}/loops_labeled.bedpe
 	set bedpe = ${outdir}/loops_labeled.bedpe
 	set bedpe2V5C_outdir = ${outdir}/bedpe2V5C

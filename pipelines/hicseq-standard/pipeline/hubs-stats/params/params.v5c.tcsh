@@ -2,7 +2,7 @@
 
 source ./inputs/params/params.tcsh
 
-set tool = v5c
+set tool = virtual5C
 
 # set input data
 set k27ac = ./params/k27ac_peaks.bed				# h3k27ac data (required)
@@ -18,8 +18,9 @@ set k27ac_in_TSS_anchor = "TRUE"				# use k27ac peaks that fall in anchors with 
 # set loop parameters
 set min_activity = 0						# minimum loop contact score (cpm)
 set min_qvalue = 0.1						# minimum loop qvalue
-set bias_corrected = "FALSE"                                    # use bias corrected loops
-set min_anchordist = 20000				        # minimum loop distance
+set bias_corrected = "FALSE"                                    # use fithic bias corrected loops
+set cpm_normalized = "TRUE"
+set min_anchordist = 30000				        # minimum loop distance
 set max_anchordist = 25000000					# maximum loop distance
 set standarize_cpm = "FALSE"					# standarize cpm values so the loop mean cpm value is 1
-set use_topLoops = "FALSE"					# only use the selected top loops (cpm ranked)
+set use_topLoops = FALSE					# only use the selected top loops (cpm ranked)
