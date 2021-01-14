@@ -23,4 +23,4 @@ set cpm_normalized = "TRUE"
 set min_anchordist = 30000				        # minimum loop distance
 set max_anchordist = 25000000					# maximum loop distance
 set standarize_cpm = "FALSE"					# standarize cpm values so the loop mean cpm value is 1
-set use_topLoops = FALSE					# only use the selected top loops (cpm ranked)
+set use_topLoops = "FALSE"					# only use the selected top loops (cpm ranked)
