@@ -61,10 +61,10 @@ source activate fithic
 
 # Run fithic with bias file
 fithic -i i1.bed.gz -f f1.bed.gz -t bias.bed.gz -o fit_bias -r "$winsize"
-zcat fit_bias/*gz | awk '(NR == 1 || $5 >= 3)' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' > loops_unfiltered_bias_raw.tsv
+zcat fit_bias/*gz | awk '(NR == 1 || $5 >= 0)' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' > loops_unfiltered_bias_raw.tsv
 zcat fit_bias/*gz | awk -v qval="$qval" '{if ((NR == 1) || ($5 >= 3) && ($7 <= qval)) {print}}'| awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' > loops_filtered_bias_raw.tsv
 
 # Run fithic without bias file
 fithic -i i1.bed.gz -f f1.bed.gz -o fit_nobias -r "$winsize"
-zcat fit_nobias/*gz | awk '(NR == 1 || $5 >= 3)' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' > loops_unfiltered_nobias_raw.tsv
+zcat fit_nobias/*gz | awk '(NR == 1 || $5 >= 0)' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' > loops_unfiltered_nobias_raw.tsv
 zcat fit_nobias/*gz | awk -v qval="$qval" '{if ((NR == 1) || ($5 >= 3) && ($7 <= qval)) {print}}' | awk -v OFS="\t" '{print $1,$2,$3,$4,$5,$6,$7,$8,$9}' > loops_filtered_nobias_raw.tsv
