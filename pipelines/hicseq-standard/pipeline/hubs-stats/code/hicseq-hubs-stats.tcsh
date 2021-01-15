@@ -71,6 +71,7 @@ if ($tool == fithic) then
 	set bedpe2V5C_outdir = ${outdir}/bedpe2V5C
 	./code/bedpe2V5C_annot.sh ${bedpe} ${k27ac} ${tss} ${atac} ${accessible_only} ${tss_extension} ${promoter_k27ac_only} ${standarize_cpm} ${use_topLoops} ${winsize} ${bedpe2V5C_outdir}
 	set inpfile = $outdir/bedpe2V5C/all_loops_wRev_v5cFormat.csv
+	rm -f ${outdir}/$inputLoops.bedpe
 else
 	set inpfile = $branch/$object/virtual-5C_top200k.csv
 endif
