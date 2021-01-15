@@ -62,7 +62,10 @@ if ($tool == fithic) then
 	cat $branch/$object/$inputLoops.tsv.gz | gunzip >! ${outdir}/$inputLoops.tsv
 	awk 'NR>1' ${outdir}/$inputLoops.tsv | cut -f 7 >! ${outdir}/qval.txt
 	rm -f ${outdir}/$inputLoops.tsv
-	paste $branch/$object/$inputLoops.bedpe ${outdir}/qval.txt >! ${outdir}/loops_labeled_qval.bedpe
+	
+	cat $branch/$object/$inputLoops.bedpe.gz | gunzip >! ${outdir}/$inputLoops.bedpe	
+	paste ${outdir}/$inputLoops.bedpe ${outdir}/qval.txt >! ${outdir}/loops_labeled_qval.bedpe
+
 	awk -v m=${min_anchordist} -v M=${max_anchordist} -v c=${min_activity} -v mqval=${min_qvalue} '($5-$2)>=m && ($5-$2)<=M && $7>=c && $8 <= mqval' ${outdir}/loops_labeled_qval.bedpe | cut -f 1-7 > ${outdir}/loops_labeled.bedpe
 	set bedpe = ${outdir}/loops_labeled.bedpe
 	set bedpe2V5C_outdir = ${outdir}/bedpe2V5C
