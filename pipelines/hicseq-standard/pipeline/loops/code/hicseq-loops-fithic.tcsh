@@ -202,10 +202,17 @@ endif
 # Get random unfiltered 500k loops
 head -n 1 loops_unfiltered_bias_raw.tsv > loops_unfiltered_bias_raw_shuf500k.tsv
 tail -n +2 loops_unfiltered_bias_raw.tsv | shuf -n 500000 >> loops_unfiltered_bias_raw_shuf500k.tsv
+
+# compress big files
 gzip -f loops_unfiltered_bias_cpm.tsv
 gzip -f loops_unfiltered_nobias_cpm.tsv
 gzip -f loops_unfiltered_bias_raw.tsv
 gzip -f loops_unfiltered_nobias_raw.tsv
+gzip -f loops_unfiltered_nobias_raw.bedpe
+gzip -f loops_unfiltered_nobias_cpm.bedpe
+gzip -f loops_unfiltered_bias_raw.bedpe
+gzip -f loops_unfiltered_bias_cpm.bedpe
+
 #rm -f loops_unfiltered_bias_raw.tsv loops_unfiltered_nobias_raw.tsv loops_unfiltered_bias_cpm.tsv loops_unfiltered_nobias_cpm.tsv
 
 mkdir -p QC_plots
