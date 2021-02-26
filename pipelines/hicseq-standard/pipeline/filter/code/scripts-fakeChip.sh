@@ -16,7 +16,7 @@ module load ucscutils/374
 #############################################################################################
 
 #### RUN EXAMPLE ####################################################################################################
-# sbatch ./code/chipEmul.sh results/filter.by_sample.mapq_20_mindist0/align.by_sample.bowtie2/CUTLL1-DMSO-k27ac/ hs #
+# sbatch ./code/scripts-fakeChip.sh results/filter.by_sample.mapq_20_mindist0/align.by_sample.bowtie2/CUTLL1-DMSO-k27ac/ hs #
 #####################################################################################################################
 
 genome=`grep -w "^genome" $inpdir/job.vars.tsv | cut -f2`
