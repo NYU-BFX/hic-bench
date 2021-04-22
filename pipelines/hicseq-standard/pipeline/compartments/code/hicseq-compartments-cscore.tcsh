@@ -51,7 +51,7 @@ awk '{ if ($2 == $5) { print } }' $outdir/filtered.temp >! $outdir/filtered.bed
 
 module unload bedtools
 module load bedtools
-windowMaker -g ${main_dir}/inputs/genomes/$genome/bowtie2.index/$genome.fa.fai -w $resolution > $outdir/$genome.tiled.$resolution.temp.bed
+bedtools makewindows -g ${main_dir}/inputs/genomes/$genome/bowtie2.index/$genome.fa.fai -w $resolution > $outdir/$genome.tiled.$resolution.temp.bed
 module unload bedtools
 # User might wonder why we have to manually add +1 to start column.
 # The primary reason is sloppy code in cscoretool: in order for the final bedgraph output to conform to 0 based coordinate.

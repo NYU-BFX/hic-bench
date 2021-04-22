@@ -44,7 +44,10 @@ set main_dir = `echo ${cwd}`
 echo "Creating bin files..." | scripts-send2err
 mkdir -p $outdir/bins
 cd $outdir/bins
-windowMaker -g $main_dir/$genome_file -w $winsize >! x.bed
+module unload bedtools
+module load bedtools
+bedtools makewindows -g $main_dir/$genome_file -w $winsize >! x.bed
+module unload bedtools
 awk '{printf "%s\t%d\t%d\t%s_%.0f\n",$1,$2+1,$3,$1,($2+$3)*0.5}' x.bed >! k.bed
 awk '{print>$1}' k.bed
 rm -f x.bed
