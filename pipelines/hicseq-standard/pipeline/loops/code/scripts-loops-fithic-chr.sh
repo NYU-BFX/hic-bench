@@ -26,18 +26,20 @@ cd "$outdir"/"$chr"
 
 ### Conduct Fit-Hi-C ###
 
+module load bedtools
+
 # Create fragment file (f1.bed)
 cut -f1,2 "$bedpe" | awk -v OFS='\t' '{print $1,$2,$2}' > l1.bed
 cut -f4,5 "$bedpe" | awk -v OFS='\t' '{print $1,$2,$2}'  > r1.bed
-intersectBed -a "$bins" -b l1.bed -c > fl1.bed
-intersectBed -a "$bins" -b r1.bed -c > fr1.bed
+bedtools intersect -a "$bins" -b l1.bed -c > fl1.bed
+bedtools intersect -a "$bins" -b r1.bed -c > fr1.bed
 paste fl1.bed fr1.bed | \
     cut -f4,5,10 | \
     sed 's/_/\t/g' | \
     awk 'BEGIN {OFS="\t"} {print $1,"0",$2,$3+$4,"1"}' > f1.bed
 
-intersectBed -a l1.bed -b "$bins" -loj > x.bed
-intersectBed -a r1.bed -b "$bins" -loj > y.bed
+bedtools intersect -a l1.bed -b "$bins" -loj > x.bed
+bedtools intersect -a r1.bed -b "$bins" -loj > y.bed
 paste x.bed y.bed | \
     cut -f7,14 | \
     sort -k1,1n -k2,2n | \
@@ -47,6 +49,7 @@ paste x.bed y.bed | \
     awk -v OFS='\t' '{print $2,$3,$4,$5,$1}' > i1.bed
 
 #rm -v !("i1.bed"|"f1.bed")
+module unload bedtools
 
 # Generate gzip files for fithic
 gzip i1.bed f1.bed
