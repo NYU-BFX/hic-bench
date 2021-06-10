@@ -57,11 +57,12 @@ ggHmapAPA = function(mat.path, title, nloops, URm) {
               panel.grid.minor = element_blank(),
               panel.background = element_blank(),
               axis.line = element_blank())
+    print(p)
 }
 
 # prepare scores table
 prepMetrics=function(measures.file,q,s){
-  if(length(measures.file)==1){
+  if(file.path(measures.file)){
     x=read.table(measures.file,stringsAsFactors = F)
     m=as.data.frame(t(x[2]))
     names(m)=x$V1
