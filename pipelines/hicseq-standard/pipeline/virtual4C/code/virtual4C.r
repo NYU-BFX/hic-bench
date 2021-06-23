@@ -24,13 +24,14 @@ option_list <- list(
 arguments = parse_args(args=commandArgs(trailingOnly=T), OptionParser(usage=usage,option_list=option_list), positional_arguments=c(0,Inf))
 opt = arguments$options
 inputs = arguments$args
-if (length(inputs) != 5) { write("Error: wrong number of inputs! Use --help to see help information", stderr()); quit(save='no') }
+if (length(inputs) != 6) { write("Error: wrong number of inputs! Use --help to see help information", stderr()); quit(save='no') }
 
 # input parameters
 outdir = inputs[1]
 chrname = inputs[2]
 nullRmvAnchors = inputs[4]                # TRUE: remove anchors from the null distribution
 v4c_bdg = inputs[5]                       # TRUE/FALSE: produce v4c bedgraphs
+normalize_bdg = inputs[6]                 # normalize bedgraph using CPK2B
 n_reads = as.integer(opt$"nreads")        # number of sequenced read pairs in sample 1
 U = as.integer(opt$"unit")                # maximum resolution (bp)
 d = as.integer(opt$"maxdist")             # maximum distance from viewpoint
@@ -172,7 +173,8 @@ for (k in 1:n_vp)
   
   if (v4c_bdg){
   	# generate virtual 4C bedgraph files
-  	x_out = cbind(coord_start,coord_end,x)  
+	if (normalize_bdg) { x_out = cbind(coord_start,coord_end,x) } else { x_out = cbind(coord_start,coord_end,x0) }
+
   	x_out = x_out[!is.na(x_out[,3]),]
   	x_out = cbind(chrname,x_out)
   	filename = paste(outdir,'/',vp_table$label[k],'-',chrname,'-v4C.bedgraph',sep='') 

@@ -2,15 +2,19 @@
 
 source ./inputs/params/params.tcsh
 
+## Viewpoints/Anchors settings ##
 set chrom_excluded = 'chr[MY]'                                  # excluded chromosomes
 set viewpoints_file = $genome_dir/protein-coding-tss.bed	# bed file: list of coordinates to be used as viewpoints
-set anchors_file = $viewpoints_file 			    	# bed file: list of target anchors (e.g. enhancers)
-
+set anchors_file = $viewpoints_file 			    	# bed file: list of target anchors (e.g. enhancers) 
+								# anchors_file doesn't affect the v4c bedgraph (only used for v5c analysis)
+## Virtual 4C settings ##
 set resolution = 5000                                           # resolution (bp)
-set maxdist = 1000000                                           # maximum distance from viewpoint (bp)
-set minvalue = 1                                                # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results
+set maxdist = 2500000                                           # maximum distance from viewpoint (bp)
+set v4c_bdg = TRUE                                              # produce v4c bedgraphs for every viewpoint
+set normalize_bdg = FALSE                                       # CPK2B normalize the bedgraphs (FALSE = raw counts)
 
+## Virtual5C settings ## (not relevant if you only want the v4c bedgraphs)
+set minvalue = 1                                                # minimum CPK2B (counts per kilobase^2 per billion reads) applied to virtual 5C results
 set nullRmvAnchors = TRUE					# remove target-anchor counts from the null distribution computation
-set v4c_bdg = FALSE						# produce v4c bedgraphs for every viewpoint
 set mindist = 20000						# minimum distance filter for the binomial test
 set qval_cut = 0.01						# qvalue filter for the binomial test

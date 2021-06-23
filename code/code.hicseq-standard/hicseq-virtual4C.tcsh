@@ -72,7 +72,7 @@ foreach chr ($CHR)
     set jpref = $outdir/__jdata/job.$chr
     set mem = 20G   #`du $branch/$object/matrix.$chr.mtx | awk '{printf "%ld\n", 5+2*$1/100000}' | tools-vectors cutoff -n 0 -u -c 40`G
     scripts-create-path $jpref
-    set Rcmd = "Rscript ./code/virtual4C.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object/matrix.$chr.mtx $nullRmvAnchors $v4c_bdg"
+    set Rcmd = "Rscript ./code/virtual4C.r $OPTIONS --vp-file=$outdir/$chr/vp.bed --target-file=$outdir/$chr/anchors.bed $outdir/$chr $chr $branch/$object/matrix.$chr.mtx $nullRmvAnchors $v4c_bdg $normalize_bdg"
     echo $Rcmd | scripts-send2err
     if ($DEBUG == true) then
       $Rcmd
