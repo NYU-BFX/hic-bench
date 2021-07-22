@@ -13,12 +13,12 @@ set standard_bysample = "TRUE"
 set standard_bygroup = "TRUE"		
 
 # set alignment & filtering parameters (you can find this info in the respective step's 'params' files)
-set aligner = bowtie2			# e.g. bowtie2, bwa. hicbench default = bowtie
+set aligner = bwa			# e.g. bowtie2, bwa. hicbench default = bwa
 set mapq = 20				# hicbench default = 20
-set mindist = 25000			# hicbench defaulst = 25000
+set mindist = 0				# hicbench default = 0
 
 # set matrix parameters
-set binsize = 40 			# matrix resolution (kb)
+set binsize = 20 			# matrix resolution (kb)
 set matrix = ic				# (e.g. ic, dist_norm)
 set caller = hicratio 			# (e.g. hicratio, crane, topdom)
 set compBinSize = 100  			# compartments resolution (kb)

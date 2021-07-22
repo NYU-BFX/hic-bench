@@ -11,8 +11,8 @@ endif
 
 # Set parameters
 source ./params/params_report.tcsh
-set genome = `cat ../pipeline/align/results/align.by_sample.bowtie2/*/job.vars.tsv | fgrep "genome" | fgrep -v "index" | sort -k1 | uniq | awk '{print $2}'`
-set main_branch = filter.by_sample.mapq_$mapq/align.by_sample.$aligner/
+set genome = `cat ../pipeline/align/results/align.by_sample.${aligner}/*/job.vars.tsv | fgrep "genome" | fgrep -v "index" | sort -k1 | uniq | awk '{print $2}'`
+set main_branch = filter.by_sample.mapq_${mapq}_mindist${mindist}/align.by_sample.${aligner}/
 set bscore_method = activity_500kb
 set user = $USER
 if ($transferGdrive == "TRUE") then
