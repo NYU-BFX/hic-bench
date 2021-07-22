@@ -18,7 +18,7 @@ set opt = "$1"
 # setup
 set op = compartments-stats
 set inpdirs = "inpdirs/*"             # indicate input directories
-set filter = ""                       # filter input objects
+set filter = "compartments.by_sample.*.res_100kb"                       # filter input objects
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
