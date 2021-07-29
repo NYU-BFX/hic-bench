@@ -138,7 +138,7 @@ foreach intraTAD_method ($intraTAD_methods)
 	
 	foreach norm_method ($norm_methods)
 		mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"
-		set comparisons_all = `ls ../../pipeline/domains-diff/results/domains-diff.by_group."$caller".d_0500."$norm_method"."$intraTAD_method"/matrix-"$matrix".by_group.cutoff_0/matrix-filtered.by_group.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
+		set comparisons_all = `ls ../../pipeline/domains-diff/results/domains-diff.by_group."$caller".d_0500."$norm_method"."$intraTAD_method"/matrix-"$matrix".by_group.cutoff_0/matrix-filtered.by_group.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"_mindist"$mindist"/align.by_sample."$aligner"/`
 		
 		foreach comparison ($comparisons_all)
 			mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
@@ -180,7 +180,7 @@ foreach intraTAD_method ($intraTAD_methods)
 	
 	foreach norm_method ($norm_methods)
 		mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"
-		set comparisons_all = `ls ../../pipeline/domains-diff/results/domains-diff.by_sample."$caller".d_0500."$norm_method"."$intraTAD_method"/matrix-"$matrix".by_sample.cutoff_0/matrix-filtered.by_sample.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"/align.by_sample."$aligner"/`
+		set comparisons_all = `ls ../../pipeline/domains-diff/results/domains-diff.by_sample."$caller".d_0500."$norm_method"."$intraTAD_method"/matrix-"$matrix".by_sample.cutoff_0/matrix-filtered.by_sample.res_"$binsize"kb/filter.by_sample.mapq_"$mapq"_mindist"$mindist"/align.by_sample."$aligner"/`
 		
 		foreach comparison ($comparisons_all)
 			mkdir -p domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
@@ -197,7 +197,7 @@ end
 # generate intraTAD templates
 foreach intraTAD_method ($intraTAD_methods)
 	foreach norm_method ($norm_methods)
-		foreach comparison ($comparisons_group)			
+		foreach comparison ($comparisons_sample)			
                         set plotPath = domains-diff/"${intraTAD_method}"/"${norm_method}"/"${comparison}"
                         cp ../report-repo/tex-templates/template_intraTAD.tex $plotPath/template_intraTAD_tmp.tex
                         sed 's/REPORT_NAME/'${report}'/g' $plotPath/template_intraTAD_tmp.tex > $plotPath/template_intraTAD_tmp1.tex
