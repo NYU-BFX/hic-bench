@@ -1,0 +1,98 @@
+# Please change the variable settings below if necessary
+
+#########################################################################
+## Paths and Settings  - Do not edit !
+#########################################################################
+
+TMP_DIR = tmp
+LOGS_DIR = logs
+BOWTIE2_OUTPUT_DIR = bowtie_results
+MAPC_OUTPUT = hic_results
+RAW_DIR = rawdata
+
+#######################################################################
+## SYSTEM AND SCHEDULER - Start Editing Here !!
+#######################################################################
+N_CPU = 6
+SORT_RAM = 1000M
+LOGFILE = hicpro.log
+
+JOB_NAME = hic-pro
+JOB_MEM = 60G
+JOB_WALLTIME = 
+JOB_QUEUE = 
+JOB_MAIL = 
+
+#########################################################################
+## Data
+#########################################################################
+
+PAIR1_EXT = _R1_001
+PAIR2_EXT = _R2_001
+
+#######################################################################
+## Alignment options
+#######################################################################
+
+MIN_MAPQ = 20
+
+BOWTIE2_IDX_PATH = bowtie_idx_path
+BOWTIE2_GLOBAL_OPTIONS = bowtie_param_global
+BOWTIE2_LOCAL_OPTIONS = bowtie_param_local
+
+#######################################################################
+## Annotation files
+#######################################################################
+
+REFERENCE_GENOME = refGenome
+GENOME_SIZE = chrom_refGenome.sizes
+
+#######################################################################
+## Allele specific analysis
+#######################################################################
+
+ALLELE_SPECIFIC_SNP = 
+
+#######################################################################
+## Capture Hi-C analysis
+#######################################################################
+
+CAPTURE_TARGET =
+REPORT_CAPTURE_REPORTER = 1
+
+#######################################################################
+## Digestion Hi-C
+#######################################################################
+
+GENOME_FRAGMENT = enzyme_path
+LIGATION_SITE = 
+MIN_FRAG_SIZE = 
+MAX_FRAG_SIZE =
+MIN_INSERT_SIZE =
+MAX_INSERT_SIZE =
+
+#######################################################################
+## Hi-C processing
+#######################################################################
+
+MIN_CIS_DIST =
+GET_ALL_INTERACTION_CLASSES = 1
+GET_PROCESS_SAM = 0
+RM_SINGLETON = 1
+RM_MULTI = 1
+RM_DUP = 1
+
+#######################################################################
+## Contact Maps
+#######################################################################
+
+BIN_SIZE = 20000 40000 150000 500000 1000000
+MATRIX_FORMAT = upper
+
+#######################################################################
+## Normalization
+#######################################################################
+MAX_ITER = 100
+FILTER_LOW_COUNT_PERC = 0.02
+FILTER_HIGH_COUNT_PERC = 0
+EPS = 0.1
