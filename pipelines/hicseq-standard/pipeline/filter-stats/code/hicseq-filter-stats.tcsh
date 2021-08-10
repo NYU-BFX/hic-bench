@@ -30,7 +30,7 @@ scripts-create-path $outdir/
 Rscript ./code/hicseq-filter-stats.r $outdir "$sample_paths"
 
 #symbolic link to hicpro output 
-if ($branch == 'inpdirs/filter/results/filter.by_sample.mapq_20_mindist0/align.by_sample.hicpro') then 
+if (`echo $branch | cut -f 5 -d"/"` == 'align.by_sample.hicpro') then 
    
   foreach f (`cd $branch; ls -1d *`) 
      ln -s ../../../../../inpdirs/filter/inpdirs/align/results/align.by_sample.hicpro/$f/hic_results/pic/$f/ $outdir
