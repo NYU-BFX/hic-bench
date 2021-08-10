@@ -115,7 +115,7 @@ else if ($aligner == 'hicpro') then           ##run hic-pro
   #clean up 
   rm -r $out/bowtie_results/bwt2_global $out/tmp
   rm $out/bowtie_results/bwt2/$objects/*.bwt2merged.bam
-  
+  rm config-hicpro-$objects.txt
 
 else
   scripts-send2err "Error: unknown aligner $aligner."

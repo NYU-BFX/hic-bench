@@ -18,6 +18,7 @@ set objects = ($4)
 # read variables from input branch
 source ./code/code.main/scripts-read-job-vars $branch "$objects" "genome genome_dir"
 
+
 # run parameter script
 source $params
 
@@ -33,6 +34,16 @@ set reg_files = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/
 
 if ($tool == fithic) then
 	./code/hicseq-loops-fithic.tcsh $outdir $params "$reg_files" $genome $branch "$objects"
+
+else if ($tool == fithichip) then
+	#run PeakInferHiChIP.sh to get peakfile, which is needed by fithichip to call loops 
+	set hicpro = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/hicpro/"}'`
+        ./code/hicseq-PeakInferHiChIP-fithichip.tcsh $outdir $params "$hicpro" $genome $branch "$objects"
+	
+	#set allvalidpair file
+	set allValidPair = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/hicpro/*allValidPairs"}'`
+	./code/hicseq-loops-fithichip.tcsh $outdir $params "$allValidPair" $genome $branch "$objects"
+
 else
   	echo "Error: Loops calling tool $tool not supported." | scripts-send2err
 endif
