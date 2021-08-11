@@ -36,13 +36,18 @@ if ($tool == fithic) then
 	./code/hicseq-loops-fithic.tcsh $outdir $params "$reg_files" $genome $branch "$objects"
 
 else if ($tool == fithichip) then
-	#run PeakInferHiChIP.sh to get peakfile, which is needed by fithichip to call loops 
-	set hicpro = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/hicpro/"}'`
-        ./code/hicseq-PeakInferHiChIP-fithichip.tcsh $outdir $params "$hicpro" $genome $branch "$objects"
+	if (`echo $branch | cut -f 5 -d"/"` == "align.by_sample.hicpro") then 
+	      #run PeakInferHiChIP.sh to get peakfile, which is needed by fithichip to call loops 
+	      set hicpro = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/hicpro/"}'`
+              ./code/hicseq-PeakInferHiChIP-fithichip.tcsh $outdir $params "$hicpro" $genome $branch "$objects"
 	
-	#set allvalidpair file
-	set allValidPair = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/hicpro/*allValidPairs"}'`
-	./code/hicseq-loops-fithichip.tcsh $outdir $params "$allValidPair" $genome $branch "$objects"
+	      #set allvalidpair file
+	      set allValidPair = `echo $objects | tr ' ' '\n' | awk -v d=$branch '{print d"/"$0"/hicpro/*allValidPairs"}'`
+	      ./code/hicseq-loops-fithichip.tcsh $outdir $params "$allValidPair" $genome $branch "$objects"
+
+	else 
+	      echo "Error: Fithichip loop calling requires hic-pro output." | scripts-send2err
+	endif
 
 else
   	echo "Error: Loops calling tool $tool not supported." | scripts-send2err
