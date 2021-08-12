@@ -2,6 +2,8 @@
 
 source ./inputs/params/params.tcsh
 
+set top_loops = 50000
+set cpmScaled = TRUE 
 set qcut1 = 0.01		# qvalue cutoff
 set qcut2 = 0.1			# qvalue cutoff for specific-common loops classification
 set common_log2FC = 1		# log2FC (cpm normalized contactCounts) threshold for common loops classification

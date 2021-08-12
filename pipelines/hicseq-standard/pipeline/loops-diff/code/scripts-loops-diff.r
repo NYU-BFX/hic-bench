@@ -11,7 +11,7 @@ qcut1 = as.numeric(argv[9L])
 qcut2 = as.numeric(argv[10L])
 min.dist = as.numeric(argv[11L])
 max.dist = as.numeric(argv[12L])
-annot_promoters = F # to do
+annot_promoters = T
 
 library(ggplot2)
 library(plyr)
@@ -216,6 +216,9 @@ countBarStacked = function(df.gg2){
 
 # loop % barplot (common, C1.specific, C2.specific)
 fractionBarStacked = function(df.perc){
+  df.perc$group2=as.factor(df.perc$group2)
+  df.perc$group2=factor(df.perc$group2,levels=c("common","unique"))
+  df.perc=df.perc[order(df.perc$group2,decreasing = T),]
   print(ggplot(data=df.perc,aes(x=group,fill=group2,y=perc))+
           geom_bar(position="fill",stat="identity",colour="black")+
           ylab("loop fraction")+
@@ -234,34 +237,6 @@ fractionBarStackedLoopClass = function(df.count){
           labs(fill="loop class")+
           ylab("loop fraction")+
           coord_flip())
-}
-
-# annotate loops-promoter 
-annotGenes=function(x){
-  loopIndex=x
-  print(x)
-  TssIndex.1 = anchor1.tss.index$subjectHits[anchor1.tss.index$queryHits==loopIndex]
-  TssIndex.2 = anchor2.tss.index$subjectHits[anchor2.tss.index$queryHits==loopIndex]
-  current.annot.1 = df.gg$anchor1.annot[loopIndex]
-  current.annot.2 = df.gg$anchor2.annot[loopIndex]
-  
-  #anchor1
-  if(df.gg$anchor1.promoter[loopIndex]==T){
-    if(!is.na(current.annot.1)){ 
-      A1.annot=paste(current.annot.1,tss$geneID[TssIndex.1],collapse = ",")
-    } else{
-      A1.annot=paste(tss$geneID[TssIndex.1],collapse = ",")
-    }
-  } else {A1.annot=current.annot.1}
-  #anchor2
-  if(df.gg$anchor2.promoter[loopIndex]==T){
-    if(!is.na(current.annot.2)){ 
-      A2.annot=paste(current.annot.2,tss$geneID[TssIndex.2],collapse = ",")
-    } else{
-      A2.annot=paste(tss$geneID[TssIndex.2],collapse = ",")
-    }
-  } else {A2.annot=current.annot.2}
-  return(list(a1=A1.annot,a2=A2.annot))
 }
 
 # promoter count
@@ -305,6 +280,19 @@ promoterFractionCommon = function(df.promoter.perc.common){
     labs(fill="common loops")+
     theme(axis.text.x = element_text(angle = -45))+
     xlab("")
+}
+
+# gene/loop annotation
+geneAnnotAnchor=function(i){
+  j=anchor.tss.ovl$subjectHits[anchor.tss.ovl$queryHits==i]
+  if (length(j)>0) { x=paste(tss[j,"geneID"],collapse=",") } else { x=NA}
+  return(x)
+}
+
+getAnnot = function(anchor.id){
+  x=anchors$gene.annot[anchors$anchor.id==anchor.id]
+  if (length(x)==0){x="NA"}
+  return(x)
 }
 
 ### START ###################################################
@@ -370,13 +358,6 @@ anchor2.tss.index=as.data.frame(findOverlaps(anchor2.gr,tss.gr,maxgap = binsize/
 df.gg$anchor1.promoter[anchor1.tss.index$queryHits]=T
 df.gg$anchor2.promoter[anchor2.tss.index$queryHits]=T
 
-if (annot_promoters){ ## This takes too long: Look for a different approach.
-  loops.A1.p = df.gg[df.gg$anchor1.promoter==T,]
-  loops.A2.p = df.gg[df.gg$anchor2.promoter==T,]
-  loops.index=as.numeric(rownames(df.gg[df.gg$anchor1.promoter==T | df.gg$anchor2.promoter==T,]))
-  for (i in loops.index){ df.gg[i,21:22]=unlist(annotGenes(x = i)) }
-}
-
 # classify loops in common & group-specific
 df.gg$qcut1=F
 df.gg$qcut1[df.gg$q.value <= qcut1]=T 
@@ -415,6 +396,10 @@ write.table(C1.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C1.lab.original,"_s
 write.table(C2.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C2.lab.original,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 write.table(master.tab[,c(1:5,7,10,11,19:20,23)],paste0(outdir,"/master_table.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
 
+write.table(C1.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C1.lab.original,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(C2.specific[c(1:5,7,10,19:20)],paste0(outdir,"/",C2.lab.original,"_specific_loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+write.table(master.tab[,c(1:5,7,10,11,19:20,23)],paste0(outdir,"/master_table.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+
 # common loops
 df.gg.common=df.gg[df.gg$loops.ID %in% common.loops,]
 common.C1=df.gg.common[df.gg.common$group==C1.lab,]
@@ -432,29 +417,35 @@ df.common$loop.strength[abs(df.common$lfc.contacts) < common.lfc]="stable"
 df.common=df.common[order(df.common$C1,decreasing = T),]
 df.common$rank=nrow(df.common):1
 
+write.table(df.common,paste0(outdir,"/common.loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+
 common.stable.out=df.common[df.common$loop.strength=="stable",c(1:4,6:8,10:11,13)]
 common.up.out=df.common[df.common$loop.strength=="increased",c(1:4,6:8,10:11,13)]
 common.down.out=df.common[df.common$loop.strength=="decreased",c(1:4,6:8,10:11,13)]
-common.stable.out$q.value=1
-common.up.out$q.value=1
-common.down.out$q.value=1
 
-colnames(common.stable.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
-colnames(common.up.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
-colnames(common.down.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+if (nrow(common.stable.out)>0) {
+  common.stable.out$q.value=1 
+  colnames(common.stable.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+  common.stable.out=common.stable.out[,c(1:5,11,6,8:9,7,10)]
+  write.table(common.stable.out,paste0(outdir,"/common.loops_stable.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+  common.stable=df.common[df.common$loop.strength=="stable",c(1:4,7,10:11,13)]
+}
 
-common.stable.out=common.stable.out[,c(1:5,11,6,8:9,7,10)]
-common.up.out=common.up.out[,c(1:5,11,6,8:9,7,10)]
-common.down.out=common.down.out[,c(1:5,11,6,8:9,7,10)]
+if (nrow(common.up.out)>0) {
+  common.up.out$q.value=1 
+  colnames(common.up.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+  common.up.out=common.up.out[,c(1:5,11,6,8:9,7,10)]
+  write.table(common.up.out,paste0(outdir,"/common.loops_increased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+  common.up=df.common[df.common$loop.strength=="increased",c(1:4,7,10:11,13)]
+}
 
-write.table(common.up.out,paste0(outdir,"/common.loops_increased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(common.down.out,paste0(outdir,"/common.loops_decreased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(common.stable.out,paste0(outdir,"/common.loops_stable.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-write.table(df.common,paste0(outdir,"/common.loops.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
-
-common.stable=df.common[df.common$loop.strength=="stable",c(1:4,7,10:11,13)]
-common.up=df.common[df.common$loop.strength=="increased",c(1:4,7,10:11,13)]
-common.down=df.common[df.common$loop.strength=="decreased",c(1:4,7,10:11,13)]
+if (nrow(common.down.out)>0) {
+  common.down.out$q.value=1 
+  colnames(common.down.out)[c(5,7)]=c(paste0(C1.lab,".cpm"),paste0(C2.lab,".cpm"))
+  common.down.out=common.down.out[,c(1:5,11,6,8:9,7,10)]
+  write.table(common.down.out,paste0(outdir,"/common.loops_decreased.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+  common.down=df.common[df.common$loop.strength=="decreased",c(1:4,7,10:11,13)]
+}
 
 #distance
 df.distance.count=data.frame(distance=unique(df.gg$distance),count.C1=NA,count.C2=NA,count.common=NA,stringsAsFactors = F)
@@ -465,7 +456,7 @@ for (dist.num in 1:nrow(df.distance.count)){
   catch=df.gg[df.gg$distance == df.distance.count$distance[dist.num],]
   count.specific.C1=sum(catch$group2 == C1.lab,na.rm=T)
   count.specific.C2=sum(catch$group2 == C2.lab,na.rm=T)
-  count.common=sum(catch$group2 == "common",na.rm=T)
+  count.common=sum(catch$group2 == paste0("common-",C1.lab),na.rm=T)
   df.distance.count$count.C1[dist.num]=count.specific.C1
   df.distance.count$count.C2[dist.num]=count.specific.C2
   df.distance.count$count.common[dist.num]=count.common
@@ -504,7 +495,7 @@ for (i in x){
 }
 
 df.perc=data.frame(group=rep(df.perc$group2,2),perc=c(df.perc$unique,df.perc$common))
-df.perc$group2=rep(c("common","unique"),each=2)
+df.perc$group2=rep(c("unique","common"),each=2)
 df.perc$perc=df.perc$perc*100
 df.perc$comparison=paste0(C2.lab,"_vs_",C1.lab)
 #write.table(df.perc,paste0(outdir,"/metrics_fraction.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
@@ -578,6 +569,88 @@ keys.df.common2=data.frame(keys=levels(df.common$loop.strength),color=NA)
 keys.df.common2$color[keys.df.common2$keys == "stable"]="darkgrey"
 keys.df.common2$color[keys.df.common2$keys == "decreased"]="blue"
 keys.df.common2$color[keys.df.common2$keys == "increased"]="red"
+
+# save annot files #
+
+if (annot_promoters){ ## This takes too long: Look for a different approach.
+  df.gg$anchor1.id=paste(df.gg$chr1,df.gg$start1,df.gg$end1,sep = ":")
+  df.gg$anchor2.id=paste(df.gg$chr2,df.gg$start2,df.gg$end2,sep = ":")
+  
+  df.common.up=df.common[df.common$loop.strength=="increased",c(1:4,13)]
+  df.common.down=df.common[df.common$loop.strength=="decreased",c(1:4,13)]
+  df.common.stable=df.common[df.common$loop.strength=="stable",c(1:4,13)]
+  
+  bse=binsize/2
+  
+  df.common.up$anchor1.id=paste(df.common.up$chr1,df.common.up$fragmentMid1,df.common.up$fragmentMid1,sep = ":")
+  df.common.up$anchor2.id=paste(df.common.up$chr1,df.common.up$fragmentMid2,df.common.up$fragmentMid2,sep = ":")
+  
+  df.common.down$anchor1.id=paste(df.common.down$chr1,df.common.down$fragmentMid1,df.common.down$fragmentMid1,sep = ":")
+  df.common.down$anchor2.id=paste(df.common.down$chr1,df.common.down$fragmentMid2,df.common.down$fragmentMid2,sep = ":")
+  
+  df.common.stable$anchor1.id=paste(df.common.stable$chr1,df.common.stable$fragmentMid1,df.common.stable$fragmentMid1,sep = ":")
+  df.common.stable$anchor2.id=paste(df.common.stable$chr1,df.common.stable$fragmentMid2,df.common.stable$fragmentMid2,sep = ":")
+  
+  anchors=as.data.frame(rbind(as.matrix(df.gg[,c(13,15:16)]),as.matrix(df.gg[,c(13,17:18)])))
+  names(anchors)=c("chr","start","end")
+  anchors$anchor.id=paste(anchors$chr,anchors$start,anchors$end,sep = ":")
+  anchors$anchor.id=gsub(anchors$anchor.id,pattern = " ",replacement = "")
+  anchors=anchors[!duplicated(anchors$anchor.id),]
+  anchors.gr=makeGRangesFromDataFrame(anchors)
+  anchor.tss.ovl=as.data.frame(findOverlaps(anchors.gr,tss.gr,maxgap = binsize/2))
+  
+  anchors$gene.annot=unlist(lapply(1:nrow(anchors),geneAnnotAnchor))
+  df.gg$anchor1.annot=unlist(lapply(df.gg$anchor1.id,getAnnot))
+  df.gg$anchor2.annot=unlist(lapply(df.gg$anchor2.id,getAnnot))
+  
+  df.common.stable$anchor1.annot=unlist(lapply(df.common.stable$anchor1.id,getAnnot))
+  df.common.stable$anchor2.annot=unlist(lapply(df.common.stable$anchor2.id,getAnnot))
+  
+  df.common.up$anchor1.annot=unlist(lapply(df.common.up$anchor1.id,getAnnot))
+  df.common.up$anchor2.annot=unlist(lapply(df.common.up$anchor2.id,getAnnot))
+  
+  df.common.down$anchor1.annot=unlist(lapply(df.common.down$anchor1.id,getAnnot))
+  df.common.down$anchor2.annot=unlist(lapply(df.common.down$anchor2.id,getAnnot))
+}
+
+c2.specific.annot=df.gg[df.gg$group2==C2.lab,c(1:5,21,22)]
+
+if (nrow(c2.specific.annot)>0){
+  c2.specific.genes=unique(unlist(strsplit(c(c2.specific.annot$anchor1.annot,c2.specific.annot$anchor2.annot),split = ",")))
+  c2.specific.genes=c2.specific.genes[!is.na(c2.specific.genes)]
+  write.table(c2.specific.genes,paste0(outdir,"/",C2.lab.original,"_specific_genes.tsv"),row.names = F,col.names = F,quote = F,sep="\t")
+  write.table(c2.specific.annot,paste0(outdir,"/",C2.lab.original,"_specific_geneAnnot.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+}
+
+c1.specific.annot=df.gg[df.gg$group2==C1.lab,c(1:5,21,22)]
+
+if (nrow(c1.specific.annot)>0){
+  c1.specific.genes=unique(unlist(strsplit(c(c1.specific.annot$anchor1.annot,c1.specific.annot$anchor2.annot),split = ",")))
+  c1.specific.genes=c1.specific.genes[!is.na(c1.specific.genes)]
+  write.table(c1.specific.genes,paste0(outdir,"/",C1.lab.original,"_specific_genes.tsv"),row.names = F,col.names = F,quote = F,sep="\t")
+  write.table(c1.specific.annot,paste0(outdir,"/",C1.lab.original,"_specific_geneAnnot.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+}
+
+if(nrow(df.common.stable)>0){
+  common.stable.genes=unique(unlist(strsplit(c(df.common.stable$anchor1.annot,df.common.stable$anchor2.annot),split = ",")))
+  common.stable.genes=common.stable.genes[!is.na(common.stable.genes)]
+  write.table(common.stable.genes,paste0(outdir,"/common_stable_genes.tsv"),row.names = F,col.names = F,quote = F,sep="\t")
+  write.table(df.common.stable,paste0(outdir,"/common_stable_geneAnnot.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+}
+
+if(nrow(df.common.up)>0){
+  common.up.genes=unique(unlist(strsplit(c(df.common.up$anchor1.annot,df.common.up$anchor2.annot),split = ",")))
+  common.up.genes=common.up.genes[!is.na(common.up.genes)]
+  write.table(common.up.genes,paste0(outdir,"/common_increased_genes.tsv"),row.names = F,col.names = F,quote = F,sep="\t")
+  write.table(df.common.up,paste0(outdir,"/common_increased_geneAnnot.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+}
+
+if(nrow(df.common.down)>0){
+  common.down.genes=unique(unlist(strsplit(c(df.common.down$anchor1.annot,df.common.down$anchor2.annot),split = ",")))
+  common.down.genes=common.down.genes[!is.na(common.down.genes)]
+  write.table(common.down.genes,paste0(outdir,"/common_decreased_genes.tsv"),row.names = F,col.names = F,quote = F,sep="\t")
+  write.table(df.common.down,paste0(outdir,"/common_decreased_geneAnnot.tsv"),row.names = F,col.names = T,quote = F,sep="\t")
+}
 
 ### Save plots in objects ###
 p1=contactsByDist(df.gg,"group",is.common = F)
@@ -654,7 +727,9 @@ grid.arrange(arrangeGrob(p9,p8,nrow=1))
 grid.arrange(arrangeGrob(p5,p7,nrow=1))
 grid.arrange(arrangeGrob(p10,p11,nrow=1))
 p3
+
 #p4
 p6
 grid.arrange(arrangeGrob(p16,p17,nrow=1),arrangeGrob(p18,p19,nrow=1),top="Promoter-annotation: Common and group-specific loops",bottom="Criteria: one or more TSS in at least 1 of the loop-anchors")
 dev.off()
+
