@@ -25,6 +25,7 @@ endif
 
 # run parameter script
 scripts-send2err "Setting parameters..."
+
 source $params
 if (! $?NSLOTS) then
   set threads = 16
@@ -86,6 +87,36 @@ else if ($aligner == 'bwa') then              ## Aligner = bwa
   bwa mem $align_params -t $threads $genome_index $out/R2.fastq.gz | samtools view -Shb - >! $out/R2.bam
   rm -f $out/R2.fastq.gz
   
+else if ($aligner == 'hicpro') then           ##run hic-pro 
+  module unload r
+  module load r/4.0.3
+  module unload python
+  module load python/cpu/3.7.2
+  module load hic-pro
+
+  set object_dir = $fastq_dir/$object
+
+  #make custom config file from template 
+  sed -e "s|refGenome|$genome|" \
+      -e "s|enzyme_path|$PWD/$enzyme_path|" \
+      -e "s|bowtie_idx_path|$PWD/$genome_index|" \
+      -e "s|bowtie_param_global|$align_params_global|" \
+      -e "s|bowtie_param_local|$align_params_local|" \
+          $hicpro_config > config-hicpro-$objects.txt 
+  
+  
+  
+  mkdir $out/fastq/
+  ln -s ../../../../$object_dir $out/fastq/
+	
+  #run hic-pro
+  HiC-Pro -i $out/fastq/ -o $out -c config-hicpro-$objects.txt -s mapping -s proc_hic -s quality_checks -s merge_persample
+  
+  #clean up 
+  rm -r $out/bowtie_results/bwt2_global $out/tmp
+  rm $out/bowtie_results/bwt2/$objects/*.bwt2merged.bam
+  rm config-hicpro-$objects.txt
+
 else
   scripts-send2err "Error: unknown aligner $aligner."
   exit

@@ -1,0 +1,17 @@
+
+Use the configfile_* files 
+for configuration parameters of different FitHiChIP versions
+---------------------
+
+configfile_BiasCorrection_CoverageBias
+FitHiChIP(L) with coverage bias regression
+
+configfile_BiasCorrection_ICEBias
+FitHiChIP(L) with ICE bias regression
+
+configfile_P2P_BiasCorrection_CoverageBias
+FitHiChIP(S) with coverage bias regression
+
+configfile_P2P_BiasCorrection_ICEBias
+FitHiChIP(S) with ICE bias regression
+
