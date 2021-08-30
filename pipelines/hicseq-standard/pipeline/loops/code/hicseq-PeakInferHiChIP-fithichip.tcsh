@@ -28,7 +28,15 @@ source $params
 set job_dir=$outdir/PeakInferHiChIP
 mkdir -p $job_dir
 
-set jid = `sbatch --output="$job_dir/job.out" --error="$job_dir/job.err" ./code/PeakInferHiChIP.sh $hicpro_output $job_dir $genome $macs` 
+# MACS-style genome abbreviation (keep first two characters of build name)
+set macs_genome = `echo $genome | cut -c1-2`
+
+# fix if hgXX
+if ("$macs_genome" == "hg") then 
+	set macs_genome = "hs"
+endif
+
+set jid = `sbatch --output="$job_dir/job.out" --error="$job_dir/job.err" ./code/PeakInferHiChIP.sh $hicpro_output $job_dir $macs_genome $macs` 
 set jid = `echo $jid | sed 's/.* //'`
 echo $jid >! $job_dir/job.id
 echo "Waiting for job array [$jid] to complete..." | scripts-send2err
