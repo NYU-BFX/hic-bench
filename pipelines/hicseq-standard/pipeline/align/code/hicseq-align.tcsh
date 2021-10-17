@@ -102,20 +102,18 @@ else if ($aligner == 'hicpro') then           ##run hic-pro
       -e "s|bowtie_idx_path|$PWD/$genome_index|" \
       -e "s|bowtie_param_global|$align_params_global|" \
       -e "s|bowtie_param_local|$align_params_local|" \
-          $hicpro_config > config-hicpro-$objects.txt 
-  
-  
-  
+          $hicpro_config > $out/config-hicpro-$objects.txt 
+    
   mkdir $out/fastq/
   ln -s ../../../../$object_dir $out/fastq/
 	
   #run hic-pro
-  HiC-Pro -i $out/fastq/ -o $out -c config-hicpro-$objects.txt -s mapping -s proc_hic -s quality_checks -s merge_persample
+  HiC-Pro -i $out/fastq/ -o $out -c $out/config-hicpro-$objects.txt -s mapping -s proc_hic -s quality_checks -s merge_persample
   
   #clean up 
   rm -r $out/bowtie_results/bwt2_global $out/tmp
   rm $out/bowtie_results/bwt2/$objects/*.bwt2merged.bam
-  rm config-hicpro-$objects.txt
+  rm $out/config-hicpro-$objects.txt
 
 else
   scripts-send2err "Error: unknown aligner $aligner."
