@@ -68,9 +68,9 @@ else if (-e $branch/$objects[1]/R1.bam) then
   cat $outdir/R12.sam | gtools-hic filter -v -E $genome_dir/$enzyme.fragments.bed --stats $outdir/stats_with_dups.tsv $filter_params | sort -t'	' -k2 >! $outdir/filtered_with_dups.reg
   rm -f $outdir/R12.sam
 
-else if ($branch == 'inpdirs/align/results/align.by_sample.hicpro') then
+else if ($branch == 'inpdirs/align/results/align.by_sample.hicpro' && $enzyme != "X") then
 #------------------------------------------------------------------------
-# Case 3: his-pro allValidPairs files are available
+# Case 3: hic-pro allValidPairs files are available
 #------------------------------------------------------------------------
   set allValidPairs = ()
   foreach obj ($objects)
