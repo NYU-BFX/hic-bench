@@ -36,7 +36,7 @@ scripts-create-path $outdir/
 if ($#objects < 2) then
 	scripts-send2err "WARNING: More than one input objects are required. No output will be produced!"
 	exit 1
-endif 
+endif
 
 # Generate Compartments Plots
 foreach inp_var (sample group)
@@ -47,15 +47,16 @@ foreach inp_var (sample group)
   endif
 end
 echo -n "" >! $outdir/data.tsv
-echo -n "" >! $outdir/metrics.tsv
+# echo -n "" >! $outdir/metrics.tsv
+head -1 $branch/$objects[1]/pc1_metrics_summary.txt >! $outdir/metrics.tsv
 
 foreach object ($objects)
 	cat $branch/$object/compartments.scores.bedGraph | cut -f1-4 | sed '1d' | grep -vwE "$chrom_excluded" | awk '{print $1":"$2"-"$3"\t"$4}' | sed "s/\t/\t$object\t/" >> $outdir/data.tsv
-	cat $branch/$object/pc1_metrics_summary.txt >> $outdir/metrics.tsv
+	tail -n +2 $branch/$object/pc1_metrics_summary.txt >> $outdir/metrics.tsv
 end
 
 cat $outdir/data.tsv | tools-table -c -n 6 | sed 's/ *$//' | tr -s ' ' '\t' >! $outdir/pca1.matrix.tsv
-Rscript ./code/scripts-compartments-stats.r -v -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -r $outdir/metrics.tsv -c $centrotelo_file -d $delta_cut $pca_params
+Rscript ./code/scripts-compartments-stats.r -o $outdir -L $outdir/labels.tsv -m $outdir/pca1.matrix.tsv -r $outdir/metrics.tsv -c $centrotelo_file -d $delta_cut #$pca_params
 
 rm -f $outdir/data.tsv
 
