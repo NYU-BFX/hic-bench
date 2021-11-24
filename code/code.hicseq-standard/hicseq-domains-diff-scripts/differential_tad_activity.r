@@ -157,18 +157,18 @@ for (i in 2:(ncol(conn_table_sample_1)-1)) {
 centrotelo <- read.table(centrotelo_file, header = FALSE, sep = "\t")
 centrotelo <- centrotelo[centrotelo$V1 == chr,]
 
+if (nrow(centrotelo)>0){	# to avoid errors in dm6 genome
 for (i in 1:nrow(centrotelo)) {
-        centrotelo_entry <- centrotelo[i,]
-        centrotelo_entry_start_bin <- as.numeric(floor(centrotelo_entry[2] / bin.size)) + 1
-        centrotelo_entry_end_bin <- as.numeric(ceiling(centrotelo_entry[3] / bin.size)) + 1
- 	if (i == 3){
-		centrotelo_entry_end_bin <- ncol(conn_table_sample_1)
-	}
-	conn_table_sample_1[centrotelo_entry_start_bin:centrotelo_entry_end_bin,] <- NA
-        conn_table_sample_2[centrotelo_entry_start_bin:centrotelo_entry_end_bin,] <- NA
+        	centrotelo_entry <- centrotelo[i,]
+        	centrotelo_entry_start_bin <- as.numeric(floor(centrotelo_entry[2] / bin.size)) + 1
+        	centrotelo_entry_end_bin <- as.numeric(ceiling(centrotelo_entry[3] / bin.size)) + 1
+ 		if (i == 3){ centrotelo_entry_end_bin <- ncol(conn_table_sample_1) }
+		conn_table_sample_1[centrotelo_entry_start_bin:centrotelo_entry_end_bin,] <- NA
+        	conn_table_sample_2[centrotelo_entry_start_bin:centrotelo_entry_end_bin,] <- NA
         
-	conn_table_sample_1[,centrotelo_entry_start_bin:centrotelo_entry_end_bin] <- NA
-        conn_table_sample_2[,centrotelo_entry_start_bin:centrotelo_entry_end_bin] <- NA
+		conn_table_sample_1[,centrotelo_entry_start_bin:centrotelo_entry_end_bin] <- NA
+        	conn_table_sample_2[,centrotelo_entry_start_bin:centrotelo_entry_end_bin] <- NA
+	}
 }
 
 # Sequencing depth normalization - Upper-triangular matrix
