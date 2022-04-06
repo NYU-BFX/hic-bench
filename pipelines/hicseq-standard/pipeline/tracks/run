@@ -5,9 +5,9 @@ source ./code/code.main/custom-tcshrc      # customize shell environment
 ## USAGE: run [--dry-run]
 ##
 
-#% This step generates Hi-C tracks for the WashU Genome Browser. 
-#% TABLES: 
-#% FIGURES: 
+#% This step generates Hi-C tracks for the WashU Genome Browser.
+#% TABLES:
+#% FIGURES:
 
 # process command-line inputs
 if ($#argv > 1) then
@@ -23,7 +23,7 @@ set inpdirs = "inpdirs/*"
 set results = results
 scripts-create-path $results/
 scripts-send2err "=== Operation = $op ============="
-set resources = 4,60G
+set resources = 1,8G
 set cmd = "./code/code.main/scripts-qsub-wrapper $resources ./code/hicseq-$op.tcsh"
 
 # generate run script

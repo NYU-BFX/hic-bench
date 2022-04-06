@@ -47,16 +47,16 @@ awk ' BEGIN { OFS="\t"; strand["-"]="1"; strand["+"]="0" } {                    
 
 # Generate .hic file
 echo 'Generating .hic file...' | scripts-send2err
-module unload r       
+module unload r
 module load juicer/1.5
-java -Xms512m -Xmx20480m -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar pre $outdir/filtered.bed $outdir/filtered.hic "$genome" -r $resolution -n
+java -Xmx8g -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar pre $outdir/filtered.bed $outdir/filtered.hic "$genome" -r $resolution -n
 module unload juicer/1.5
 
 # Normalize .hic file (KR)
 echo 'Normalizing .hic file...' | scripts-send2err
 module unload r
 module load juicer/1.5
-java -Xms512m -Xmx20480m -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar addNorm -k KR $outdir/filtered.hic
+java -Xmx8g -jar /gpfs/share/apps/juicer/1.5/scripts/juicer_tools.jar addNorm -k KR $outdir/filtered.hic
 module unload juicer/1.5
 
 # Generate .cool and .h5 files (had to separate this step in a second bash script because the conda module doesn't work well on tcsh)
