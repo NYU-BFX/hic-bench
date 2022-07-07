@@ -68,9 +68,9 @@ else if (-e $branch/$objects[1]/R1.bam) then
   cat $outdir/R12.sam | gtools-hic filter -v -E $genome_dir/$enzyme.fragments.bed --stats $outdir/stats_with_dups.tsv $filter_params | sort -t'	' -k2 >! $outdir/filtered_with_dups.reg
   rm -f $outdir/R12.sam
 
-else if ($branch == 'inpdirs/align/results/align.by_sample.hicpro' && $enzyme != "X") then
+else if ($branch == 'inpdirs/align/results/align.by_sample.hicpro' && $enzyme != "hicpro") then
 #------------------------------------------------------------------------
-# Case 3: hic-pro allValidPairs files are available
+# Case 3: hic-pro validPairs files are available (produced locally)
 #------------------------------------------------------------------------
   set allValidPairs = ()
   foreach obj ($objects)
@@ -104,9 +104,9 @@ else if ($branch == 'inpdirs/align/results/align.by_sample.hicpro' && $enzyme !=
   ) | tr ' ' '\t' >! $outdir/stats.tsv
   
   
-else
+else if ($enzyme == "hicpro") then
 #------------------------------------------------------------------------
-# Case 4: validPairs files are available
+# Case 4: hicpro validPairs files are available (produced externally)
 #------------------------------------------------------------------------
   set valid_pairs = ()
   foreach obj ($objects)
@@ -137,6 +137,27 @@ else
     echo "unclassified 0 0" ;\
   ) | tr ' ' '\t' >! $outdir/stats.tsv
   goto done
+
+echo $enzyme
+
+else if ($enzyme == reg) then
+#--------------------------------------------------------------------------------------------------------
+# Case 5: hicbench validPairs files (.reg) are available (produced externally - E.g. C-Origami predicted)
+#--------------------------------------------------------------------------------------------------------
+  scripts-send2err "Creating symbolic links to alternative .reg input data."
+  echo 'outdir: '$outdir
+  echo 'objects: '$objects
+  
+  cd $outdir
+    
+	
+  ln -s ../../../../inputs/fastq/$objects/filtered.reg.gz ./
+  cd ../../../../
+  goto done
+
+else
+  scripts-send2err "Error: unknown filter settings."
+  exit
 endif
 
 if (-e $outdir/filtered_with_dups.reg) then 
@@ -152,7 +173,7 @@ if (-e $outdir/filtered_with_dups.reg) then
 
   # cleanup
   rm -f $outdir/filtered_with_dups.reg $outdir/stats_with_dups.tsv
-endif 
+endif
 
 done:
 # calculate distance statistics
@@ -162,5 +183,3 @@ done:
 set >! $outdir/job.vars.tsv
 
 scripts-send2err "Done."
-
-
