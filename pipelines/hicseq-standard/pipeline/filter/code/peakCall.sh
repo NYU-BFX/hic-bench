@@ -11,8 +11,10 @@
 
 branch=`realpath results/*/*/ | fgrep -v "total"`
 n_samples=`ls -l $branch | fgrep -v "total" | wc -l`
+make_bam=FALSE
 
 echo $n_samples 
 echo $branch
+echo $make_bam
 
-sbatch --array=1-$n_samples ./code/scripts-peakCall.sh ${branch}
+sbatch --array=1-$n_samples ./code/scripts-peakCall.sh ${branch} ${make_bam}
